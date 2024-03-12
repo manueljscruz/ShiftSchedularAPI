@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34330.188
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularAPI", "ShiftSchedularAPI.csproj", "{2D09AAE9-5ED8-4E36-921E-22F759AE111D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularBLL", "..\ShiftSchedularBLL\ShiftSchedularBLL.csproj", "{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularDAL", "..\ShiftSchedularDAL\ShiftSchedularDAL.csproj", "{48132A89-1F35-4F45-A82D-2B058CDDCFE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularEntity", "..\ShiftSchedularEntity\ShiftSchedularEntity.csproj", "{A16382C3-0606-46E0-AC76-EA17B8F7B347}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2D09AAE9-5ED8-4E36-921E-22F759AE111D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D09AAE9-5ED8-4E36-921E-22F759AE111D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D09AAE9-5ED8-4E36-921E-22F759AE111D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D09AAE9-5ED8-4E36-921E-22F759AE111D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48132A89-1F35-4F45-A82D-2B058CDDCFE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48132A89-1F35-4F45-A82D-2B058CDDCFE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48132A89-1F35-4F45-A82D-2B058CDDCFE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48132A89-1F35-4F45-A82D-2B058CDDCFE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {60BCE3F0-0B75-4AA5-9928-8ED43925702C}
+	EndGlobalSection
+EndGlobal
