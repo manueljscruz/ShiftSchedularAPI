@@ -20,19 +20,5 @@ namespace ShiftSchedularEntity.Entities
         public virtual Gender Gender { get; set; }
 
         #endregion
-
-        #region Constructor
-
-        public Worker()
-        {
-            WorkerId = 0;
-            WorkerName = string.Empty;
-            GenderId = 0;
-            Email = string.Empty;
-            Password = string.Empty;
-            Gender = new Gender();
-        }
-
-        #endregion
     }
 }

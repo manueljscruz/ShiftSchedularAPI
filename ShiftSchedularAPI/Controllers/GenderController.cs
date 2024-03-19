@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -61,6 +62,23 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Genders By Localization
+
+        /// <summary>
+        /// Get all genders records by localization code
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("get-all-genders-by-localization/{lcode}")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetAllGendersByLocalization(string lcode)
+        {
+            var gendersLocalization = await _genderService.GetAllGendersByLocalization(lcode);
+
+            return Ok(gendersLocalization);
+        }
+
+        #endregion
+
         #region Add Gender
 
         /// <summary>
@@ -75,6 +93,27 @@ namespace ShiftSchedularAPI.Controllers
             int newGenderId = await _genderService.AddGender(strNewGenderValue);
 
             return Created($"/api/gender/{newGenderId}", "Gender Added");
+        }
+
+        #endregion
+
+        #region Add Gender Localization
+
+        /// <summary>
+        /// Adds a new gender localization entry
+        /// </summary>
+        /// <param name="genderLocalizationSubmission"></param>
+        /// <returns></returns>
+        [HttpPost("add-gender-localization")]
+        [ProducesResponseType(201)]
+        public async Task<IActionResult> AddGenderLocalization(GenderLocalizationSubmissionModel genderLocalizationSubmission)
+        {
+            bool result = await _genderService.AddGenderLocalization(genderLocalizationSubmission);
+
+            if(result)
+                return Created($"/api/gender/add-gender-localization", "Gender Localization entry submitted");
+            else 
+                return BadRequest("Error occured when creating a gender localization entry");
         }
 
         #endregion

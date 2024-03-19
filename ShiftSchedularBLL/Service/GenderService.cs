@@ -1,18 +1,26 @@
 ﻿using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
+using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 
 namespace ShiftSchedularBLL.Service
 {
     public class GenderService : IGenderService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Gender> _genderRepository;
+        private readonly ILocalizationRepository _localizationRepository;
+        private readonly IGenericRepository<GenderLocalization> _genderLocalizationRepository;
 
         #region Constructor
 
-        public GenderService(IGenericRepository<Gender> genderRepository)
+        public GenderService(IUnitOfWork unitOfWork, IGenericRepository<Gender> genderRepository, ILocalizationRepository localizationRepository, IGenericRepository<GenderLocalization> genderLocalizationRepository)
         {
+            _unitOfWork = unitOfWork;
             _genderRepository = genderRepository;
+            _localizationRepository = localizationRepository;
+            _genderLocalizationRepository = genderLocalizationRepository;
         }
 
         #endregion
@@ -60,6 +68,24 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get All Genders By Localization
+
+        public async Task<IEnumerable<GenderLocalization>> GetAllGendersByLocalization(string lcode)
+        {
+            IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetAll();
+            Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
+
+            if (localization != null && localization.GenderLocalizations.Count() != 0)
+            {
+                return localization.GenderLocalizations;
+            }
+
+            else 
+                return null;
+        }
+
+        #endregion
+
         #region Get Gender By Id
 
         public async Task<Gender> GetGenderById(int genderId)
@@ -81,6 +107,54 @@ namespace ShiftSchedularBLL.Service
         }
 
         #endregion
+
+        #region Add Gender Localization
+
+        /// <summary>
+        /// Creates a new entry of Gender Localization
+        /// </summary>
+        /// <param name="genderLocalizationSubmission"></param>
+        /// <returns></returns>
+        public async Task<bool> AddGenderLocalization(GenderLocalizationSubmissionModel genderLocalizationSubmission)
+        {
+            bool result = false;
+
+            Gender gender = await _genderRepository.GetById(genderLocalizationSubmission.GenderId);
+            Localization localization = await _localizationRepository.GetById(genderLocalizationSubmission.LanguageId);
+
+            if(gender != null && localization != null)
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                try
+                {
+                    GenderLocalization genderLocalization = new GenderLocalization
+                    {
+                        GenderId = gender.GenderId,
+                        LocalizationId = localization.LocalizationId,
+                        GenderDisplayValue = genderLocalizationSubmission.GenderDisplayValue
+                    };
+
+                    await _genderLocalizationRepository.Add(genderLocalization);
+                    await _unitOfWork.CommitAsync();
+
+                    result = true;
+                }
+                catch (Exception ex)
+                {
+                    await _unitOfWork.RollbackAsync();
+                }
+                finally
+                {
+                    _unitOfWork.Dispose();
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
 
         #endregion
     }

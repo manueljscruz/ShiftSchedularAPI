@@ -23,9 +23,12 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 // Repositories
 builder.Services.AddScoped<IGenericRepository<Gender>, GenericRepository<Gender>>();
+builder.Services.AddScoped<IGenericRepository<GenderLocalization>, GenericRepository<GenderLocalization>>();
+builder.Services.AddScoped<ILocalizationRepository, LocalizationRepository>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();

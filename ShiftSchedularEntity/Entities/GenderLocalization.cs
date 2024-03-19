@@ -16,20 +16,5 @@
         public virtual Localization Localization { get; set; }
 
         #endregion
-
-        #region Constructor
-
-        public GenderLocalization()
-        {
-            GenderId = 0;
-            LocalizationId = 0;
-            GenderDisplayValue = string.Empty;
-
-            Gender = new Gender();
-            Localization = new Localization();
-        }
-
-        #endregion
-
     }
 }

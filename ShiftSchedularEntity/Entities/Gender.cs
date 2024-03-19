@@ -19,17 +19,5 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<Worker> Workers { get; set; }
 
         #endregion
-
-        #region Constructor
-
-        public Gender()
-        {
-            GenderId = 0;
-            GenderValue = string.Empty;
-            GenderLocalizations = new HashSet<GenderLocalization>();
-            Workers = new HashSet<Worker>();
-        }
-
-        #endregion
     }
 }
