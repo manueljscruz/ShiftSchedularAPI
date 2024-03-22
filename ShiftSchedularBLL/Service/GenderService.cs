@@ -3,6 +3,7 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.Responses;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -70,18 +71,27 @@ namespace ShiftSchedularBLL.Service
 
         #region Get All Genders By Localization
 
-        public async Task<IEnumerable<GenderLocalization>> GetAllGendersByLocalization(string lcode)
+        /// <summary>
+        /// Returns a list will all of the genders with display values in the specified language
+        /// </summary>
+        /// <param name="lcode"></param>
+        /// <returns></returns>
+        public async Task<List<GenderLocalizedModel>> GetAllGendersByLocalization(string lcode)
         {
+            List<GenderLocalizedModel> genderLocalizeds = new List<GenderLocalizedModel>();
+
+            // Get necessary data
             IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetAll();
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
 
+            // If data found, add it to list to be returned
             if (localization != null && localization.GenderLocalizations.Count() != 0)
             {
-                return localization.GenderLocalizations;
+                foreach (GenderLocalization genderLocalization in localization.GenderLocalizations)
+                    genderLocalizeds.Add(new GenderLocalizedModel(genderLocalization));
             }
 
-            else 
-                return null;
+            return genderLocalizeds;
         }
 
         #endregion
