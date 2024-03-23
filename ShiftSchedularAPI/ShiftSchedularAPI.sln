@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularAPI", "ShiftSchedularAPI.csproj", "{2D09AAE9-5ED8-4E36-921E-22F759AE111D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularAPI", "ShiftSchedularAPI.csproj", "{2D09AAE9-5ED8-4E36-921E-22F759AE111D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularBLL", "..\ShiftSchedularBLL\ShiftSchedularBLL.csproj", "{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularBLL", "..\ShiftSchedularBLL\ShiftSchedularBLL.csproj", "{9E43ED45-4E70-4F37-9C8F-D5CB971C43DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularDAL", "..\ShiftSchedularDAL\ShiftSchedularDAL.csproj", "{48132A89-1F35-4F45-A82D-2B058CDDCFE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularDAL", "..\ShiftSchedularDAL\ShiftSchedularDAL.csproj", "{48132A89-1F35-4F45-A82D-2B058CDDCFE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularEntity", "..\ShiftSchedularEntity\ShiftSchedularEntity.csproj", "{A16382C3-0606-46E0-AC76-EA17B8F7B347}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularEntity", "..\ShiftSchedularEntity\ShiftSchedularEntity.csproj", "{A16382C3-0606-46E0-AC76-EA17B8F7B347}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularIL", "..\ShiftSchedularIL\ShiftSchedularIL.csproj", "{90121C17-5C34-4C33-998F-C1DE43611DAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A16382C3-0606-46E0-AC76-EA17B8F7B347}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

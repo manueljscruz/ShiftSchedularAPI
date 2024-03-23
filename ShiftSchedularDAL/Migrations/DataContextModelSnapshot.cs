@@ -76,11 +76,8 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
                 {
-                    b.Property<long>("WorkerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("WorkerId"));
+                    b.Property<string>("WorkerId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()

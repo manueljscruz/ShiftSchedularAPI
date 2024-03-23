@@ -1,9 +1,11 @@
-﻿using ShiftSchedularBLL.IService;
+﻿using AutoMapper;
+using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.Responses;
+using AutoMapper.QueryableExtensions;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -13,15 +15,17 @@ namespace ShiftSchedularBLL.Service
         private readonly IGenericRepository<Gender> _genderRepository;
         private readonly ILocalizationRepository _localizationRepository;
         private readonly IGenericRepository<GenderLocalization> _genderLocalizationRepository;
+        private readonly IMapper _mapper;
 
         #region Constructor
 
-        public GenderService(IUnitOfWork unitOfWork, IGenericRepository<Gender> genderRepository, ILocalizationRepository localizationRepository, IGenericRepository<GenderLocalization> genderLocalizationRepository)
+        public GenderService(IUnitOfWork unitOfWork, IGenericRepository<Gender> genderRepository, ILocalizationRepository localizationRepository, IGenericRepository<GenderLocalization> genderLocalizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _genderRepository = genderRepository;
             _localizationRepository = localizationRepository;
             _genderLocalizationRepository = genderLocalizationRepository;
+            _mapper = mapper;
         }
 
         #endregion
@@ -76,9 +80,9 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<List<GenderLocalizedModel>> GetAllGendersByLocalization(string lcode)
+        public async Task<List<GenderLocalizedDTO>> GetAllGendersByLocalization(string lcode)
         {
-            List<GenderLocalizedModel> genderLocalizeds = new List<GenderLocalizedModel>();
+            List<GenderLocalizedDTO> genderLocalizeds = new List<GenderLocalizedDTO>();
 
             // Get necessary data
             IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetAll();
@@ -86,11 +90,8 @@ namespace ShiftSchedularBLL.Service
 
             // If data found, add it to list to be returned
             if (localization != null && localization.GenderLocalizations.Count() != 0)
-            {
-                foreach (GenderLocalization genderLocalization in localization.GenderLocalizations)
-                    genderLocalizeds.Add(new GenderLocalizedModel(genderLocalization));
-            }
-
+                genderLocalizeds = localization.GenderLocalizations.AsQueryable().ProjectTo<GenderLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
+            
             return genderLocalizeds;
         }
 

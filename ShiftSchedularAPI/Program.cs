@@ -6,6 +6,11 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularIL.IServices;
+using ShiftSchedularIL.Mappers;
+using ShiftSchedularIL.Services;
+using System.ComponentModel;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +35,12 @@ builder.Services.AddScoped<ILocalizationRepository, LocalizationRepository>();
 builder.Services.AddScoped<IGenderService, GenderService>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Infrastructure
+builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
+builder.Services.AddScoped<IGeneralService, GeneralService>();
+builder.Services.AddScoped<ICryptographyService, CryptographyService>();
+
 
 var app = builder.Build();
 

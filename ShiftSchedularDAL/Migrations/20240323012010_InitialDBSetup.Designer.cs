@@ -11,8 +11,8 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240311221102_InitialDbSetup")]
-    partial class InitialDbSetup
+    [Migration("20240323012010_InitialDBSetup")]
+    partial class InitialDBSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -79,11 +79,8 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
                 {
-                    b.Property<long>("WorkerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("WorkerId"));
+                    b.Property<string>("WorkerId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()

@@ -12,7 +12,7 @@ namespace ShiftSchedularBLL.IService
         Task UpdateGender(Gender gender);
         Task DeleteGender(int genderId);
         Task<bool> AddGenderLocalization(GenderLocalizationSubmissionModel genderLocalizationSubmission);
-        Task<List<GenderLocalizedModel>> GetAllGendersByLocalization(string lcode);
+        Task<List<GenderLocalizedDTO>> GetAllGendersByLocalization(string lcode);
     }
 }
     

@@ -5,7 +5,7 @@
 namespace ShiftSchedularDAL.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialDbSetup : Migration
+    public partial class InitialDBSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,8 +40,7 @@ namespace ShiftSchedularDAL.Migrations
                 name: "Workers",
                 columns: table => new
                 {
-                    WorkerId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WorkerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WorkerName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     GenderId = table.Column<int>(type: "int", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),

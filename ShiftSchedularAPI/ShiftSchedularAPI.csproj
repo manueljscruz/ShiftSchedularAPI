@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ShiftSchedularBLL\ShiftSchedularBLL.csproj" />
     <ProjectReference Include="..\ShiftSchedularDAL\ShiftSchedularDAL.csproj" />
+    <ProjectReference Include="..\ShiftSchedularIL\ShiftSchedularIL.csproj" />
   </ItemGroup>
 
 </Project>

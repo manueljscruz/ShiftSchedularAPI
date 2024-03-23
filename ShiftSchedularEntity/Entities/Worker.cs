@@ -6,8 +6,7 @@ namespace ShiftSchedularEntity.Entities
     {
         #region Properties
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long WorkerId { get; set; }
+        public string WorkerId { get; set; }
         public string WorkerName { get; set; }
         public int GenderId { get; set; }
         public string Email { get; set; }
