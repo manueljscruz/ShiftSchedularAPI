@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularDAL", "..\Shi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularEntity", "..\ShiftSchedularEntity\ShiftSchedularEntity.csproj", "{A16382C3-0606-46E0-AC76-EA17B8F7B347}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularIL", "..\ShiftSchedularIL\ShiftSchedularIL.csproj", "{90121C17-5C34-4C33-998F-C1DE43611DAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftSchedularIL", "..\ShiftSchedularIL\ShiftSchedularIL.csproj", "{90121C17-5C34-4C33-998F-C1DE43611DAF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShiftSchedularRL", "..\ShiftSchedularRL\ShiftSchedularRL.csproj", "{2A7B299C-6951-43C8-9A9D-59F8BC5E82F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90121C17-5C34-4C33-998F-C1DE43611DAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A7B299C-6951-43C8-9A9D-59F8BC5E82F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A7B299C-6951-43C8-9A9D-59F8BC5E82F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A7B299C-6951-43C8-9A9D-59F8BC5E82F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A7B299C-6951-43C8-9A9D-59F8BC5E82F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

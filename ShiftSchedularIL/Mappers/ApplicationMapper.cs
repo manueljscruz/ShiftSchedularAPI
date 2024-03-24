@@ -17,6 +17,12 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
+            CreateMap<Worker, WorkerDTO>()
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
+                .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
         }
     }
 }

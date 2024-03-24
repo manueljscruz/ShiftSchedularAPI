@@ -11,6 +11,7 @@ namespace ShiftSchedularEntity.Entities
         public int GenderId { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public bool IsActive { get; set; }
 
         #endregion
 
