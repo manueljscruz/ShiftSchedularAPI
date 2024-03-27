@@ -84,6 +84,9 @@ namespace ShiftSchedularBLL.Service
         {
             List<GenderLocalizedDTO> genderLocalizeds = new List<GenderLocalizedDTO>();
 
+            if (lcode.Contains("-"))
+                lcode = lcode.Split('-')[0];
+
             // Get necessary data
             IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetAll();
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
