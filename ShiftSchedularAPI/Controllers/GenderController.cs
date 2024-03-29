@@ -4,11 +4,12 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using ShiftSchedularEntity.Models.Responses;
 
 namespace ShiftSchedularAPI.Controllers
 {
     [ApiController]
-    [Route("gender")]
+    [Route("api/[controller]")]
     public class GenderController : ControllerBase
     {
         public readonly IGenderService _genderService;
