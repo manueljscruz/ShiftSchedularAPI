@@ -2,22 +2,23 @@
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class Localization
+    public class EntityType
     {
         #region Properties
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int LocalizationId { get; set; }
-        public string LocalizationCode { get; set; }
+        public int EntityTypeId { get; set; }
+
+        public string EntityTypeValue { get; set; }
 
         #endregion
 
         #region Navigation Properties
 
-        public virtual ICollection<GenderLocalization> GenderLocalizations { get; set; }
+        public virtual ICollection<Entity> Entities { get; set; }
+
         public virtual ICollection<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
 
         #endregion
-
     }
 }

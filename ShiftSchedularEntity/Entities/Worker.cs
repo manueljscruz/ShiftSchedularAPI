@@ -19,6 +19,8 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual Gender Gender { get; set; }
 
+        public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
+
         #endregion
     }
 }

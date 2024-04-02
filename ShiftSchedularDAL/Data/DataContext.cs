@@ -27,6 +27,10 @@ namespace ShiftSchedularDAL.Data
         public DbSet<GenderLocalization> GenderLocalizations { get; set; }
         public DbSet<Worker> Workers { get; set; }
         public DbSet<Localization> Localizations { get; set; }
+        public DbSet<EntityType> EntityTypes { get; set; }
+        public DbSet<Entity> Entities { get; set; }
+        public DbSet<EntityWorker> EntityWorkers { get; set; }
+        public DbSet<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
 
         #endregion
 
@@ -76,9 +80,48 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(g=>g.Workers)
                 .HasForeignKey(w=>w.GenderId);
 
+            #endregion
+
+            #region Entity Type
+
+            modelBuilder.Entity<EntityType>()
+                .HasKey(et => et.EntityTypeId);
 
             #endregion
 
+            #region Entity Type Localization
+
+            modelBuilder.Entity<EntityTypeLocalization>()
+                .HasKey(etl => new { etl.EntityTypeId, etl.LocalizationId });
+
+            modelBuilder.Entity<EntityTypeLocalization>()
+                .HasOne(etl => etl.EntityType)
+                .WithMany(et => et.EntityTypeLocalizations)
+                .HasForeignKey(etl => etl.EntityTypeId);
+
+            modelBuilder.Entity<EntityTypeLocalization>()
+                .HasOne(etl => etl.Localization)
+                .WithMany(l => l.EntityTypeLocalizations)
+                .HasForeignKey(etl => etl.LocalizationId);
+
+            #endregion
+
+            #region Entity Workers
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasKey(ew => new { ew.EntityId, ew.WorkerId });
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasOne(ew => ew.Entity)
+                .WithMany(e => e.EntityWorkers)
+                .HasForeignKey(ew => ew.EntityId);
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasOne(ew => ew.Worker)
+                .WithMany(e => e.EntityWorkers)
+                .HasForeignKey(ew => ew.WorkerId);
+
+            #endregion
         }
 
         #endregion
