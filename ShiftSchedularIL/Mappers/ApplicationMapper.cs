@@ -11,7 +11,7 @@ namespace ShiftSchedularIL.Mappers
         {
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
-                .ForMember(dest => dest.GenderLocalizedName, opt => opt.MapFrom(src => src.GenderDisplayValue)); // Later you can add .ReverseMap();
+                .ForMember(dest => dest.GenderLocalizedName, opt => opt.MapFrom(src => src.GenderDisplayValue)); 
 
             CreateMap<NewWorkerDTO, Worker>()
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
@@ -23,6 +23,16 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+
+            CreateMap<EntityTypeLocalization, EntityTypeLocalizedDTO>()
+                .ForMember(dest => dest.EntityTypeId, opt => opt.MapFrom(src => src.EntityTypeId))
+                .ForMember(dest => dest.EntityTypeLocalizedName, opt => opt.MapFrom(src => src.EntityTypeDisplayValue));
+
+            CreateMap<NewEntityDTO, Entity>()
+                .ForMember(dest => dest.EntityTypeId, opt => opt.MapFrom(src => src.EntityTypeId))
+                .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
+                .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription));
+
         }
     }
 }

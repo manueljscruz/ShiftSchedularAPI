@@ -7,6 +7,8 @@
         public string EntityId { get; set; }
         public string WorkerId { get; set; }
         public bool ActiveWorkerStatus { get; set; }
+        public bool IsOwner { get; set; }
+        public bool CanCreateSchedules { get; set; }
 
         #endregion
 

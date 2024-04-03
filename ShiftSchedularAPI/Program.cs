@@ -47,11 +47,17 @@ builder.Services.AddScoped<IGenericRepository<Gender>, GenericRepository<Gender>
 builder.Services.AddScoped<IGenericRepository<GenderLocalization>, GenericRepository<GenderLocalization>>();
 builder.Services.AddScoped<ILocalizationRepository, LocalizationRepository>();
 builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
+builder.Services.AddScoped<IGenericRepository<EntityType>, GenericRepository<EntityType>>();
+builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
+builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
+builder.Services.AddScoped<IGenericRepository<EntityWorker>, GenericRepository<EntityWorker>>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IWorkerService, WorkerService>();
+builder.Services.AddScoped<IEntityTypeService, EntityTypeService>();
+builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure

@@ -23,7 +23,7 @@ namespace ShiftSchedularDAL.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task<T> GetById(long id)
+        public async Task<T> GetById(string id)
         {
             return await _dbSet.FindAsync(id);
         }
@@ -65,12 +65,11 @@ namespace ShiftSchedularDAL.Repositories
             }
         }
 
-        public async Task Delete(long id)
+        public async Task Delete(string id)
         {
             T entity = await _dbSet.FindAsync(id);
             if (entity != null)
             {
-
                 _dbSet.Remove(entity);
                 await _unitOfWork.SaveChangesAsync();
             }
