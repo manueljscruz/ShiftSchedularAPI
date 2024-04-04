@@ -61,7 +61,7 @@ namespace ShiftSchedularAPI.Controllers
         {
             BaseResponse<Entity> response = await _entityService.AddEntity(newEntity);
 
-            return Created($"/api/entity/{response.Result.EntityId}", "Entity Added");
+            return Ok(response);
         }
 
         #endregion

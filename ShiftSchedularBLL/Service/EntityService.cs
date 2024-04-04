@@ -60,7 +60,7 @@ namespace ShiftSchedularBLL.Service
 
                 EntityType entityTypeInstance = await _entityTypeRepository.GetById(newEntity.EntityTypeId);
 
-                if (entityTypeInstance != null && string.IsNullOrEmpty(newEntity.WorkerId))
+                if (entityTypeInstance != null && !string.IsNullOrEmpty(newEntity.WorkerId))
                 {
                     await _unitOfWork.BeginTransactionAsync();
 
