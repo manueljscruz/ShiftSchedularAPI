@@ -50,7 +50,8 @@ builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
 builder.Services.AddScoped<IGenericRepository<EntityType>, GenericRepository<EntityType>>();
 builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
 builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
-builder.Services.AddScoped<IGenericRepository<EntityWorker>, GenericRepository<EntityWorker>>();
+builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
+builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();

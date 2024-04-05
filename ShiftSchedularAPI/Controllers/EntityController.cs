@@ -53,6 +53,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entities by Worker ID
+
+        [HttpGet("get-entities-by-worker-id/{workerId}")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetEntitiesByWorkerId(string workerId)
+        {
+            var entities = await _entityService.GetEntitiesByWorkerId(workerId);
+            return Ok(entities);
+        }
+
+        #endregion
+
         #region Add Entity
 
         [HttpPost("add")]

@@ -11,5 +11,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<Entity>> AddEntity(NewEntityDTO newEntity);
         Task<BaseResponse<bool>> UpdateEntity(Entity entity);
         Task<BaseResponse<bool>> DeleteEntityById(string entityId);
+        Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
     }
 }

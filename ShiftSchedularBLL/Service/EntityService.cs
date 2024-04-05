@@ -17,13 +17,13 @@ namespace ShiftSchedularBLL.Service
         private readonly IWorkerRepository _workerRepository;
         private readonly IGenericRepository<EntityType> _entityTypeRepository;
         private readonly IGenericRepository<Entity> _entityRepository;
-        private readonly IGenericRepository<EntityWorker> _entityWorkerRepository;
+        private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IGeneralService _generalService;
 
         #region Constructor
 
         public EntityService(IUnitOfWork unitOfWork, IMapper mapper, IWorkerRepository workerRepository, IGenericRepository<EntityType> entityTypeRepository, IGenericRepository<Entity> entityRepository,
-           IGenericRepository<EntityWorker> entityWorkerRepository, IGeneralService generalService) 
+           IEntityWorkerRepository entityWorkerRepository, IGeneralService generalService) 
         { 
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -218,6 +218,29 @@ namespace ShiftSchedularBLL.Service
             response.Message = Entities.UpdateEntitySuccess;
 
             return response;
+        }
+
+        #endregion
+
+        #region Get Entities By Worker Id
+
+        public async Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId)
+        {
+            List<EntityWorkerDTO> entityWorkers = new List<EntityWorkerDTO>();
+
+            if (!string.IsNullOrEmpty(workerId))
+            {
+                // Get entity worker instances by worker identifier
+                IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _entityWorkerRepository.GetByWorkerId(workerId);
+
+                if (entityWorkerDTOs != null)
+                    entityWorkers = entityWorkerDTOs.ToList();
+                    
+            }
+
+            return entityWorkers;
+
+
         }
 
         #endregion
