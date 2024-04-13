@@ -5,6 +5,8 @@ using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.QueryModels;
+using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.Dashboard;
 
@@ -17,18 +19,25 @@ namespace ShiftSchedularBLL.Service
         private readonly IWorkerRepository _workerRepository;
         private readonly IGenericRepository<EntityType> _entityTypeRepository;
         private readonly IGenericRepository<Entity> _entityRepository;
+        private readonly ISkillService _skillService;
         private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IGeneralService _generalService;
 
         #region Constructor
 
-        public EntityService(IUnitOfWork unitOfWork, IMapper mapper, IWorkerRepository workerRepository, IGenericRepository<EntityType> entityTypeRepository, IGenericRepository<Entity> entityRepository,
+        public EntityService(IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            IWorkerRepository workerRepository, 
+            IGenericRepository<EntityType> entityTypeRepository, 
+            IGenericRepository<Entity> entityRepository,
+            ISkillService skillService,
            IEntityWorkerRepository entityWorkerRepository, IGeneralService generalService) 
         { 
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _workerRepository = workerRepository;
             _entityRepository = entityRepository;
+            _skillService = skillService;
             _entityTypeRepository = entityTypeRepository;
             _entityWorkerRepository = entityWorkerRepository;
             _generalService = generalService;
@@ -241,6 +250,41 @@ namespace ShiftSchedularBLL.Service
             return entityWorkers;
 
 
+        }
+
+        #endregion
+
+        #region Get Entities Members View Model
+
+        public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode)
+        {
+            EntityMembersViewModel viewModel = new EntityMembersViewModel();
+
+            viewModel.Skills = await _skillService.GetAllSkillsByLocalization(lcode);
+            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId);
+
+            foreach(EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
+            {
+                EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
+                entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
+
+                // string[] skills = entityWorkerMember.SkillIds.Split(',');
+                int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
+
+                entityWorkerMemberDTO.SkillSet = viewModel.Skills.Where(i => skillIds.Contains(i.SkillId))
+                                            .Select(s => new SkillLocalizedDTO
+                                            {
+                                                SkillId = s.SkillId,
+                                                SkillLocalizedName = s.SkillLocalizedName,
+                                                SkillHexBGColor = s.SkillHexBGColor,
+                                                SkillHexFontColor = s.SkillHexFontColor
+                                            }).ToList();
+
+                viewModel.EntityMembers.Add(entityWorkerMemberDTO);
+
+            }
+
+            return viewModel;
         }
 
         #endregion

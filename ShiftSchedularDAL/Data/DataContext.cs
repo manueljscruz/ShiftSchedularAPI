@@ -31,6 +31,8 @@ namespace ShiftSchedularDAL.Data
         public DbSet<Entity> Entities { get; set; }
         public DbSet<EntityWorker> EntityWorkers { get; set; }
         public DbSet<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
+        public DbSet<Skill> Skills { get; set; }
+        public DbSet<SkillLocalization> SkillLocalizations { get; set; }
 
         #endregion
 
@@ -59,6 +61,25 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(gl => gl.Localization)
                 .WithMany(l => l.GenderLocalizations)
                 .HasForeignKey(gl => gl.LocalizationId);
+
+            #endregion
+
+            
+
+            #region Skill Localization Configuration
+
+            modelBuilder.Entity<SkillLocalization>()
+                .HasKey(sl => new { sl.SkillId, sl.LocalizationId });
+
+            modelBuilder.Entity<SkillLocalization>()
+                .HasOne(sl => sl.Skill)
+                .WithMany(s => s.SkillLocalizations)
+                .HasForeignKey(sl => sl.SkillId);
+
+            modelBuilder.Entity<SkillLocalization>()
+                .HasOne(sl => sl.Localization)
+                .WithMany(l => l.SkillLocalizations)
+                .HasForeignKey(sl => sl.LocalizationId);
 
             #endregion
 
@@ -106,10 +127,17 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
+            #region Skill Configuration
+
+            modelBuilder.Entity<Skill>()
+                .HasKey(s => s.SkillId);
+
+            #endregion
+
             #region Entity Workers
 
             modelBuilder.Entity<EntityWorker>()
-                .HasKey(ew => new { ew.EntityId, ew.WorkerId });
+                .HasKey(ew => new { ew.EntityId, ew.WorkerId, ew.SkillId });
 
             modelBuilder.Entity<EntityWorker>()
                 .HasOne(ew => ew.Entity)
@@ -120,6 +148,12 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(ew => ew.Worker)
                 .WithMany(e => e.EntityWorkers)
                 .HasForeignKey(ew => ew.WorkerId);
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasOne(ew => ew.Skill)
+                .WithMany(s => s.EntityWorkers)
+                .HasForeignKey(ew => ew.SkillId)
+                .IsRequired(false);
 
             #endregion
         }

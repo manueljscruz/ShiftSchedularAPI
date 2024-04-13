@@ -120,6 +120,9 @@
   <data name="WorkerEmailEmptyError" xml:space="preserve">
     <value>Email cannot be empty.</value>
   </data>
+  <data name="WorkerExceptionError" xml:space="preserve">
+    <value>An unexpected error has occured, please try again later.</value>
+  </data>
   <data name="WorkerLoginEmailNotFoundError" xml:space="preserve">
     <value>Email not found or invalid.</value>
   </data>
@@ -132,9 +135,6 @@
   <data name="WorkerRegistrationEmailInvalidError" xml:space="preserve">
     <value>Email is in invalid format.</value>
   </data>
-  <data name="WorkerRegistrationExceptionError" xml:space="preserve">
-    <value>An unexpected error has occured, please try again later.</value>
-  </data>
   <data name="WorkerRegistrationNameEmptyError" xml:space="preserve">
     <value>Name cannot be empty space</value>
   </data>
@@ -143,5 +143,8 @@
   </data>
   <data name="WorkerRegistrationSuccess" xml:space="preserve">
     <value>User registration was successful.</value>
+  </data>
+  <data name="WorkerUpdateSuccess" xml:space="preserve">
+    <value>User was updated successfuly.</value>
   </data>
 </root>

@@ -22,14 +22,14 @@ namespace ShiftSchedularRL.Resources.Home {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Home {
+    public class WorkerRelatedMessages {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Home() {
+        internal WorkerRelatedMessages() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace ShiftSchedularRL.Resources.Home {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ShiftSchedularRL.Resources.Home.Home", typeof(Home).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ShiftSchedularRL.Resources.Home.WorkerRelatedMessages", typeof(WorkerRelatedMessages).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -66,6 +66,15 @@ namespace ShiftSchedularRL.Resources.Home {
         public static string WorkerEmailEmptyError {
             get {
                 return ResourceManager.GetString("WorkerEmailEmptyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error has occured, please try again later..
+        /// </summary>
+        public static string WorkerExceptionError {
+            get {
+                return ResourceManager.GetString("WorkerExceptionError", resourceCulture);
             }
         }
         
@@ -106,15 +115,6 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An unexpected error has occured, please try again later..
-        /// </summary>
-        public static string WorkerRegistrationExceptionError {
-            get {
-                return ResourceManager.GetString("WorkerRegistrationExceptionError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Name cannot be empty space.
         /// </summary>
         public static string WorkerRegistrationNameEmptyError {
@@ -138,6 +138,15 @@ namespace ShiftSchedularRL.Resources.Home {
         public static string WorkerRegistrationSuccess {
             get {
                 return ResourceManager.GetString("WorkerRegistrationSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User was updated successfuly..
+        /// </summary>
+        public static string WorkerUpdateSuccess {
+            get {
+                return ResourceManager.GetString("WorkerUpdateSuccess", resourceCulture);
             }
         }
     }

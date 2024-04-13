@@ -58,6 +58,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Update Worker
+
+        [HttpPut("update")]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> UpdateWorker(WorkerDTO workerDTO)
+        {
+            BaseResponse<bool> result = await _workerService.UpdateWorker(workerDTO);
+            return Ok(result);
+        }
+
+        #endregion
+
         #endregion
 
     }

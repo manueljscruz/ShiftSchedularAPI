@@ -6,6 +6,7 @@
 
         public string EntityId { get; set; }
         public string WorkerId { get; set; }
+        public int SkillId { get; set; }
         public bool ActiveWorkerStatus { get; set; }
         public bool IsOwner { get; set; }
         public bool CanCreateSchedules { get; set; }
@@ -16,6 +17,7 @@
 
         public virtual Entity Entity { get; set; }
         public virtual Worker Worker { get; set; }
+        public virtual Skill Skill { get; set; }
 
         #endregion
 

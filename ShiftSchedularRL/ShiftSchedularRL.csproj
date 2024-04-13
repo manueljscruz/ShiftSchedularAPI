@@ -12,10 +12,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Entities.resx</DependentUpon>
     </Compile>
-    <Compile Update="Resources\Home\Home.Designer.cs">
+    <Compile Update="Resources\Home\WorkerRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Home.resx</DependentUpon>
+      <DependentUpon>WorkerRelatedMessages.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -24,9 +24,9 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Entities.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Update="Resources\Home\Home.resx">
+    <EmbeddedResource Update="Resources\Home\WorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Home.Designer.cs</LastGenOutput>
+      <LastGenOutput>WorkerRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

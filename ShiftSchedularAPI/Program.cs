@@ -51,6 +51,8 @@ builder.Services.AddScoped<IGenericRepository<EntityType>, GenericRepository<Ent
 builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
 builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
 builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
+builder.Services.AddScoped<IGenericRepository<Skill>, GenericRepository<Skill>>();
+builder.Services.AddScoped<IGenericRepository<SkillLocalization>, GenericRepository<SkillLocalization>>();
 builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
 
 // Services
@@ -59,6 +61,7 @@ builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IWorkerService, WorkerService>();
 builder.Services.AddScoped<IEntityTypeService, EntityTypeService>();
 builder.Services.AddScoped<IEntityService, EntityService>();
+builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure

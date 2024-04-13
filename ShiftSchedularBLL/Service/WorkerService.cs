@@ -48,25 +48,25 @@ namespace ShiftSchedularBLL.Service
             { 
                 if(string.IsNullOrEmpty(newWorker.WorkerName))
                 {
-                    result.Message = Home.WorkerRegistrationNameEmptyError;
+                    result.Message = WorkerRelatedMessages.WorkerRegistrationNameEmptyError;
                     return result;
                 }
 
                 if(string.IsNullOrEmpty(newWorker.Password))
                 {
-                    result.Message = Home.WorkerRegistrationPasswordEmptyError;
+                    result.Message = WorkerRelatedMessages.WorkerRegistrationPasswordEmptyError;
                     return result;
                 }
 
                 if(string.IsNullOrEmpty(newWorker.Email))
                 {
-                    result.Message = Home.WorkerEmailEmptyError;
+                    result.Message = WorkerRelatedMessages.WorkerEmailEmptyError;
                     return result;
                 }
 
                 if (!_generalService.ValidateRegexEmail(newWorker.Email))
                 {
-                    result.Message = Home.WorkerRegistrationEmailInvalidError;
+                    result.Message = WorkerRelatedMessages.WorkerRegistrationEmailInvalidError;
                     return result;
                 }
 
@@ -79,11 +79,11 @@ namespace ShiftSchedularBLL.Service
 
                 result.Success = true;
                 result.Result = true;
-                result.Message = Home.WorkerRegistrationSuccess;
+                result.Message = WorkerRelatedMessages.WorkerRegistrationSuccess;
             }
             catch (Exception ex)
             {
-                result.Message = Home.WorkerRegistrationExceptionError;
+                result.Message = WorkerRelatedMessages.WorkerExceptionError;
             }
 
             return result;
@@ -108,14 +108,14 @@ namespace ShiftSchedularBLL.Service
                 // Check if email is empty
                 if (string.IsNullOrEmpty(loginDTO.Email))
                 {
-                    response.Message = Home.WorkerEmailEmptyError;
+                    response.Message = WorkerRelatedMessages.WorkerEmailEmptyError;
                     return response;
                 }
 
                 // Check if password is empty
                 else if(string.IsNullOrEmpty(loginDTO.Password))
                 {
-                    response.Message = Home.WorkerPasswordEmptyError;
+                    response.Message = WorkerRelatedMessages.WorkerPasswordEmptyError;
                     return response;
                 }
 
@@ -128,7 +128,7 @@ namespace ShiftSchedularBLL.Service
                     // If password does not match
                     if(!_cryptographyService.VerifyPassword(loginDTO.Password, worker.Password))
                     {
-                        response.Message = Home.WorkerLoginEmailNotFoundError;
+                        response.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
                         return response;
                     }
 
@@ -138,7 +138,41 @@ namespace ShiftSchedularBLL.Service
                 }
                 else
                 {
-                    response.Message = Home.WorkerLoginEmailNotFoundError;
+                    response.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
+                }
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Update Worker
+
+
+        public async Task<BaseResponse<bool>> UpdateWorker(WorkerDTO workerDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if(workerDTO != null)
+            {
+                Worker worker = await _workerRepository.GetById(workerDTO.WorkerId);
+                if(worker != null)
+                {
+                    worker.WorkerName = workerDTO.WorkerName;
+                    worker.GenderId = workerDTO.GenderId;
+                    worker.Email = workerDTO.Email;
+
+
+                    await _workerRepository.Update(worker);
+
+                    response.Success = true;
+                    response.Result = true;
+                    response.Message = WorkerRelatedMessages.WorkerUpdateSuccess;
+                }
+                else
+                {
+                    response.Message = WorkerRelatedMessages.WorkerExceptionError;
                 }
             }
 

@@ -65,6 +65,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entities Members View Model 
+
+        [HttpGet("get-entities-members-view-model/{entityId}/{lcode}")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetEntitiesMembersViewModel(string entityId, string lcode)
+        {
+            var entities = await _entityService.GetEntitiesMembersViewModel(entityId, lcode);
+            return Ok(entities);
+        }
+
+        #endregion
+
         #region Add Entity
 
         [HttpPost("add")]
