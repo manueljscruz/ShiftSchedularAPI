@@ -239,12 +239,18 @@ namespace ShiftSchedularBLL.Service
 
             if (!string.IsNullOrEmpty(workerId))
             {
-                // Get entity worker instances by worker identifier
-                IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _entityWorkerRepository.GetByWorkerId(workerId);
+                try
+                {
+                    // Get entity worker instances by worker identifier
+                    IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _entityWorkerRepository.GetByWorkerId(workerId);
 
-                if (entityWorkerDTOs != null)
-                    entityWorkers = entityWorkerDTOs.ToList();
-                    
+                    if (entityWorkerDTOs != null)
+                        entityWorkers = entityWorkerDTOs.ToList();
+                }
+                catch (Exception ex)
+                {
+                    string error = ex.Message;
+                }
             }
 
             return entityWorkers;

@@ -10,10 +10,7 @@
         public static readonly string GetEntityWorkersByWorkerId = @"
             SELECT 
                 et.EntityId,
-                et.EntityName, 
-                et.EntityDescription,
-                etw.CanCreateSchedules,
-                etw.IsOwner 
+                et.EntityName 
             FROM Entities et
             LEFT JOIN EntityWorkers etw on et.EntityId = etw.EntityId
             WHERE 
