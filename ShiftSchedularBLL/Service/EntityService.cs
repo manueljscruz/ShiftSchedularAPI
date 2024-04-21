@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
+using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.QueryModels;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
@@ -20,7 +22,9 @@ namespace ShiftSchedularBLL.Service
         private readonly IGenericRepository<EntityType> _entityTypeRepository;
         private readonly IGenericRepository<Entity> _entityRepository;
         private readonly ISkillService _skillService;
+        private readonly IEntityTypeService _entityTypeService;
         private readonly IEntityWorkerRepository _entityWorkerRepository;
+        private readonly IEntityTypeLocalizationRepository _entityTypeLocalizationRepository;
         private readonly IGeneralService _generalService;
 
         #region Constructor
@@ -31,15 +35,20 @@ namespace ShiftSchedularBLL.Service
             IGenericRepository<EntityType> entityTypeRepository, 
             IGenericRepository<Entity> entityRepository,
             ISkillService skillService,
-           IEntityWorkerRepository entityWorkerRepository, IGeneralService generalService) 
+            IEntityTypeService entityTypeService,
+           IEntityWorkerRepository entityWorkerRepository,
+           IEntityTypeLocalizationRepository entityTypeLocalizationRepository,
+           IGeneralService generalService) 
         { 
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _workerRepository = workerRepository;
             _entityRepository = entityRepository;
             _skillService = skillService;
+            _entityTypeService = entityTypeService;
             _entityTypeRepository = entityTypeRepository;
             _entityWorkerRepository = entityWorkerRepository;
+            _entityTypeLocalizationRepository = entityTypeLocalizationRepository;
             _generalService = generalService;
         }
 
@@ -95,7 +104,8 @@ namespace ShiftSchedularBLL.Service
                             EntityId = entity.EntityId,
                             ActiveWorkerStatus = true,
                             IsOwner = true,
-                            CanCreateSchedules = true
+                            CanCreateSchedules = true,
+                            // DateOfJoin = DateTime.UtcNow
                         };
 
                         // Add entity worker and commit
@@ -267,6 +277,7 @@ namespace ShiftSchedularBLL.Service
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
             viewModel.Skills = await _skillService.GetAllSkillsByLocalization(lcode);
+
             IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId);
 
             foreach(EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
@@ -274,7 +285,6 @@ namespace ShiftSchedularBLL.Service
                 EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
                 entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
 
-                // string[] skills = entityWorkerMember.SkillIds.Split(',');
                 int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
 
                 entityWorkerMemberDTO.SkillSet = viewModel.Skills.Where(i => skillIds.Contains(i.SkillId))
@@ -290,7 +300,36 @@ namespace ShiftSchedularBLL.Service
 
             }
 
+            viewModel.EntityOwnerId = await _entityWorkerRepository.GetEntityOwnerId(entityId);
+
             return viewModel;
+        }
+
+        #endregion
+
+        #region Get Entity Profile View Model
+        
+        public async Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequest entityProfileViewModelRequest)
+        {
+            EntityProfileViewModel entityProfileViewModel = new EntityProfileViewModel();
+
+            if(entityProfileViewModelRequest != null)
+            {
+                Entity entity = await _entityRepository.GetById(entityProfileViewModelRequest.EntityId);
+                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
+                EntityType entityType = await _entityTypeRepository.GetById(entity.EntityTypeId);
+                EntityTypeLocalization entityTypeLocalization = await _entityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
+
+                entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, entityName: entity.EntityName, entityDescription: entity.EntityDescription, entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, await _entityWorkerRepository.GetTotalCountByEntity(entity.EntityId));
+                entityProfileViewModel.AllowEdit = entityWorker.IsOwner;
+
+                if (entityProfileViewModel.AllowEdit)
+                {
+                    entityProfileViewModel.EntityTypeLocalizeds = await _entityTypeService.GetAllEntityTypesByLocalization(entityProfileViewModelRequest.LanguageCode);
+                }
+            }
+
+            return entityProfileViewModel;
         }
 
         #endregion

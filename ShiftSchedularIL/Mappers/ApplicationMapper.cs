@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.QueryModels;
 using ShiftSchedularEntity.Models.Responses;
 

@@ -1,6 +1,7 @@
 ﻿using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.ViewModels;
 
 namespace ShiftSchedularBLL.IService
@@ -14,5 +15,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteEntityById(string entityId);
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
         Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode);
+        Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequest entityProfileViewModelRequest);
     }
 }

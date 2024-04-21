@@ -53,6 +53,7 @@ builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>
 builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
 builder.Services.AddScoped<IGenericRepository<Skill>, GenericRepository<Skill>>();
 builder.Services.AddScoped<IGenericRepository<SkillLocalization>, GenericRepository<SkillLocalization>>();
+builder.Services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
 builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
 
 // Services

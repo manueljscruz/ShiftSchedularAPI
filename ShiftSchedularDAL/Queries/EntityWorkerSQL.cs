@@ -10,13 +10,14 @@
         public static readonly string GetEntityWorkersByWorkerId = @"
             SELECT 
                 et.EntityId,
-                et.EntityName 
+                et.EntityName,
+                et.IsOwner
             FROM Entities et
             LEFT JOIN EntityWorkers etw on et.EntityId = etw.EntityId
             WHERE 
                 etw.ActiveWorkerStatus = 1
                 AND etw.WorkerId = @WorkerId
-            GROUP BY et.EntityId, et.EntityName"
+            GROUP BY et.EntityId, et.EntityName, et.IsOwner"
             ;
 
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
@@ -31,6 +32,15 @@
             WHERE
 	            EW.EntityId = @EntityId
             GROUP BY W.WorkerId, W.WorkerName, EW.CanCreateSchedules, EW.IsOwner
+        ";
+
+        public static readonly string GetEntityWorkersCount = @"
+            SELECT 
+                DISTINCT COUNT(*)
+            FROM EntityWorkers
+            WHERE 
+                EntityId = @EntityId
+            GROUP BY EntityId, WorkerId, ActiveWorkerStatus, CanCreateSchedules, IsOwner, SkillId;
         ";
     }
 }

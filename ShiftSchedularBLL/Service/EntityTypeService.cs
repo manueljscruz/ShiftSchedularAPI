@@ -19,13 +19,13 @@ namespace ShiftSchedularBLL.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<EntityType> _entityTypeRepository;
-        private readonly IGenericRepository<EntityTypeLocalization> _entityTypeLocalizationRepository;
+        private readonly IEntityTypeLocalizationRepository _entityTypeLocalizationRepository;
         private readonly ILocalizationRepository _localizationRepository;
         private readonly IMapper _mapper;
 
         #region Constructor
 
-        public EntityTypeService(IUnitOfWork unitOfWork, IGenericRepository<EntityType> entityTypeRepository, IGenericRepository<EntityTypeLocalization> entityTypeLocalizationRepository, ILocalizationRepository localizationRepository, IMapper mapper)
+        public EntityTypeService(IUnitOfWork unitOfWork, IGenericRepository<EntityType> entityTypeRepository, IEntityTypeLocalizationRepository entityTypeLocalizationRepository, ILocalizationRepository localizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _entityTypeRepository = entityTypeRepository;

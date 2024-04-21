@@ -1,5 +1,6 @@
 ﻿using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 
 namespace ShiftSchedularBLL.IService
 {

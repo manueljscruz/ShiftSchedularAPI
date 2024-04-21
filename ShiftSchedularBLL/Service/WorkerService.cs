@@ -4,6 +4,7 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.Home;
 

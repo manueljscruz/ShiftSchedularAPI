@@ -1,4 +1,4 @@
-﻿namespace ShiftSchedularEntity.Models.DataTransferObjects
+﻿namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 {
     public class NewEntityDTO
     {

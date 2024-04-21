@@ -14,6 +14,32 @@ namespace ShiftSchedularDAL.Repositories
             _context = context;
         }
 
+
+        public async Task<T> ExecuteScalar<T>(string query, Dictionary<string, object> parameters)
+        {
+            var connection = _context.Database.GetDbConnection();
+
+            connection.Open();
+
+            using (var command = connection.CreateCommand())
+            {
+                command.CommandText = query;
+                command.CommandType = System.Data.CommandType.Text;
+
+                foreach (var param in parameters)
+                {
+                    var parameter = command.CreateParameter();
+                    parameter.ParameterName = param.Key;
+                    parameter.Value = param.Value;
+                    command.Parameters.Add(parameter);
+                }
+
+                return (T)await command.ExecuteScalarAsync();
+            }
+
+
+        }
+
         public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string,object> parameters)
         {
             var connection = _context.Database.GetDbConnection();
@@ -58,5 +84,6 @@ namespace ShiftSchedularDAL.Repositories
                 }
             }
         }
+
     }
 }

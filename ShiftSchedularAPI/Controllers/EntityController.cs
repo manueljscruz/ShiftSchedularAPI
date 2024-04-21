@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
-using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -76,6 +76,15 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        [HttpPost("get-entity-profile-view-model")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetEntityProfileViewModel(EntityProfileViewModelRequest profileViewModelRequest)
+        {
+            var entityVM = await _entityService.GetEntityProfileViewModel(profileViewModelRequest);
+            return Ok(entityVM);
+        }
+
 
         #region Add Entity
 

@@ -24,6 +24,8 @@ namespace ShiftSchedularDAL.Repositories
             _entityWorkerDbSet = _context.Set<EntityWorker>();
         }
 
+        #region Get By Worker Id
+
         /// <summary>
         /// Gets entities to which the worker belongs to
         /// </summary>
@@ -42,6 +44,24 @@ namespace ShiftSchedularDAL.Repositories
                 return null;
         }
 
+        #endregion
+
+        #region Get By Worker and Entity
+
+        public async Task<EntityWorker> GetByWorkerAndEntity(string workerId, string entityId)
+        {
+            if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId))
+            {
+                EntityWorker entityWorker = _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId)).FirstOrDefault();
+                return entityWorker;
+            }
+            else return null;
+        }
+
+        #endregion
+
+        #region Get Distinct Members By Entity Id
+
         /// <summary>
         /// Returns the members that belong to a specific entity and their skills with no duplicates
         /// </summary>
@@ -59,5 +79,42 @@ namespace ShiftSchedularDAL.Repositories
             else
                 return null;
         }
+
+        #endregion
+
+        #region Get Entity Owner Id
+
+        public async Task<string> GetEntityOwnerId(string entityId)
+        {
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId == entityId);
+
+                if (entityWorker != null)
+                    return entityWorker.WorkerId;
+            }
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Get Total Count By Entity 
+
+        public async Task<int> GetTotalCountByEntity(string entityId)
+        {
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                // GetEntityWorkersCount
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add("@EntityId", entityId);
+
+                var result = await _sqlRawRepository.ExecuteScalar<object>(EntityWorkerSQL.GetEntityWorkersCount, parameters);
+                if (result != null)
+                    return Convert.ToInt32(result);
+            }
+            return 0;
+        }
+
+        #endregion
     }
 }
