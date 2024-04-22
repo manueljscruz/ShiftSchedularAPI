@@ -77,14 +77,17 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entity Profile View Model
+
         [HttpPost("get-entity-profile-view-model")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> GetEntityProfileViewModel(EntityProfileViewModelRequest profileViewModelRequest)
+        public async Task<IActionResult> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO profileViewModelRequest)
         {
             var entityVM = await _entityService.GetEntityProfileViewModel(profileViewModelRequest);
             return Ok(entityVM);
         }
 
+        #endregion
 
         #region Add Entity
 

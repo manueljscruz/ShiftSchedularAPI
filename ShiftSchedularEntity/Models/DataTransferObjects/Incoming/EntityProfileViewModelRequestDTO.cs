@@ -1,6 +1,6 @@
 ﻿namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 {
-    public class EntityProfileViewModelRequest
+    public class EntityProfileViewModelRequestDTO
     {
         #region Properties
 
@@ -12,7 +12,7 @@
 
         #region Constructor
 
-        public EntityProfileViewModelRequest()
+        public EntityProfileViewModelRequestDTO()
         {
             EntityId = string.Empty;
             WorkerId = string.Empty;

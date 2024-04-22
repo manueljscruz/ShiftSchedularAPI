@@ -309,7 +309,7 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Profile View Model
         
-        public async Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequest entityProfileViewModelRequest)
+        public async Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest)
         {
             EntityProfileViewModel entityProfileViewModel = new EntityProfileViewModel();
 

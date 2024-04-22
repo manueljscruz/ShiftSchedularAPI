@@ -11,13 +11,13 @@
             SELECT 
                 et.EntityId,
                 et.EntityName,
-                et.IsOwner
+                etw.IsOwner
             FROM Entities et
             LEFT JOIN EntityWorkers etw on et.EntityId = etw.EntityId
             WHERE 
                 etw.ActiveWorkerStatus = 1
                 AND etw.WorkerId = @WorkerId
-            GROUP BY et.EntityId, et.EntityName, et.IsOwner"
+            GROUP BY et.EntityId, et.EntityName, etw.IsOwner"
             ;
 
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
