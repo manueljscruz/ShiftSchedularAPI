@@ -133,6 +133,15 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Work entity was not found..
+        /// </summary>
+        public static string UpdateEntityNotFound {
+            get {
+                return ResourceManager.GetString("UpdateEntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Work Entity was updated successfully..
         /// </summary>
         public static string UpdateEntitySuccess {

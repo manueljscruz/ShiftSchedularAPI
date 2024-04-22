@@ -93,7 +93,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPost("add")]
         [ProducesResponseType(201)]
-        public async Task<IActionResult> AddEntity(NewEntityDTO newEntity)
+        public async Task<IActionResult> AddEntity(FormEntityDTO newEntity)
         {
             BaseResponse<Entity> response = await _entityService.AddEntity(newEntity);
 
@@ -106,14 +106,10 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPut("update")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> UpdateEntity(Entity entity)
+        public async Task<IActionResult> UpdateEntity(FormEntityDTO entity)
         {
             BaseResponse<bool> response = await _entityService.UpdateEntity(entity);
-
-            if (response.Success)
-                return NoContent();
-            else
-                return Ok(response);
+            return Ok(response);
         }
 
         #endregion
@@ -122,14 +118,11 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpDelete("delete-by-id/{id}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteEntityById(string entityId)
+        public async Task<IActionResult> DeleteEntityById([FromRoute]string id)
         {
-            BaseResponse<bool> response = await _entityService.DeleteEntityById(entityId);
+            BaseResponse<bool> response = await _entityService.DeleteEntityById(id);
 
-            if (response.Success)
-                return NoContent();
-            else
-                return Ok(response);
+            return Ok(response);
 
         }
 

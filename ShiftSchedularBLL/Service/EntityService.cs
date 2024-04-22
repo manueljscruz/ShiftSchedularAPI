@@ -58,7 +58,7 @@ namespace ShiftSchedularBLL.Service
 
         #region Add Entity
 
-        public async Task<BaseResponse<Entity>> AddEntity(NewEntityDTO newEntity)
+        public async Task<BaseResponse<Entity>> AddEntity(FormEntityDTO newEntity)
         {
             BaseResponse<Entity> response = new BaseResponse<Entity>();
 
@@ -206,7 +206,7 @@ namespace ShiftSchedularBLL.Service
 
         #region Update Entity
 
-        public async Task<BaseResponse<bool>> UpdateEntity(Entity entity)
+        public async Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity)
         {
             // if(entity != null && !string.IsNullOrEmpty(entity.EntityName) && entity.EntityTypeId != 0)
             BaseResponse<bool> response = new BaseResponse<bool>();
@@ -230,8 +230,20 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
+            Entity entityToUpdate = await _entityRepository.GetById(entity.EntityId);
+            if(entityToUpdate == null)
+            {
+                response.Message = Entities.UpdateEntityNotFound;
+                return response;
+            }
+
+            entityToUpdate.EntityName = entity.EntityName;
+            entityToUpdate.EntityTypeId = entity.EntityTypeId;
+            entityToUpdate.EntityDescription = entity.EntityDescription;
+
+
             // Update the entity and set the message
-            await _entityRepository.Update(entity);
+            await _entityRepository.Update(entityToUpdate);
 
             response.Success = true;
             response.Message = Entities.UpdateEntitySuccess;

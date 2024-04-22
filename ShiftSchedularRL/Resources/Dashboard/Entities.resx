@@ -141,6 +141,9 @@
   <data name="EntityTypeInvalidValueError" xml:space="preserve">
     <value>Entity type for this entity has an invalid value.  If this error persists, contact support to resolve this issue.</value>
   </data>
+  <data name="UpdateEntityNotFound" xml:space="preserve">
+    <value>Work entity was not found.</value>
+  </data>
   <data name="UpdateEntitySuccess" xml:space="preserve">
     <value>Work Entity was updated successfully.</value>
   </data>

@@ -10,8 +10,8 @@ namespace ShiftSchedularBLL.IService
     {
         Task<Entity> GetEntityById(string entityId);
         Task<IEnumerable<Entity>> GetAllEntities();
-        Task<BaseResponse<Entity>> AddEntity(NewEntityDTO newEntity);
-        Task<BaseResponse<bool>> UpdateEntity(Entity entity);
+        Task<BaseResponse<Entity>> AddEntity(FormEntityDTO newEntity);
+        Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity);
         Task<BaseResponse<bool>> DeleteEntityById(string entityId);
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
         Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode);
