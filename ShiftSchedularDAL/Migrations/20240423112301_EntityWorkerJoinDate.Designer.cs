@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240423112301_EntityWorkerJoinDate")]
+    partial class EntityWorkerJoinDate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,31 +114,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.HasIndex("WorkerId");
 
                     b.ToTable("EntityWorkers");
-                });
-
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerInvitation", b =>
-                {
-                    b.Property<string>("EntityId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("InviteDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SkillsetIds")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkerId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("EntityId", "Email");
-
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("EntityWorkerInvitations");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Gender", b =>
@@ -323,23 +301,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("Worker");
                 });
 
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerInvitation", b =>
-                {
-                    b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
-                        .WithMany("EntityWorkerInvitations")
-                        .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShiftSchedularEntity.Entities.Worker", "Worker")
-                        .WithMany("EntityWorkerInvitations")
-                        .HasForeignKey("WorkerId");
-
-                    b.Navigation("Entity");
-
-                    b.Navigation("Worker");
-                });
-
             modelBuilder.Entity("ShiftSchedularEntity.Entities.GenderLocalization", b =>
                 {
                     b.HasOne("ShiftSchedularEntity.Entities.Gender", "Gender")
@@ -391,8 +352,6 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Entity", b =>
                 {
-                    b.Navigation("EntityWorkerInvitations");
-
                     b.Navigation("EntityWorkers");
                 });
 
@@ -428,8 +387,6 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
                 {
-                    b.Navigation("EntityWorkerInvitations");
-
                     b.Navigation("EntityWorkers");
                 });
 #pragma warning restore 612, 618

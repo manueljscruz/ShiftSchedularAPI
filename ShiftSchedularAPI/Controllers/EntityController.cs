@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 
 namespace ShiftSchedularAPI.Controllers
@@ -127,6 +128,15 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        [HttpPost("add-new-entity-member")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> AddNewEntityMember(AddNewMemberDTO newMemberDTO)
+        {
+            BaseResponse<object> response = await _entityService.AddNewEntityMember(newMemberDTO);
+
+            return Ok(response);
+        }
 
         #endregion
     }

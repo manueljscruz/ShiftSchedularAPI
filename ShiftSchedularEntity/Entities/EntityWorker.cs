@@ -10,7 +10,7 @@
         public bool ActiveWorkerStatus { get; set; }
         public bool IsOwner { get; set; }
         public bool CanCreateSchedules { get; set; }
-        // public DateTime DateOfJoin { get; set; }
+        public DateTime DateOfJoin { get; set; }
 
         #endregion
 

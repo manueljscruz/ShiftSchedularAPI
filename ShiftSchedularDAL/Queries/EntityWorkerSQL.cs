@@ -26,12 +26,13 @@
 	            W.WorkerName,
 	            EW.CanCreateSchedules,
 	            EW.IsOwner,
+                EW.DateOfJoin,
 	            STRING_AGG(CAST(EW.SkillId AS VARCHAR), ',') AS SkillIds
             FROM Workers W
 	            LEFT JOIN EntityWorkers EW on W.WorkerId = EW.WorkerId
             WHERE
 	            EW.EntityId = @EntityId
-            GROUP BY W.WorkerId, W.WorkerName, EW.CanCreateSchedules, EW.IsOwner
+            GROUP BY W.WorkerId, W.WorkerName, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
         ";
 
         public static readonly string GetEntityWorkersCount = @"

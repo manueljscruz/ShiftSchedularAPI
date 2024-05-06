@@ -22,6 +22,8 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
 
+        public virtual ICollection<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
+
         #endregion
     }
 }

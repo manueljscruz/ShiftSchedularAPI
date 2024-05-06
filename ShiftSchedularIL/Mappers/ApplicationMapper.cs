@@ -43,7 +43,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
                 .ForMember(dest => dest.CanCreateSchedules, opt => opt.MapFrom(src => src.CanCreateSchedules))
-                .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.IsOwner));
+                .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.IsOwner))
+                .ForMember(dest => dest.DateOfJoin, opt => opt.MapFrom(src => src.DateOfJoin));
         }
     }
 }

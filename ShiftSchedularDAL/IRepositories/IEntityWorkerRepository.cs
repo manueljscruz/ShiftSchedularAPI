@@ -7,6 +7,8 @@ namespace ShiftSchedularDAL.IRepositories
     public interface IEntityWorkerRepository : IGenericRepository<EntityWorker>
     {
         Task<IEnumerable<EntityWorkerDTO>> GetByWorkerId(string workerId);
+        Task<IEnumerable<EntityWorker>> GetByEntityId(string entityId);
+        Task<bool> IsWorkerInEntity(string entityId, string workerId);
         Task<EntityWorker> GetByWorkerAndEntity(string workerId, string entityId);
         Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId);
         Task<int> GetTotalCountByEntity(string entityId);

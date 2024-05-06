@@ -44,6 +44,14 @@ namespace ShiftSchedularDAL.Repositories
             return entity;
         }
 
+
+        public async Task<List<T>> AddRange(List<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+            await _unitOfWork.SaveChangesAsync();
+            return entities;
+        }
+
         public async Task Update(T entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
@@ -83,5 +91,6 @@ namespace ShiftSchedularDAL.Repositories
                 await _unitOfWork.SaveChangesAsync();
             }
         }
+
     }
 }

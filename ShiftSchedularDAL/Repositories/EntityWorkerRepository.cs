@@ -46,6 +46,20 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get By Entity Id
+
+        public async Task<IEnumerable<EntityWorker>> GetByEntityId(string entityId)
+        {
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                return await _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
+            }
+            else
+                return null;
+        }
+
+        #endregion
+
         #region Get By Worker and Entity
 
         public async Task<EntityWorker> GetByWorkerAndEntity(string workerId, string entityId)
@@ -113,6 +127,21 @@ namespace ShiftSchedularDAL.Repositories
                     return Convert.ToInt32(result);
             }
             return 0;
+        }
+
+        #endregion
+
+        #region Is Worker In Entity
+
+        public async Task<bool> IsWorkerInEntity(string entityId, string workerId)
+        {
+            if(string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(workerId))
+            {
+                return false;
+            }
+
+            return await _entityWorkerDbSet.AnyAsync(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId));
+
         }
 
         #endregion

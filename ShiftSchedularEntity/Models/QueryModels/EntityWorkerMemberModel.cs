@@ -6,6 +6,7 @@
         public string WorkerName { get; set; }
         public bool CanCreateSchedules { get; set; }
         public bool IsOwner { get; set; }
+        public DateTime DateOfJoin { get; set; }
         public string SkillIds { get; set; }
 
         public EntityWorkerMemberModel()

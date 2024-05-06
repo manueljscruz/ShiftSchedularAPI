@@ -11,6 +11,7 @@ using ShiftSchedularIL.Mappers;
 using ShiftSchedularIL.Services;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,12 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+    options.JsonSerializerOptions.PropertyNamingPolicy = null; // Use camelCase or any other naming policy
+    options.JsonSerializerOptions.IgnoreNullValues = true;
+});
 
 
 
@@ -51,10 +57,11 @@ builder.Services.AddScoped<IGenericRepository<EntityType>, GenericRepository<Ent
 builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
 builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
 builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
-builder.Services.AddScoped<IGenericRepository<Skill>, GenericRepository<Skill>>();
+builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 builder.Services.AddScoped<IGenericRepository<SkillLocalization>, GenericRepository<SkillLocalization>>();
 builder.Services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
 builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
+builder.Services.AddScoped<IEntityWorkerInvitationRepository, EntityWorkerInvitationRepository>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();

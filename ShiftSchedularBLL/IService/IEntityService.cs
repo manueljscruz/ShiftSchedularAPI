@@ -16,5 +16,6 @@ namespace ShiftSchedularBLL.IService
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
         Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode);
         Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest);
+        Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO);
     }
 }

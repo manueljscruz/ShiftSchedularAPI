@@ -6,6 +6,7 @@
         Task<T> GetById(string id);
         Task<IEnumerable<T>> GetAll();
         Task<T> Add(T entity);
+        Task<List<T>> AddRange(List<T> entities);
         Task Update(T entity);
         Task Delete(int id);
         Task Delete(string id);

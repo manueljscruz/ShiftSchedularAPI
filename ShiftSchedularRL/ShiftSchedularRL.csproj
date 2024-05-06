@@ -7,26 +7,35 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Update="Resources\Dashboard\Entities.Designer.cs">
+    <Compile Update="Resources\Dashboard\EntitiesRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Entities.resx</DependentUpon>
+      <DependentUpon>EntitiesRelatedMessages.resx</DependentUpon>
     </Compile>
     <Compile Update="Resources\Home\WorkerRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>WorkerRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\MemberManagement\EntityWorkerRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EntityWorkerRelatedMessages.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\Dashboard\Entities.resx">
+    <EmbeddedResource Update="Resources\Dashboard\EntitiesRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>Entities.Designer.cs</LastGenOutput>
+      <LastGenOutput>EntitiesRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Home\WorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>WorkerRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\MemberManagement\EntityWorkerRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>EntityWorkerRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

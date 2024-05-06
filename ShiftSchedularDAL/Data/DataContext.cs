@@ -33,6 +33,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<SkillLocalization> SkillLocalizations { get; set; }
+        public DbSet<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
 
         #endregion
 
@@ -63,8 +64,6 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(gl => gl.LocalizationId);
 
             #endregion
-
-            
 
             #region Skill Localization Configuration
 
@@ -154,6 +153,23 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(s => s.EntityWorkers)
                 .HasForeignKey(ew => ew.SkillId)
                 .IsRequired(false);
+
+            #endregion
+
+            #region Entity Worker Invitation Configuration
+
+            modelBuilder.Entity<EntityWorkerInvitation>()
+                .HasKey(ewi => new { ewi.EntityId, ewi.Email });
+
+            modelBuilder.Entity<EntityWorkerInvitation>()
+                .HasOne(ewi => ewi.Entity)
+                .WithMany(e => e.EntityWorkerInvitations)
+                .HasForeignKey(ewi => ewi.EntityId);
+
+            modelBuilder.Entity<EntityWorkerInvitation>()
+                .HasOne(ewi => ewi.Worker)
+                .WithMany(w => w.EntityWorkerInvitations)
+                .HasForeignKey(ewi => ewi.WorkerId);
 
             #endregion
         }

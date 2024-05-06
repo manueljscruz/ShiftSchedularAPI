@@ -13,12 +13,12 @@ namespace ShiftSchedularBLL.Service
     public class SkillService : ISkillService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Skill> _skillRepository;
+        private readonly ISkillRepository _skillRepository;
         private readonly ILocalizationRepository _localizationRepository;
         private readonly IGenericRepository<SkillLocalization> _skillLocalizationRepository;
         private readonly IMapper _mapper;
 
-        public SkillService(IUnitOfWork unitOfWork, IGenericRepository<Skill> skillRepository, ILocalizationRepository localizationRepository, IGenericRepository<SkillLocalization> skillLocalizationRepository, IMapper mapper)
+        public SkillService(IUnitOfWork unitOfWork, ISkillRepository skillRepository, ILocalizationRepository localizationRepository, IGenericRepository<SkillLocalization> skillLocalizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _skillRepository = skillRepository;
