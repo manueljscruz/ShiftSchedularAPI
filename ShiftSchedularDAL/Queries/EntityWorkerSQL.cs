@@ -37,11 +37,12 @@
 
         public static readonly string GetEntityWorkersCount = @"
             SELECT 
-                DISTINCT COUNT(*)
-            FROM EntityWorkers
-            WHERE 
-                EntityId = @EntityId
-            GROUP BY EntityId, WorkerId, ActiveWorkerStatus, CanCreateSchedules, IsOwner, SkillId;
+                COUNT(DISTINCT WorkerId) AS WorkerCount
+            FROM 
+                [ShiftSchedular].[dbo].[EntityWorkers]
+            WHERE EntityId = @EntityId
+            GROUP BY 
+                EntityId;;
         ";
     }
 }
