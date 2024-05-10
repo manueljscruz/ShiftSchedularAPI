@@ -17,6 +17,7 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<GenderLocalization> GenderLocalizations { get; set; }
         public virtual ICollection<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
         public virtual ICollection<SkillLocalization> SkillLocalizations { get; set; }
+        public virtual ICollection<ShiftBreakTypeLocalization> ShiftBreakTypeLocalizations { get; set; }
 
         #endregion
 

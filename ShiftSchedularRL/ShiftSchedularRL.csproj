@@ -22,6 +22,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>EntityWorkerRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\ShiftManagement\ShiftRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ShiftRelatedMessages.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +41,10 @@
     <EmbeddedResource Update="Resources\MemberManagement\EntityWorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>EntityWorkerRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ShiftManagement\ShiftRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ShiftRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

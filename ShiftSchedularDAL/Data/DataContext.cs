@@ -34,6 +34,13 @@ namespace ShiftSchedularDAL.Data
         public DbSet<Skill> Skills { get; set; }
         public DbSet<SkillLocalization> SkillLocalizations { get; set; }
         public DbSet<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
+        public DbSet<ShiftBreakTypeLocalization> ShiftBreakTypeLocalizations { get; set; }
+        public DbSet<ShiftBreakType> ShiftBreakTypes { get; set; }
+        public DbSet<ShiftBreak> ShiftBreaks { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<ShiftTemplate> ShiftTemplates { get; set; }
+        public DbSet<ShiftBreakTemplate> ShiftBreakTemplates { get; set; }
+        public DbSet<ShiftTemplateBreaks> ShiftTemplateBreaks { get; set; }
 
         #endregion
 
@@ -62,6 +69,13 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(gl => gl.Localization)
                 .WithMany(l => l.GenderLocalizations)
                 .HasForeignKey(gl => gl.LocalizationId);
+
+            #endregion
+
+            #region Entity Configuration
+
+            modelBuilder.Entity<Entity>()
+                .HasKey(e => e.EntityId);
 
             #endregion
 
@@ -170,6 +184,96 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(ewi => ewi.Worker)
                 .WithMany(w => w.EntityWorkerInvitations)
                 .HasForeignKey(ewi => ewi.WorkerId);
+
+            #endregion
+
+            #region Shift Break Type Configuration
+
+            modelBuilder.Entity<ShiftBreakType>()
+                .HasKey(sbt => sbt.ShiftBreakTypeId);
+
+            #endregion
+
+            #region Shift Break Type Localization Configuration
+
+            modelBuilder.Entity<ShiftBreakTypeLocalization>()
+                .HasKey(sbtl => new { sbtl.ShiftBreakTypeId, sbtl.LocalizationId });
+
+            modelBuilder.Entity<ShiftBreakTypeLocalization>()
+                .HasOne(sbtl => sbtl.ShiftBreakType)
+                .WithMany(sbt => sbt.ShiftBreakTypeLocalizations)
+                .HasForeignKey(sbtl => sbtl.ShiftBreakTypeId);
+
+            modelBuilder.Entity<ShiftBreakTypeLocalization>()
+                .HasOne(sbtl => sbtl.Localization)
+                .WithMany(l => l.ShiftBreakTypeLocalizations)
+                .HasForeignKey(sbtl => sbtl.LocalizationId);
+
+            #endregion
+
+            #region Shift Configuration
+
+            modelBuilder.Entity<Shift>()
+                .HasKey(s => s.ShiftId);
+
+            modelBuilder.Entity<Shift>()
+                .HasOne(s => s.Entity)
+                .WithMany(e => e.EntityShifts)
+                .HasForeignKey(s => s.EntityId);
+
+            #endregion
+
+            #region Shift Breaks Configuration
+
+            modelBuilder.Entity<ShiftBreak>()
+                .HasKey(sb => sb.ShiftBreakId);
+
+            modelBuilder.Entity<ShiftBreak>()
+                .HasOne(sb => sb.Shift)
+                .WithMany(s => s.ShiftBreaks)
+                .HasForeignKey(sb => sb.ShiftId);
+
+            modelBuilder.Entity<ShiftBreak>()
+                .HasOne(sb => sb.ShiftBreakType)
+                .WithMany(sbt => sbt.ShiftBreaks)
+                .HasForeignKey(sb => sb.ShiftBreakTypeId);
+
+            #endregion
+
+            #region Shift Template Configuration
+
+            modelBuilder.Entity<ShiftTemplate>()
+                .HasKey(st => st.ShiftTemplateId);
+
+            #endregion
+
+            #region Shift Break Template Configuration
+
+
+            modelBuilder.Entity<ShiftBreakTemplate>()
+                .HasKey(sbt => sbt.ShiftBreakTemplateId);
+
+            modelBuilder.Entity<ShiftBreakTemplate>()
+                .HasOne(sbt => sbt.ShiftBreakType)
+                .WithMany(st => st.ShiftBreakTemplates)
+                .HasForeignKey(sbt => sbt.ShiftBreakTypeId);
+
+            #endregion
+
+            #region Shift Template Breaks Configuration
+
+            modelBuilder.Entity<ShiftTemplateBreaks>()
+                .HasKey(stb => new { stb.ShiftTemplateId, stb.ShiftBreakTemplateId });
+
+            modelBuilder.Entity<ShiftTemplateBreaks>()
+                .HasOne(stb => stb.ShiftTemplate)
+                .WithMany(st => st.ShiftTemplateBreaks)
+                .HasForeignKey(stb => stb.ShiftTemplateId);
+
+            modelBuilder.Entity<ShiftTemplateBreaks>()
+                .HasOne(stb => stb.ShiftBreakTemplate)
+                .WithMany(sb => sb.ShiftTemplateBreaks)
+                .HasForeignKey(stb => stb.ShiftBreakTemplateId);
 
             #endregion
         }
