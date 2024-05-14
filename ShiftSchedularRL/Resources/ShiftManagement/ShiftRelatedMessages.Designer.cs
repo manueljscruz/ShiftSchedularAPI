@@ -160,6 +160,24 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shift break was removed successfuly..
+        /// </summary>
+        public static string DeleteShiftBreakSuccessful {
+            get {
+                return ResourceManager.GetString("DeleteShiftBreakSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occured while deleting the shift break. Please try again later..
+        /// </summary>
+        public static string DeleteShiftBreakUnexpectedError {
+            get {
+                return ResourceManager.GetString("DeleteShiftBreakUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An unexpected error occurred while deleting the shift. Please try again later..
         /// </summary>
         public static string DeleteShiftUnexpectedError {
@@ -201,6 +219,51 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         public static string ShiftRemovedSuccessfuly {
             get {
                 return ResourceManager.GetString("ShiftRemovedSuccessfuly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift was updated successfuly..
+        /// </summary>
+        public static string ShiftUpdatedSuccessfuly {
+            get {
+                return ResourceManager.GetString("ShiftUpdatedSuccessfuly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred while updating the shift break. Please try again later..
+        /// </summary>
+        public static string UpdateShfitBreakUnexpectedError {
+            get {
+                return ResourceManager.GetString("UpdateShfitBreakUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift break was updated successfuly..
+        /// </summary>
+        public static string UpdateShiftBreakSuccessfuly {
+            get {
+                return ResourceManager.GetString("UpdateShiftBreakSuccessfuly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occured while finding the related shift. If this continues, contact support to resolve this issue..
+        /// </summary>
+        public static string UpdateShiftNotFound {
+            get {
+                return ResourceManager.GetString("UpdateShiftNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred while updating the shift. Please try again later..
+        /// </summary>
+        public static string UpdateShiftUnexpectedError {
+            get {
+                return ResourceManager.GetString("UpdateShiftUnexpectedError", resourceCulture);
             }
         }
     }

@@ -150,6 +150,12 @@
   <data name="DeleteShiftBreaksNotFound" xml:space="preserve">
     <value>An unexpected error occured while finding related shift breaks to this shift. If this continues, contact support to resolve this issue.</value>
   </data>
+  <data name="DeleteShiftBreakSuccessful" xml:space="preserve">
+    <value>Shift break was removed successfuly.</value>
+  </data>
+  <data name="DeleteShiftBreakUnexpectedError" xml:space="preserve">
+    <value>An unexpected error occured while deleting the shift break. Please try again later.</value>
+  </data>
   <data name="DeleteShiftUnexpectedError" xml:space="preserve">
     <value>An unexpected error occurred while deleting the shift. Please try again later.</value>
   </data>
@@ -164,5 +170,20 @@
   </data>
   <data name="ShiftRemovedSuccessfuly" xml:space="preserve">
     <value>Shift was removed successfuly.</value>
+  </data>
+  <data name="ShiftUpdatedSuccessfuly" xml:space="preserve">
+    <value>Shift was updated successfuly.</value>
+  </data>
+  <data name="UpdateShfitBreakUnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred while updating the shift break. Please try again later.</value>
+  </data>
+  <data name="UpdateShiftBreakSuccessfuly" xml:space="preserve">
+    <value>Shift break was updated successfuly.</value>
+  </data>
+  <data name="UpdateShiftNotFound" xml:space="preserve">
+    <value>An unexpected error occured while finding the related shift. If this continues, contact support to resolve this issue.</value>
+  </data>
+  <data name="UpdateShiftUnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred while updating the shift. Please try again later.</value>
   </data>
 </root>

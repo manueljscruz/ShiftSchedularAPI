@@ -11,8 +11,8 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<ShiftBreakDTO>> AddEntityShiftBreak(AddShiftBreakDTO shiftBreakDTO);
         Task<BaseResponse<bool>> DeleteEntityShift(string entityId, string shiftId);
         Task<BaseResponse<bool>> DeleteEntityShiftBreak(DeleteEntityShiftBreakDTO deleteEntityShiftBreak);
-        Task<IEnumerable<ShiftDTO>> GetAllEntityShifts(string entityId, string lcode);
-        Task<ShiftDTO> GetShiftById(string id);
+        Task<List<ShiftDTO>> GetAllEntityShifts(string entityId, string lcode);
+        Task<ShiftDTO> GetShiftById(string shiftId, string lcode);
         Task<BaseResponse<bool>> UpdateEntityShift(ShiftDTO shift);
         Task<BaseResponse<bool>> UpdateEntityShiftBreak(ShiftBreakDTO shiftBreak);
     }

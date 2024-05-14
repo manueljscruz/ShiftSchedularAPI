@@ -10,5 +10,10 @@
         public TimeSpan ShiftStartHour { get; set; }
         public TimeSpan ShiftDuration { get; set; }
         public List<ShiftBreakDTO> ShiftBreakDTOs { get; set; }
+
+        public ShiftDTO()
+        {
+            ShiftBreakDTOs = new List<ShiftBreakDTO>();
+        }
     }
 }

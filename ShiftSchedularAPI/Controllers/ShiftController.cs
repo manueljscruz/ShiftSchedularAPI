@@ -1,6 +1,4 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
@@ -21,11 +19,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Shift By Id
 
-        [HttpGet("get-by-id/{id}")]
+        [HttpGet("get-by-id/{id}/{lcode}")]
         [ProducesResponseType(200, Type = typeof(Shift))]
-        public async Task<IActionResult> GetShiftById(string id)
+        public async Task<IActionResult> GetShiftById(string id, string lcode)
         {
-            var shifts = await _shiftService.GetShiftById(id);
+            var shifts = await _shiftService.GetShiftById(id, lcode);
             return Ok(shifts);
         }
 
@@ -91,6 +89,8 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Delete Shift
+
         [HttpDelete("delete-entity-shift/{entityId}/{shiftId}")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteShift(string entityId, string shiftId)
@@ -99,6 +99,10 @@ namespace ShiftSchedularAPI.Controllers
             return Ok(response);
         }
 
+        #endregion
+
+        #region Delete Shift Break
+
         [HttpDelete("delete-entity-shift-break")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteShiftBreak(DeleteEntityShiftBreakDTO deleteEntityShiftBreak)
@@ -106,5 +110,7 @@ namespace ShiftSchedularAPI.Controllers
             var response = await _shiftService.DeleteEntityShiftBreak(deleteEntityShiftBreak);
             return Ok(response);
         }
+
+        #endregion
     }
 }

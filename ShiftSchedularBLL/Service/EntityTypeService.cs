@@ -6,12 +6,6 @@ using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.API_Management;
 using ShiftSchedularEntity.Models.DataTransferObjects;
-using ShiftSchedularEntity.Models.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.Service
 {

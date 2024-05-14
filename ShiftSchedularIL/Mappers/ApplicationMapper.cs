@@ -64,8 +64,25 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
                 .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
 
-
             CreateMap<AddShiftBreakDTO, ShiftBreak>()
+                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
+                .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
+                .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
+                .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
+                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+
+            CreateMap<ShiftDTO, Shift>()
+                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.ShiftName))
+                .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
+                .ForMember(dest => dest.ShiftDescription, opt => opt.MapFrom(src => src.ShiftDescription))
+                .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
+                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
+
+            CreateMap<ShiftBreakDTO, ShiftBreak>()
+                .ForMember(dest => dest.ShiftBreakId, opt => opt.MapFrom(src => src.ShiftBreakId))
+                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
                 .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
