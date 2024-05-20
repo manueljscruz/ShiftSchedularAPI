@@ -27,6 +27,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>ShiftRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\ShiftManagement\ShiftTemplateRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ShiftTemplateRelatedMessages.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -45,6 +50,10 @@
     <EmbeddedResource Update="Resources\ShiftManagement\ShiftRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ShiftRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ShiftManagement\ShiftTemplateRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ShiftTemplateRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

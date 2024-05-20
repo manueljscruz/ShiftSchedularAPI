@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models.APIManagement;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
@@ -88,6 +89,34 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
                 .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
                 .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+
+            CreateMap<ShiftBreakTypeLocalization, ShiftBreakTypeLocalizedDTO>()
+                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
+                .ForMember(dest => dest.ShiftBreakTypeLocalizedName, opt => opt.MapFrom(src => src.ShiftBreakTypeDisplayValue));
+
+            CreateMap<ShiftBreakTemplate, ShiftBreakTemplateDTO>()
+                .ForMember(dest => dest.ShiftBreakTemplateId, opt => opt.MapFrom(src => src.ShiftBreakTemplateId))
+                .ForMember(dest => dest.ShiftBreakTemplateName, opt => opt.MapFrom(src => src.ShiftBreakTemplateName))
+                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
+                .ForMember(dest => dest.ShiftBreakStartHour, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
+                .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
+                .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
+                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+
+            CreateMap<ShiftBreakTemplateSubmissionModel, ShiftBreakTemplate>()
+                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
+                .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
+                .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
+                .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
+                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+
+            CreateMap<ShiftTemplateSubmissionModel, ShiftTemplate>()
+                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.ShiftName))
+                .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
+                .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
+                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
+
+
         }
     }
 }

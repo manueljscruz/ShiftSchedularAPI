@@ -62,6 +62,14 @@ builder.Services.AddScoped<IGenericRepository<SkillLocalization>, GenericReposit
 builder.Services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
 builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
 builder.Services.AddScoped<IEntityWorkerInvitationRepository, EntityWorkerInvitationRepository>();
+// Repositories - Shifts
+builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
+builder.Services.AddScoped<IShiftBreakRepository, ShiftBreakRepository>();
+builder.Services.AddScoped<IGenericRepository<ShiftBreakType>, GenericRepository<ShiftBreakType>>();
+builder.Services.AddScoped<IShiftBreakTypeLocalizationRepository, ShiftBreakTypeLocalizationRepository>();
+builder.Services.AddScoped<IGenericRepository<ShiftTemplate>, GenericRepository<ShiftTemplate>>();
+builder.Services.AddScoped<IGenericRepository<ShiftBreakTemplate>, GenericRepository<ShiftBreakTemplate>>();
+
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
@@ -70,6 +78,8 @@ builder.Services.AddScoped<IWorkerService, WorkerService>();
 builder.Services.AddScoped<IEntityTypeService, EntityTypeService>();
 builder.Services.AddScoped<IEntityService, EntityService>();
 builder.Services.AddScoped<ISkillService, SkillService>();
+builder.Services.AddScoped<IShiftService, ShiftService>();
+builder.Services.AddScoped<IShiftBreakTypeService, ShiftBreakTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure

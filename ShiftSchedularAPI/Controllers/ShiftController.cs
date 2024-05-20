@@ -29,13 +29,13 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-        #region Get All Entity Shifts
+        #region Get Entity Shifts View Model
 
-        [HttpGet("get-all-entity-shifts/{entityId}/{lcode}")]
+        [HttpPost("get-entity-shift-view-model")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> GetAllEntityShifts(string entityId, string lcode)
+        public async Task<IActionResult> GetEntityShiftsViewModel(EntityShiftViewModelRequestDTO viewModelRequestDTO)
         {
-            var shifts = await _shiftService.GetAllEntityShifts(entityId, lcode);
+            var shifts = await _shiftService.GetEntityShiftsViewModel(viewModelRequestDTO);
             return Ok(shifts);
         }
 

@@ -3,6 +3,7 @@
     public class ShiftBreakTemplate
     {
         public int ShiftBreakTemplateId { get; set; }
+        public string ShiftBreakTemplateName { get; set; }
         public int ShiftBreakTypeId { get; set; }
         public TimeSpan ShiftBreakStartTime { get; set; }
         public TimeSpan ShiftBreakDuration { get; set; }

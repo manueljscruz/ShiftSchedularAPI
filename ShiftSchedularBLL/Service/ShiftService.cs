@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
+using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.ShiftManagement;
 
@@ -15,22 +18,32 @@ namespace ShiftSchedularBLL.Service
     {
         private readonly IMapper _mapper;
         private readonly IGeneralService _generalService;
+        private readonly IShiftTemplateService _shiftTemplateService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEntityRepository _entityRepository;
+        private readonly IGenericRepository<Entity> _entityRepository;
         private readonly IShiftRepository _shiftRepository;
         private readonly IShiftBreakRepository _shiftBreakRepository;
         private readonly IGenericRepository<ShiftBreakType> _shiftBreakTypeRepository;
+        private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IShiftBreakTypeLocalizationRepository _shiftBreakTypeLocalizationRepository;
+        private readonly IGenericRepository<ShiftBreakTemplate> _shiftBreakTemplateRepository;
+        private readonly IGenericRepository<ShiftTemplate> _shiftTemplateRepository;
+        
 
         #region Constructor
 
         public ShiftService(IMapper mapper, 
             IGeneralService generalService, 
-            IUnitOfWork unitOfWork, 
-            IEntityRepository entityRepository, 
+            IShiftTemplateService shiftTemplateService,
+            IUnitOfWork unitOfWork,
+            IGenericRepository<Entity> entityRepository, 
             IShiftRepository shiftRepository, 
             IShiftBreakRepository shiftBreakRepository,
-            IGenericRepository<ShiftBreakType> shiftBreakTypeRepository) 
+            IEntityWorkerRepository entityWorkerRepository,
+            IGenericRepository<ShiftBreakType> shiftBreakTypeRepository,
+            IGenericRepository<ShiftBreakTemplate> shiftBreakTemplateRepository,
+            IShiftBreakTypeLocalizationRepository shiftBreakTypeLocalizationRepository,
+            IGenericRepository<ShiftTemplate> shiftTemplateRepository) 
         {
             _mapper = mapper;
             _generalService = generalService;
@@ -38,7 +51,11 @@ namespace ShiftSchedularBLL.Service
             _entityRepository = entityRepository;
             _shiftRepository = shiftRepository;
             _shiftBreakRepository = shiftBreakRepository;
+            _entityWorkerRepository = entityWorkerRepository;
             _shiftBreakTypeRepository = shiftBreakTypeRepository;
+            _shiftBreakTemplateRepository = shiftBreakTemplateRepository;
+            _shiftBreakTypeLocalizationRepository = shiftBreakTypeLocalizationRepository;
+            _shiftTemplateRepository = shiftTemplateRepository; 
         }
 
         #endregion
@@ -313,7 +330,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Get All Entity Shifts
+        #region Get Entity Shifts View Model
 
         /// <summary>
         /// Gets all the shift data related to this entity
@@ -321,24 +338,42 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<List<ShiftDTO>> GetAllEntityShifts(string entityId, string lcode)
+        public async Task<ShiftViewModel> GetEntityShiftsViewModel(EntityShiftViewModelRequestDTO shiftViewModelRequestDTO)
         {
-            List<ShiftDTO> shiftDTOs = new List<ShiftDTO>();
+            ShiftViewModel shiftViewModel = new ShiftViewModel();
 
-            if(!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(lcode))
+            // If necessary data is different than empty
+            if(shiftViewModelRequestDTO != null && !string.IsNullOrEmpty(shiftViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.LanguageCode))
             {
-                IEnumerable<Shift> shifts = await _shiftRepository.GetEntityShifts(entityId);
-                if(shifts.Count() != 0)
+                Entity entity = await _entityRepository.GetById(shiftViewModelRequestDTO.EntityId);
+                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
+                shiftViewModel.AllowEdit = entityWorker.IsOwner;
+
+                // If it can change data
+                if(entityWorker.IsOwner)
                 {
+                    // Get Shift Break Types Localized
+                    IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _shiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(shiftViewModelRequestDTO.LanguageCode);
+                    foreach (ShiftBreakTypeLocalization shiftBreakTypeLocalization in shiftBreakTypeLocalizations)
+                        shiftViewModel.ShiftBreakTypeLocalizeds.Add(_mapper.Map<ShiftBreakTypeLocalization, ShiftBreakTypeLocalizedDTO>(shiftBreakTypeLocalization));
+
+                    // Get Shift Breaks Templates
+                    shiftViewModel.ShiftBreakTemplates = await _shiftTemplateService.GetShiftBreakTemplates(shiftViewModelRequestDTO.LanguageCode);
+
+                    
+
+                    // Get Shifts
+                    IEnumerable<Shift> shifts = await _shiftRepository.GetEntityShifts(shiftViewModelRequestDTO.EntityId);
                     foreach (Shift shift in shifts)
                     {
-                        ShiftDTO shiftDTO = await HandleShiftData(shift, lcode);
-                        shiftDTOs.Add(shiftDTO);
+                        ShiftDTO shiftDTO = await HandleShiftData(shift, shiftBreakTypeLocalizations);
+                        shiftViewModel.Shifts.Add(shiftDTO);
+                        
                     }
                 }
             }
 
-            return shiftDTOs;
+            return shiftViewModel;
         }
 
         #endregion
@@ -362,7 +397,8 @@ namespace ShiftSchedularBLL.Service
                 Shift shift = await _shiftRepository.GetById(shiftId);
                 if(shift != null)
                 {
-                    shiftDTO = await HandleShiftData(shift, lcode);
+                    IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _shiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(lcode);
+                    shiftDTO = await HandleShiftData(shift, shiftBreakTypeLocalizations);
                 }
             }
 
@@ -379,7 +415,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="shift"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        private async Task<ShiftDTO> HandleShiftData(Shift shift, string lcode)
+        private async Task<ShiftDTO> HandleShiftData(Shift shift, IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations)
         {
             ShiftDTO shiftDTO = new ShiftDTO();
 
@@ -388,7 +424,6 @@ namespace ShiftSchedularBLL.Service
 
             // Get Shift breaks related to the shift
             IEnumerable<ShiftBreak> shiftBreaks = await _shiftBreakRepository.GetBreaksByShiftId(shift.ShiftId);
-            IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _shiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(lcode);
 
             // If any, map them to the 
             if (shiftBreaks.Count() != 0 && shiftBreakTypeLocalizations.Count() != 0)
@@ -397,7 +432,7 @@ namespace ShiftSchedularBLL.Service
                 foreach (ShiftBreak shiftBreak in shiftBreaks)
                 {
                     ShiftBreakDTO shiftBreakDTO = _mapper.Map<ShiftBreakDTO>(shiftBreak);
-                    ShiftBreakTypeLocalization shiftBreakTypeLocalization = await _shiftBreakTypeLocalizationRepository.GetBreakTypeLocalized(lcode, shiftBreak.ShiftBreakTypeId);
+                    ShiftBreakTypeLocalization shiftBreakTypeLocalization = shiftBreakTypeLocalizations.Where(i => i.ShiftBreakTypeId.Equals(shiftBreak.ShiftBreakTypeId)).FirstOrDefault();
                     shiftBreakDTO.ShiftBreakTypeDisplay = shiftBreakTypeLocalizations.Where(i => i.ShiftBreakTypeId.Equals(shiftBreak.ShiftBreakTypeId)).FirstOrDefault().ShiftBreakTypeDisplayValue;
                     shiftDTO.ShiftBreakDTOs.Add(shiftBreakDTO);
                 }
