@@ -2,16 +2,21 @@
 {
     public class ShiftBreakTemplateSubmissionModel
     {
-        public string ShiftTemplateName { get; set; }
+        public string ShiftBreakTemplateName { get; set; }
         public int ShiftBreakTypeId { get; set; }
         public TimeSpan ShiftBreakStartTime { get; set; }
         public TimeSpan ShiftBreakDuration { get; set; }
         public bool IncludedInShift { get; set; }
         public bool IsTimeFlexible { get; set; }
 
+        public ShiftBreakTemplateSubmissionModel()
+        {
+            
+        }
+
         public ShiftBreakTemplateSubmissionModel(string shiftTemplateName, int shiftBreakTypeId, TimeSpan breakStartTime, TimeSpan breakDuration, bool includedInShift, bool isTimeFlexible)
         {
-            ShiftTemplateName = shiftTemplateName;
+            ShiftBreakTemplateName = shiftTemplateName;
             ShiftBreakTypeId = shiftBreakTypeId;
             ShiftBreakStartTime = breakStartTime;
             ShiftBreakDuration = breakDuration;

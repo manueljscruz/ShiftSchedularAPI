@@ -8,6 +8,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
         public List<ShiftBreakTypeLocalizedDTO> ShiftBreakTypeLocalizeds { get; set; }
         public bool AllowEdit { get; set; }
         public List<ShiftBreakTemplateDTO> ShiftBreakTemplates { get; set; }
+        public List<ShiftTemplateDTO> ShiftTemplates { get; set; }
 
         // public List<>
 
@@ -16,6 +17,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
             Shifts = new List<ShiftDTO>();
             ShiftBreakTypeLocalizeds = new List<ShiftBreakTypeLocalizedDTO>();
             ShiftBreakTemplates = new List<ShiftBreakTemplateDTO>();
+            ShiftTemplates = new List<ShiftTemplateDTO>();
         }
 
     }

@@ -8,6 +8,11 @@
         public TimeSpan ShiftDuration { get; set; }
         public List<int> ShiftBreakTemplateIdAssociations { get; set; }
 
+        public ShiftTemplateSubmissionModel()
+        {
+            
+        }
+
         public ShiftTemplateSubmissionModel(string shiftName, string shiftAlias, TimeSpan startHour, TimeSpan duration, List<int> shiftBreakTemplateIdAssociations)
         {
             ShiftName = shiftName;

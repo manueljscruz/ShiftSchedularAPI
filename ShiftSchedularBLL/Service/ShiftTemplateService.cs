@@ -62,7 +62,7 @@ namespace ShiftSchedularBLL.Service
 
             if(submissionModel != null)
             {
-                if (string.IsNullOrEmpty(submissionModel.ShiftTemplateName))
+                if (string.IsNullOrEmpty(submissionModel.ShiftBreakTemplateName))
                 {
                     response.Message = ShiftTemplateRelatedMessages.ShiftBreakTemplateEmptyName;
                     return response;
@@ -118,14 +118,49 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                ShiftTemplate shiftTemplate = _mapper.Map<ShiftTemplate>(submissionModel);
-                shiftTemplate = await _shiftTemplateRepository.Add(shiftTemplate);
+                await _unitOfWork.BeginTransactionAsync();
 
-                if(shiftTemplate.ShiftTemplateId != 0)
+                try
                 {
-                    response.Result = shiftTemplate.ShiftTemplateId;
-                    response.Success = true;
-                    response.Message = ShiftTemplateRelatedMessages.ShiftTemplateAddSuccesful;
+                    ShiftTemplate shiftTemplate = _mapper.Map<ShiftTemplate>(submissionModel);
+                    shiftTemplate = await _shiftTemplateRepository.Add(shiftTemplate);
+
+                    // If there are shift break associations
+                    if (submissionModel.ShiftBreakTemplateIdAssociations.Count() != 0 && shiftTemplate.ShiftTemplateId != 0)
+                    {
+                        IEnumerable<ShiftBreakTemplate> shiftBreakTemplates = await _shiftBreakTemplateRepository.GetAll();
+
+                        // Check if association exists, and if so, add it.
+                        foreach (int shiftBreakTemplateId in submissionModel.ShiftBreakTemplateIdAssociations)
+                        {
+                            if (shiftBreakTemplates.Any(x => x.ShiftBreakTemplateId == shiftBreakTemplateId))
+                            {
+                                ShiftTemplateBreaks shiftTemplateBreaks = new ShiftTemplateBreaks
+                                {
+                                    ShiftBreakTemplateId = shiftBreakTemplateId,
+                                    ShiftTemplateId = shiftTemplate.ShiftTemplateId
+                                };
+
+                                await _shiftTemplateBreaksRepository.Add(shiftTemplateBreaks);
+                            }
+                        }
+                    }
+
+                    if (shiftTemplate.ShiftTemplateId != 0)
+                    {
+                        await _unitOfWork.CommitAsync();
+                        response.Result = shiftTemplate.ShiftTemplateId;
+                        response.Success = true;
+                        response.Message = ShiftTemplateRelatedMessages.ShiftTemplateAddSuccesful;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await _unitOfWork.RollbackAsync();
+                }
+                finally
+                {
+                    _unitOfWork.Dispose();
                 }
             }
             return response;
@@ -281,9 +316,59 @@ namespace ShiftSchedularBLL.Service
             {
                 shiftTemplate = await _shiftTemplateRepository.GetById(id);
                 IEnumerable<ShiftTemplateBreaks> shiftTemplateBreaks = await _shiftTemplateBreaksRepository.GetShiftTemplateBreaksByShiftId(id);
+                
             }
 
             return shiftTemplate;
+        }
+
+        #endregion
+
+        #region Get Shift Templates
+
+        public async Task<List<ShiftTemplateDTO>> GetShiftTemplates(string lcode)
+        {
+            List<ShiftTemplateDTO> shiftTemplatesDTOs = new List<ShiftTemplateDTO>();
+
+            if (!string.IsNullOrEmpty(lcode))
+            {
+                if (lcode.Contains("-"))
+                    lcode = lcode.Split('-')[0];
+
+                
+                // Get all Shift Templates and Shift Break Templates
+                IEnumerable<ShiftTemplate> shiftTemplates = await _shiftTemplateRepository.GetAll();
+
+                double average = shiftTemplates.Sum(i=>i.TemplateClicks) / shiftTemplates.Count();
+
+                List<ShiftBreakTemplateDTO> shiftBreakTemplateDTOs = await this.GetShiftBreakTemplates(lcode);
+
+                // For each shift template
+                foreach (ShiftTemplate shiftTemplate in shiftTemplates)
+                {
+                    ShiftTemplateDTO shiftTemplateDTO = _mapper.Map<ShiftTemplateDTO>(shiftTemplate);
+
+                    // Get associated Shift Template Breaks
+                    IEnumerable<ShiftTemplateBreaks> shiftTemplateBreaks = await _shiftTemplateBreaksRepository.GetShiftTemplateBreaksByShiftId(shiftTemplate.ShiftTemplateId);
+
+                    // For each one found
+                    foreach(ShiftTemplateBreaks templateBreaks in shiftTemplateBreaks)
+                    {
+                        // Get the matching break template and add it to the ShiftTemplateDTO list
+                        ShiftBreakTemplateDTO shiftBreakTemplateDTO = shiftBreakTemplateDTOs.Where(i => i.ShiftBreakTemplateId.Equals(templateBreaks.ShiftBreakTemplateId)).FirstOrDefault();
+                        if(shiftBreakTemplateDTO != null)
+                            shiftTemplateDTO.ShiftBreakTemplates.Add(shiftBreakTemplateDTO);
+                    }
+
+                    shiftTemplateDTO.IsPopular = shiftTemplate.TemplateClicks > average ? true : false;
+
+                    // Add Shift Template DTO to the returning list
+                    shiftTemplatesDTOs.Add(shiftTemplateDTO);
+                }
+                
+            }
+
+            return shiftTemplatesDTOs;
         }
 
         #endregion

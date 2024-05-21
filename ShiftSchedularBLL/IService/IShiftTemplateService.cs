@@ -9,6 +9,7 @@ namespace ShiftSchedularBLL.IService
     public interface IShiftTemplateService
     {
         Task<ShiftTemplate> GetShiftTemplateById(int id);
+        Task<List<ShiftTemplateDTO>> GetShiftTemplates(string lcode);
         Task<List<ShiftBreakTemplateDTO>> GetShiftBreakTemplates(string lcode);
         Task<BaseResponse<int>> AddShiftTemplate(ShiftTemplateSubmissionModel submissionModel);
         Task<BaseResponse<int>> AddShiftBreakTemplate(ShiftBreakTemplateSubmissionModel submissionModel);

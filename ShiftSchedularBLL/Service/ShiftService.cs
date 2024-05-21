@@ -47,6 +47,7 @@ namespace ShiftSchedularBLL.Service
         {
             _mapper = mapper;
             _generalService = generalService;
+            _shiftTemplateService = shiftTemplateService;
             _unitOfWork = unitOfWork;
             _entityRepository = entityRepository;
             _shiftRepository = shiftRepository;
@@ -360,7 +361,7 @@ namespace ShiftSchedularBLL.Service
                     // Get Shift Breaks Templates
                     shiftViewModel.ShiftBreakTemplates = await _shiftTemplateService.GetShiftBreakTemplates(shiftViewModelRequestDTO.LanguageCode);
 
-                    
+                    shiftViewModel.ShiftTemplates = await _shiftTemplateService.GetShiftTemplates(shiftViewModelRequestDTO.LanguageCode);
 
                     // Get Shifts
                     IEnumerable<Shift> shifts = await _shiftRepository.GetEntityShifts(shiftViewModelRequestDTO.EntityId);
