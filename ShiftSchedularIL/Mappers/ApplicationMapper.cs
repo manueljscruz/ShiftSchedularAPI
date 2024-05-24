@@ -90,6 +90,15 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
                 .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
 
+            CreateMap<ShiftBreak, ShiftBreakDTO>()
+                .ForMember(dest => dest.ShiftBreakId, opt => opt.MapFrom(src => src.ShiftBreakId))
+                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
+                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
+                .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
+                .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
+                .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
+                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+
             CreateMap<ShiftBreakTypeLocalization, ShiftBreakTypeLocalizedDTO>()
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
                 .ForMember(dest => dest.ShiftBreakTypeLocalizedName, opt => opt.MapFrom(src => src.ShiftBreakTypeDisplayValue));

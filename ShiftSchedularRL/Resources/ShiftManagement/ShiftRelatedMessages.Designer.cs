@@ -88,6 +88,15 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shift Break was added successfuly..
+        /// </summary>
+        public static string AddNewShiftBreakSuccessful {
+            get {
+                return ResourceManager.GetString("AddNewShiftBreakSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An expected error occured while adding a new shift break. Please try again later..
         /// </summary>
         public static string AddNewShiftBreakUnexpectedError {

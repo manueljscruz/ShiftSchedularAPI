@@ -45,7 +45,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPost("add-entity-shift")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> AddEntityShift(AddShiftDTO shiftDTO)
+        public async Task<IActionResult> AddEntityShift([FromBody] AddShiftDTO shiftDTO)
         {
             var newShift = await _shiftService.AddEntityShift(shiftDTO);
             return Ok(newShift);

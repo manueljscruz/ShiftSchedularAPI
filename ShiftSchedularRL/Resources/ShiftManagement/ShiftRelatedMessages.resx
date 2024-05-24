@@ -126,6 +126,9 @@
   <data name="AddNewShiftBreakEmptyShift" xml:space="preserve">
     <value>Shift break destination cannot be empty.</value>
   </data>
+  <data name="AddNewShiftBreakSuccessful" xml:space="preserve">
+    <value>Shift Break was added successfuly.</value>
+  </data>
   <data name="AddNewShiftBreakUnexpectedError" xml:space="preserve">
     <value>An expected error occured while adding a new shift break. Please try again later.</value>
   </data>

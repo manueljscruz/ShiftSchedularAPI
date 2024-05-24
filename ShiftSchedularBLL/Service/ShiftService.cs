@@ -144,7 +144,7 @@ namespace ShiftSchedularBLL.Service
                         }
 
                         // Save changes in the database and assign values to the response result 
-                        await _unitOfWork.SaveChangesAsync();
+                        await _unitOfWork.CommitAsync();
                         response.Success = true;
                         response.Message = ShiftRelatedMessages.AddNewShiftSuccessful;
 
@@ -210,10 +210,12 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 ShiftBreak shiftBreak = _mapper.Map<ShiftBreak>(addShiftBreakDTO);
-                shiftBreak.ShiftId = _generalService.GenerateGuid();
+                shiftBreak.ShiftBreakId = _generalService.GenerateGuid();
 
                 shiftBreak = await _shiftBreakRepository.Add(shiftBreak);
+                response.Success = true;
                 response.Result = _mapper.Map<ShiftBreakDTO>(shiftBreak);
+                response.Message = ShiftRelatedMessages.AddNewShiftBreakSuccessful;
             }
 
             return response;
