@@ -32,8 +32,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
-    options.JsonSerializerOptions.PropertyNamingPolicy = null; // Use camelCase or any other naming policy
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // Use camelCase or any other naming policy
     options.JsonSerializerOptions.IgnoreNullValues = true;
 });
 
