@@ -83,7 +83,7 @@ namespace ShiftSchedularIL.Mappers
 
             CreateMap<ShiftBreakDTO, ShiftBreak>()
                 .ForMember(dest => dest.ShiftBreakId, opt => opt.MapFrom(src => src.ShiftBreakId))
-                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
+                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftParentId))
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
                 .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
@@ -92,7 +92,7 @@ namespace ShiftSchedularIL.Mappers
 
             CreateMap<ShiftBreak, ShiftBreakDTO>()
                 .ForMember(dest => dest.ShiftBreakId, opt => opt.MapFrom(src => src.ShiftBreakId))
-                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
+                .ForMember(dest => dest.ShiftParentId, opt => opt.MapFrom(src => src.ShiftId))
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
                 .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))

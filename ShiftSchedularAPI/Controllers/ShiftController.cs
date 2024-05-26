@@ -69,7 +69,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPut("update-entity-shift")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> UpdateEntityShift(ShiftDTO shift)
+        public async Task<IActionResult> UpdateEntityShift([FromBody] ShiftDTO shift)
         {
             var updatedShift = await _shiftService.UpdateEntityShift(shift);
             return Ok(updatedShift);
@@ -81,7 +81,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPut("update-entity-shift-break")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> UpdateEntityShiftBreak(ShiftBreakDTO shiftBreak)
+        public async Task<IActionResult> UpdateEntityShiftBreak([FromBody] ShiftBreakDTO shiftBreak)
         {
             var updatedShiftBreak = await _shiftService.UpdateEntityShiftBreak(shiftBreak);
             return Ok(updatedShiftBreak);
@@ -103,11 +103,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Shift Break
 
-        [HttpDelete("delete-entity-shift-break")]
+        [HttpDelete("delete-entity-shift-break/{shiftBreakId}")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteShiftBreak(DeleteEntityShiftBreakDTO deleteEntityShiftBreak)
+        public async Task<IActionResult> DeleteShiftBreak(string shiftBreakId)
         {
-            var response = await _shiftService.DeleteEntityShiftBreak(deleteEntityShiftBreak);
+            var response = await _shiftService.DeleteEntityShiftBreak(shiftBreakId);
             return Ok(response);
         }
 
