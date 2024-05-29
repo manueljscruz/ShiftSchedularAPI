@@ -17,6 +17,8 @@
         public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
         public virtual ICollection<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
         public virtual ICollection<Shift> EntityShifts { get; set; }
+        public virtual ICollection<EntityRule> EntityRules { get; set; }
+
 
         #endregion
     }

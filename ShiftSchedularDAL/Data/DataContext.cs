@@ -41,6 +41,13 @@ namespace ShiftSchedularDAL.Data
         public DbSet<ShiftTemplate> ShiftTemplates { get; set; }
         public DbSet<ShiftBreakTemplate> ShiftBreakTemplates { get; set; }
         public DbSet<ShiftTemplateBreaks> ShiftTemplateBreaks { get; set; }
+        public DbSet<RuleType> RuleTypes { get; set; }
+        public DbSet<RuleTypeLocalization> RuleTypeLocalizations { get; set; }
+        public DbSet<EntityRule> EntityRules { get; set; }
+        public DbSet<EntityRuleSpecification> EntityRuleSpecifications { get; set; }
+        public DbSet<BusinessAspect> BusinessAspects { get; set; }
+        public DbSet<BusinessAspectLocalization> BusinessAspectLocalizations { get; set; }
+
 
         #endregion
 
@@ -274,6 +281,88 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(stb => stb.ShiftBreakTemplate)
                 .WithMany(sb => sb.ShiftTemplateBreaks)
                 .HasForeignKey(stb => stb.ShiftBreakTemplateId);
+
+            #endregion
+
+            #region Business Aspect Configuration
+
+            modelBuilder.Entity<BusinessAspect>()
+                .HasKey(ba => ba.BusinessAspectId);
+
+            #endregion
+
+            #region Business Aspect Localization Configuration
+
+            modelBuilder.Entity<BusinessAspectLocalization>()
+                .HasKey(bal => new { bal.BusinessAspectId, bal.LocalizationId });
+
+            modelBuilder.Entity<BusinessAspectLocalization>()
+                .HasOne(bal => bal.BusinessAspect)
+                .WithMany(ba => ba.BusinessAspectLocalizations)
+                .HasForeignKey(bal => bal.BusinessAspectId);
+
+            modelBuilder.Entity<BusinessAspectLocalization>()
+                .HasOne(bal => bal.Localization)
+                .WithMany(l => l.BusinessAspectLocalizations)
+                .HasForeignKey(bal => bal.LocalizationId);
+
+            #endregion
+
+            #region Rule Type Configuration
+
+            modelBuilder.Entity<RuleType>()
+                .HasKey(rt => rt.RuleTypeId);
+
+            #endregion
+
+            #region Rule Type Localization Configuration
+
+            modelBuilder.Entity<RuleTypeLocalization>()
+                .HasKey(rtl => new { rtl.RuleTypeId, rtl.LocalizationId });
+
+            modelBuilder.Entity<RuleTypeLocalization>()
+                .HasOne(rtl => rtl.RuleType)
+                .WithMany(rt => rt.RuleTypeLocalizations)
+                .HasForeignKey(rtl => rtl.RuleTypeId);
+
+            modelBuilder.Entity<RuleTypeLocalization>()
+                .HasOne(rtl => rtl.Localization)
+                .WithMany(l => l.RuleTypeLocalizations)
+                .HasForeignKey(rtl => rtl.LocalizationId);
+
+            #endregion
+
+            #region Entity Rule Configuration
+
+            modelBuilder.Entity<EntityRule>()
+                .HasKey(er => er.EntityRuleId);
+
+            modelBuilder.Entity<EntityRule>()
+                .HasOne(er => er.Entity)
+                .WithMany(e => e.EntityRules)
+                .HasForeignKey(er => er.EntityId);
+
+            modelBuilder.Entity<EntityRule>()
+                .HasOne(er => er.RuleType)
+                .WithMany(rt => rt.EntityRules)
+                .HasForeignKey(er => er.RuleTypeId);
+
+            #endregion
+
+            #region Entity Rule Specifications
+
+            modelBuilder.Entity<EntityRuleSpecification>()
+                .HasKey(ers => new { ers.EntityRuleId, ers.SpecificationId });
+
+            modelBuilder.Entity<EntityRuleSpecification>()
+                .HasOne(ers => ers.EntityRule)
+                .WithMany(er => er.EntityRuleSpecifications)
+                .HasForeignKey(ers => ers.EntityRuleId);
+
+            modelBuilder.Entity<EntityRuleSpecification>()
+                .HasOne(ers => ers.BusinessAspect)
+                .WithMany(s => s.EntityRuleSpecifications)
+                .HasForeignKey(ers => ers.BusinessAspectId);
 
             #endregion
         }

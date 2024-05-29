@@ -18,6 +18,8 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
         public virtual ICollection<SkillLocalization> SkillLocalizations { get; set; }
         public virtual ICollection<ShiftBreakTypeLocalization> ShiftBreakTypeLocalizations { get; set; }
+        public virtual ICollection<RuleTypeLocalization> RuleTypeLocalizations { get; set; }
+        public virtual ICollection<BusinessAspectLocalization> BusinessAspectLocalizations { get; set; }
 
         #endregion
 
