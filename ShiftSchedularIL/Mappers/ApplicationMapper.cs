@@ -133,6 +133,14 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
                 .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
 
+            CreateMap<RuleTypeLocalization, RuleTypeLocalizedDTO>()
+                .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId))
+                .ForMember(dest => dest.RuleTypeLocalizedName, opt => opt.MapFrom(src => src.RuleTypeDisplayValue));
+
+            CreateMap<BusinessAspectLocalization, BusinessAspectLocalizedDTO>()
+                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
+                .ForMember(dest => dest.BusinessAspectLocalizedName, opt => opt.MapFrom(src => src.BusinessAspectDisplayValue));
+
 
         }
     }
