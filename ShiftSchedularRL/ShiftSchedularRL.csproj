@@ -12,6 +12,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>EntitiesRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\EntityRuleManagement\EntityRulesRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EntityRulesRelatedMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\Home\WorkerRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -38,6 +43,10 @@
     <EmbeddedResource Update="Resources\Dashboard\EntitiesRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>EntitiesRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\EntityRuleManagement\EntityRulesRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>EntityRulesRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Home\WorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
