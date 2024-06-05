@@ -70,6 +70,13 @@ builder.Services.AddScoped<IShiftBreakTypeLocalizationRepository, ShiftBreakType
 builder.Services.AddScoped<IGenericRepository<ShiftTemplate>, GenericRepository<ShiftTemplate>>();
 builder.Services.AddScoped<IGenericRepository<ShiftBreakTemplate>, GenericRepository<ShiftBreakTemplate>>();
 builder.Services.AddScoped<IShiftTemplateBreaksRepository, ShiftTemplateBreaksRepository>();
+// Repositories - Rules
+builder.Services.AddScoped<IBusinessAspectLocalizationRepository, BusinessAspectLocalizationRepository>();
+builder.Services.AddScoped<IGenericRepository<BusinessAspect>, GenericRepository<BusinessAspect>>();
+builder.Services.AddScoped<IRuleTypeLocalizationRepository, RuleTypeLocalizationRepository>();
+builder.Services.AddScoped<IGenericRepository<RuleType>, GenericRepository<RuleType>>();
+builder.Services.AddScoped<IEntityRuleRepository, EntityRuleRepository>();
+builder.Services.AddScoped<IEntityRuleSpecificationRepository, EntityRuleSpecificationRepository>();
 
 
 // Services
@@ -82,6 +89,9 @@ builder.Services.AddScoped<ISkillService, SkillService>();
 builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IShiftBreakTypeService, ShiftBreakTypeService>();
 builder.Services.AddScoped<IShiftTemplateService, ShiftTemplateService>();
+builder.Services.AddScoped<IBusinessAspectService, BusinessAspectService>();
+builder.Services.AddScoped<IEntityRuleService, EntityRuleService>();
+builder.Services.AddScoped<IRuleTypeService, RuleTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure

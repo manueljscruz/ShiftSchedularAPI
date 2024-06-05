@@ -23,6 +23,21 @@ namespace ShiftSchedularDAL.Repositories
             _businessAspectDbSet = _context.Set<BusinessAspectLocalization>();
         }
 
+        public Task<BusinessAspectLocalization> Add(BusinessAspectLocalization entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<BusinessAspectLocalization>> AddRange(List<BusinessAspectLocalization> entities)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteRange(IEnumerable<BusinessAspectLocalization> entities)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Get Business Aspect Localizations By Id
@@ -54,5 +69,26 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
+
+        public Task Update(BusinessAspectLocalization entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<IEnumerable<BusinessAspectLocalization>> IGenericRepository<BusinessAspectLocalization>.GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<BusinessAspectLocalization> IGenericRepository<BusinessAspectLocalization>.GetById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<BusinessAspectLocalization> IGenericRepository<BusinessAspectLocalization>.GetById(string id)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

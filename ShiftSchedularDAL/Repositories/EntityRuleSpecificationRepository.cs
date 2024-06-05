@@ -6,7 +6,7 @@ using ShiftSchedularEntity.Entities;
 
 namespace ShiftSchedularDAL.Repositories
 {
-    internal class EntityRuleSpecificationRepository : IEntityRuleSpecificationRepository
+    public class EntityRuleSpecificationRepository : IEntityRuleSpecificationRepository
     {
         private readonly DataContext _context;
         private readonly DbSet<EntityRuleSpecification> _entityRuleSpecificationsDbSet;
