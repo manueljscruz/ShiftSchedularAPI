@@ -171,4 +171,16 @@
   <data name="EntityRuleSpecificationNotFound" xml:space="preserve">
     <value>Entity rule specification was not found. If this error persists, please contact support.</value>
   </data>
+  <data name="UpdateEntityRuleSpecSuccessful" xml:space="preserve">
+    <value>Entity rule specification was updated successfuly.</value>
+  </data>
+  <data name="UpdateEntityRuleSpecUnexpectedError" xml:space="preserve">
+    <value>An error occurred while updating the entity rule specification. If this error persists, please contact support.</value>
+  </data>
+  <data name="UpdateEntityRuleSuccessful" xml:space="preserve">
+    <value>Entity rule was updated successfuly.</value>
+  </data>
+  <data name="UpdateEntityRuleUnexpectedError" xml:space="preserve">
+    <value>An error occurred while updating the entity rule. If this error persists, please contact support.</value>
+  </data>
 </root>

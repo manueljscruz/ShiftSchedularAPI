@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using Azure;
-using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -12,12 +9,6 @@ using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.EntityRuleManagement;
-using ShiftSchedularRL.Resources.ShiftManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -403,27 +394,96 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        public Task<BaseResponse<bool>> UpdateEntityRule(EntityRuleDTO entityRule)
+        #region Update Entity Rule
+
+        public async Task<BaseResponse<bool>> UpdateEntityRule(EntityRuleDTO entityRule)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
-            response.Message = "";
+            response.Message = EntityRulesRelatedMessages.UpdateEntityRuleUnexpectedError;
+            
+            if(entityRule != null)
+            {
+                EntityRule instance = await _entityRuleRepository.GetById(entityRule.EntityRuleId);
+                if(instance == null)
+                {
+                    response.Message = EntityRulesRelatedMessages.EntityRuleNotFound;
+                    return response;
+                }
 
+                else if (entityRule.RuleTypeId == 0)
+                {
+                    response.Message = EntityRulesRelatedMessages.AddNewEntityRuleTypeIsZero;
+                    return response;
+                }
 
+                else if (string.IsNullOrEmpty(entityRule.EntityId))
+                {
+                    response.Message = EntityRulesRelatedMessages.AddNewEntityEntityIdEmpty;
+                    return response;
+                }
+
+                else if (entityRule.EntityRuleSpecificationDTOs.Count() == 0)
+                {
+                    response.Message = EntityRulesRelatedMessages.AddNewEntityNoSpecificationsFound;
+                    return response;
+                }
+
+                // Get entity and check ifs null
+                Entity destinationEntity = await _entityRepository.GetById(entityRule.EntityId);
+                if (destinationEntity == null)
+                {
+                    response.Message = EntityRulesRelatedMessages.AddNewEntityRuleEntityNotFound;
+                    return response;
+                }
+                else
+                {
+                    _mapper.Map(entityRule, instance);
+                    await _entityRuleRepository.Update(instance);
+                    response.Success = true;
+                    response.Message = EntityRulesRelatedMessages.UpdateEntityRuleSuccessful;
+                }
+            }
 
             return response;
         }
 
-        public Task<BaseResponse<bool>> UpdateEntityRuleSpecification(EntityRuleSpecificationDTO entityRuleSpecification)
+        #endregion
+
+        #region Update Entity Rule Specification
+
+        public async Task<BaseResponse<bool>> UpdateEntityRuleSpecification(EntityRuleSpecificationDTO entityRuleSpecification)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
-            response.Message = "";
+            response.Message = EntityRulesRelatedMessages.UpdateEntityRuleSpecUnexpectedError;
 
+            if(entityRuleSpecification != null)
+            {
+                EntityRuleSpecification instance = await _entityRuleSpecificationRepository.GetEntityRuleSpecification(entityRuleSpecification.EntityRuleId, entityRuleSpecification.SpecificationId);
+                if (instance == null) 
+                {
+                    response.Message = EntityRulesRelatedMessages.EntityRuleSpecificationNotFound;
+                    return response;
+                }
 
+                // If the entity rule identifier is empty, send error
+                else if (string.IsNullOrEmpty(entityRuleSpecification.EntityRuleId))
+                {
+                    response.Message = EntityRulesRelatedMessages.AddEntityRuleSpecEntityRuleIsEmpty;
+                    return response;
+                }
+
+                _mapper.Map(entityRuleSpecification, instance);
+                await _entityRuleSpecificationRepository.UpdateEntityRuleSpecification(instance);
+                response.Success = true;
+                response.Message = EntityRulesRelatedMessages.UpdateEntityRuleSpecSuccessful;
+            }
 
             return response;
         }
+
+        #endregion
 
         #endregion
     }

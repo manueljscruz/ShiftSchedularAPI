@@ -221,5 +221,41 @@ namespace ShiftSchedularRL.Resources.EntityRuleManagement {
                 return ResourceManager.GetString("EntityRuleSpecificationNotFound", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Entity rule specification was updated successfuly..
+        /// </summary>
+        public static string UpdateEntityRuleSpecSuccessful {
+            get {
+                return ResourceManager.GetString("UpdateEntityRuleSpecSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while updating the entity rule specification. If this error persists, please contact support..
+        /// </summary>
+        public static string UpdateEntityRuleSpecUnexpectedError {
+            get {
+                return ResourceManager.GetString("UpdateEntityRuleSpecUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Entity rule was updated successfuly..
+        /// </summary>
+        public static string UpdateEntityRuleSuccessful {
+            get {
+                return ResourceManager.GetString("UpdateEntityRuleSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while updating the entity rule. If this error persists, please contact support..
+        /// </summary>
+        public static string UpdateEntityRuleUnexpectedError {
+            get {
+                return ResourceManager.GetString("UpdateEntityRuleUnexpectedError", resourceCulture);
+            }
+        }
     }
 }

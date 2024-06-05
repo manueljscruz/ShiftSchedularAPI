@@ -115,7 +115,7 @@ namespace ShiftSchedularDAL.Repositories
             if(entityRuleSpecification != null)
             {
                 _entityRuleSpecificationsDbSet.Update(entityRuleSpecification);
-
+                await _unitOfWork.SaveChangesAsync();
                 result = true;
             }
 
