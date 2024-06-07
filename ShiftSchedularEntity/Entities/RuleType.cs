@@ -12,6 +12,7 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual ICollection<EntityRule> EntityRules { get; set; }
         public virtual ICollection<RuleTypeLocalization> RuleTypeLocalizations { get; set; }
+        public virtual ICollection<RuleTypeBusinessAspect> RuleTypeBusinessAspects { get; set; }
 
         #endregion
     }

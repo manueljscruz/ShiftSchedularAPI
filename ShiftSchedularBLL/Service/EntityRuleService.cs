@@ -348,7 +348,6 @@ namespace ShiftSchedularBLL.Service
             foreach (EntityRuleSpecification entityRuleSpec in entityRule.EntityRuleSpecifications)
             {
                 EntityRuleSpecificationDTO entityRuleSpecDTO = _mapper.Map<EntityRuleSpecificationDTO>(entityRuleSpec);
-                entityRuleSpecDTO.BusinessAspectDisplayValue = businessAspectLocalizations.Where(i => i.BusinessAspectId.Equals(entityRuleSpec.BusinessAspectId)).FirstOrDefault().BusinessAspectDisplayValue;
                 entityRuleDTO.EntityRuleSpecificationDTOs.Add(entityRuleSpecDTO);
             }
 

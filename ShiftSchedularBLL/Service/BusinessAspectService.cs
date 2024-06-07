@@ -36,7 +36,7 @@ namespace ShiftSchedularBLL.Service
         public async Task<int> AddBusinessAspect(string strNewBusinessAspect)
         {
             int id = 0;
-            if (string.IsNullOrEmpty(strNewBusinessAspect))
+            if (!string.IsNullOrEmpty(strNewBusinessAspect))
             {
                 BusinessAspect businessAspect = new BusinessAspect
                 {

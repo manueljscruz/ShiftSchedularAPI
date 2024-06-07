@@ -47,7 +47,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityRuleSpecification> EntityRuleSpecifications { get; set; }
         public DbSet<BusinessAspect> BusinessAspects { get; set; }
         public DbSet<BusinessAspectLocalization> BusinessAspectLocalizations { get; set; }
-
+        public DbSet<RuleTypeBusinessAspect> RuleTypeBusinessAspects { get; set; }
 
         #endregion
 
@@ -289,6 +289,8 @@ namespace ShiftSchedularDAL.Data
             modelBuilder.Entity<BusinessAspect>()
                 .HasKey(ba => ba.BusinessAspectId);
 
+
+
             #endregion
 
             #region Business Aspect Localization Configuration
@@ -359,10 +361,22 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(er => er.EntityRuleSpecifications)
                 .HasForeignKey(ers => ers.EntityRuleId);
 
-            modelBuilder.Entity<EntityRuleSpecification>()
-                .HasOne(ers => ers.BusinessAspect)
-                .WithMany(s => s.EntityRuleSpecifications)
-                .HasForeignKey(ers => ers.BusinessAspectId);
+            #endregion
+
+            #region Rule Type Business Aspect Configuration
+
+            modelBuilder.Entity<RuleTypeBusinessAspect>()
+                .HasKey(rtba => new { rtba.RuleTypeId, rtba.BusinessAspectId });
+
+            modelBuilder.Entity<RuleTypeBusinessAspect>()
+                .HasOne(rtba => rtba.RuleType)
+                .WithMany(rt => rt.RuleTypeBusinessAspects)
+                .HasForeignKey(rtba => rtba.RuleTypeId);
+
+            modelBuilder.Entity<RuleTypeBusinessAspect>()
+                .HasOne(rtba => rtba.BusinessAspect)
+                .WithMany(ba => ba.RuleTypeBusinessAspects)
+                .HasForeignKey(rtba => rtba.BusinessAspectId);
 
             #endregion
         }

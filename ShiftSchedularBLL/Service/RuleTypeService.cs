@@ -40,7 +40,7 @@ namespace ShiftSchedularBLL.Service
         public async Task<int> AddRuleType(string strNewRuleType)
         {
             int id = 0;
-            if (string.IsNullOrEmpty(strNewRuleType))
+            if (!string.IsNullOrEmpty(strNewRuleType))
             {
                 RuleType ruleType = new RuleType
                 {

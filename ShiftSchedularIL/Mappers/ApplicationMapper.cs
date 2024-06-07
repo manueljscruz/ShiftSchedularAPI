@@ -154,14 +154,12 @@ namespace ShiftSchedularIL.Mappers
 
             CreateMap<AddEntityRuleSpecificationDTO, EntityRuleSpecification>()
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
-                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
                 .ForMember(dest => dest.SpecificationValue, opt => opt.MapFrom(src => src.RuleSpecificationValue))
                 .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId));
 
             CreateMap<EntityRuleSpecification, EntityRuleSpecificationDTO>()
                 .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
-                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
                 .ForMember(dest => dest.RuleSpecificationValue, opt => opt.MapFrom(src => src.SpecificationValue))
                 .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId));
 
