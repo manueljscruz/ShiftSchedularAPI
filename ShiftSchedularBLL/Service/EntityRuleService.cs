@@ -23,6 +23,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
         private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
         private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
+        private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
 
         #region Constructor
 
@@ -35,7 +36,8 @@ namespace ShiftSchedularBLL.Service
             IEntityWorkerRepository entityWorkerRepository,
             IEntityRuleSpecificationRepository entityRuleSpecificationRepository,
             IRuleTypeLocalizationRepository ruleTypeLocalizationRepository,
-            IBusinessAspectLocalizationRepository businessAspectLocalizationRepository)
+            IBusinessAspectLocalizationRepository businessAspectLocalizationRepository,
+            IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository)
         {
             _mapper = mapper;
             _generalService = generalService;
@@ -46,6 +48,7 @@ namespace ShiftSchedularBLL.Service
             _entityRuleSpecificationRepository = entityRuleSpecificationRepository;
             _ruleTypeLocalizationRepository = ruleTypeLocalizationRepository;
             _businessAspectLocalizationRepository = businessAspectLocalizationRepository;
+            _ruleTypeBusinessAspectRepository = ruleTypeBusinessAspectRepository;
         }
 
         #endregion
@@ -371,13 +374,37 @@ namespace ShiftSchedularBLL.Service
                 // If it can change data
                 if (entityWorker.IsOwner)
                 {
+                    // Get All business aspect localized
+                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
+                    
+                    // Map it to a transferable object
+                    foreach (BusinessAspectLocalization businessAspectLocalization in businessAspectLocalizations)
+                        entityRuleViewModel.BusinessAspectsLocalizeds.Add(_mapper.Map<BusinessAspectLocalizedDTO>(businessAspectLocalization));
+
+                    // Get All rule type localized
                     IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
                     foreach (RuleTypeLocalization ruleTypeLocalization in ruleTypeLocalizations)
-                        entityRuleViewModel.RuleTypeLocalizeds.Add(_mapper.Map<RuleTypeLocalizedDTO>(ruleTypeLocalization));
+                    {
+                        // Map it to transferable object
+                        RuleTypeLocalizedDTO ruleTypeLocalizedDTO = new RuleTypeLocalizedDTO();
+                        ruleTypeLocalizedDTO = _mapper.Map<RuleTypeLocalizedDTO>(ruleTypeLocalization);
 
-                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
-                    foreach(BusinessAspectLocalization businessAspectLocalization in businessAspectLocalizations)
-                        entityRuleViewModel.BusinessAspectsLocalizeds.Add(_mapper.Map<BusinessAspectLocalizedDTO>(businessAspectLocalization));
+                        // Get relations between this rule type and its business aspect
+                        List<RuleTypeBusinessAspect> ruleTypeBusinessAspects = await _ruleTypeBusinessAspectRepository.GetRuleTypeBusinessAspectsByRuleTypeId(ruleTypeLocalization.RuleTypeId);
+
+                        // For each relation
+                        foreach(RuleTypeBusinessAspect ruleTypeBusinessAspect in ruleTypeBusinessAspects)
+                        {
+                            // Get Business aspect localized record and add it to the rule type
+                            BusinessAspectLocalizedDTO businessAspectLocalizedDTO = entityRuleViewModel.BusinessAspectsLocalizeds.Where(i => i.BusinessAspectId == ruleTypeLocalization.RuleTypeId).FirstOrDefault();
+                            if (businessAspectLocalizedDTO != null)
+                                ruleTypeLocalizedDTO.BusinessAspectLocalizedDTOs.Add(businessAspectLocalizedDTO);
+
+                        }
+
+                        // Add Rule types
+                        entityRuleViewModel.RuleTypeLocalizeds.Add(ruleTypeLocalizedDTO);
+                    }
 
                     IEnumerable<EntityRule> entityRules = await _entityRuleRepository.GetEntityRules(entityRuleViewModelRequestDTO.EntityId);
                     foreach(EntityRule entityRule in entityRules)

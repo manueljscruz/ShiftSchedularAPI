@@ -77,6 +77,7 @@ builder.Services.AddScoped<IRuleTypeLocalizationRepository, RuleTypeLocalization
 builder.Services.AddScoped<IGenericRepository<RuleType>, GenericRepository<RuleType>>();
 builder.Services.AddScoped<IEntityRuleRepository, EntityRuleRepository>();
 builder.Services.AddScoped<IEntityRuleSpecificationRepository, EntityRuleSpecificationRepository>();
+builder.Services.AddScoped<IRuleTypeBusinessAspectRepository, RuleTypeBusinessAspectRepository>();
 
 
 // Services
