@@ -42,7 +42,15 @@
                 [ShiftSchedular].[dbo].[EntityWorkers]
             WHERE EntityId = @EntityId
             GROUP BY 
-                EntityId;;
+                EntityId
         ";
+
+        public static readonly string GetDistinctEntitySkillsByEntityId = @"
+            SELECT 
+                DISTINCT SkillId
+            FROM 
+                EntityWorkers
+            WHERE 
+                EntityId = @EntityId";
     }
 }

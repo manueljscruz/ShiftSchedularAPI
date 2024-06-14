@@ -11,6 +11,7 @@ namespace ShiftSchedularDAL.IRepositories
         Task<bool> IsWorkerInEntity(string entityId, string workerId);
         Task<EntityWorker> GetByWorkerAndEntity(string workerId, string entityId);
         Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId);
+        Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId);
         Task<int> GetTotalCountByEntity(string entityId);
         Task<string> GetEntityOwnerId(string entityId);
     }

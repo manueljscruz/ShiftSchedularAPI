@@ -78,6 +78,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entities Skills
+
+        [HttpGet("get-entity-skills/{entityId}/{lcode}")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetEntitiesSkills(string entityId, string lcode)
+        {
+            var skills = await _entityService.GetEntitySkills(entityId, lcode);
+            return Ok(skills);
+        }
+
+        #endregion
+
         #region Get Entity Profile View Model
 
         [HttpPost("get-entity-profile-view-model")]
@@ -129,6 +141,8 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Add New Entity Member
+
         [HttpPost("add-new-entity-member")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> AddNewEntityMember(AddNewMemberDTO newMemberDTO)
@@ -137,6 +151,8 @@ namespace ShiftSchedularAPI.Controllers
 
             return Ok(response);
         }
+
+        #endregion
 
         #endregion
     }

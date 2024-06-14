@@ -9,11 +9,16 @@ namespace ShiftSchedularDAL.Repositories
     {
         private readonly DataContext _context;
 
+        #region Constructor
+
         public SqlRawRepository(DataContext context)
         {
             _context = context;
         }
 
+        #endregion
+
+        #region Execute Scalar
 
         public async Task<T> ExecuteScalar<T>(string query, Dictionary<string, object> parameters)
         {
@@ -36,9 +41,11 @@ namespace ShiftSchedularDAL.Repositories
 
                 return (T)await command.ExecuteScalarAsync();
             }
-
-
         }
+
+        #endregion
+
+        #region Execute Query
 
         public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string,object> parameters)
         {
@@ -61,29 +68,37 @@ namespace ShiftSchedularDAL.Repositories
 
                 using(var result = await command.ExecuteReaderAsync())
                 {
-                    var entity = new List<T>();
+                    var entities = new List<T>();
 
                     while(await result.ReadAsync())
                     {
-                        var obj = Activator.CreateInstance<T>();
-
-                        foreach(var prop in obj.GetType().GetProperties())
+                        if (typeof(T) == typeof(int))
                         {
-                            if (prop.GetCustomAttributes(typeof(NotMappedAttribute), false).Any())
-                                continue;
-
-                            if (!Equals(result[prop.Name], DBNull.Value))
-                            {
-                                prop.SetValue(obj, result[prop.Name]);
-                            }
+                            entities.Add((T)(object)result.GetInt32(0));
                         }
-                        entity.Add(obj);
+                        else
+                        {
+                            var obj = Activator.CreateInstance<T>();
+
+                            foreach (var prop in obj.GetType().GetProperties())
+                            {
+                                if (prop.GetCustomAttributes(typeof(NotMappedAttribute), false).Any())
+                                    continue;
+
+                                if (!Equals(result[prop.Name], DBNull.Value))
+                                {
+                                    prop.SetValue(obj, result[prop.Name]);
+                                }
+                            }
+                            entities.Add(obj);
+                        }
                     }
 
-                    return entity;
+                    return entities;
                 }
             }
         }
 
+        #endregion
     }
 }

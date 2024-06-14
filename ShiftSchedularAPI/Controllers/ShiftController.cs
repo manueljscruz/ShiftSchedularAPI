@@ -41,6 +41,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entity Shifts
+
+        [HttpGet("get-entity-shifts/{entityId}")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> GetEntityShfits(string entityId)
+        {
+            var shifts = await _shiftService.GetEntityShifts(entityId);
+            return Ok(shifts);
+        }
+
+        #endregion
+
         #region Add Entity Shift
 
         [HttpPost("add-entity-shift")]

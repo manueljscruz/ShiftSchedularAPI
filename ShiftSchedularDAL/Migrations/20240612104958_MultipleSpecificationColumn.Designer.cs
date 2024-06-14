@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240612104958_MultipleSpecificationColumn")]
+    partial class MultipleSpecificationColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -118,20 +121,15 @@ namespace ShiftSchedularDAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("AspectReferenceId2")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("BusinessAspectId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BusinessAspectId2")
+                    b.Property<int?>("BusinessAspectId")
                         .HasColumnType("int");
 
                     b.Property<int>("SpecificationValue")
                         .HasColumnType("int");
 
                     b.HasKey("EntityRuleId", "SpecificationId");
+
+                    b.HasIndex("BusinessAspectId");
 
                     b.ToTable("EntityRuleSpecifications");
                 });
@@ -649,6 +647,10 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityRuleSpecification", b =>
                 {
+                    b.HasOne("ShiftSchedularEntity.Entities.BusinessAspect", null)
+                        .WithMany("EntityRuleSpecifications")
+                        .HasForeignKey("BusinessAspectId");
+
                     b.HasOne("ShiftSchedularEntity.Entities.EntityRule", "EntityRule")
                         .WithMany("EntityRuleSpecifications")
                         .HasForeignKey("EntityRuleId")
@@ -888,6 +890,8 @@ namespace ShiftSchedularDAL.Migrations
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BusinessAspect", b =>
                 {
                     b.Navigation("BusinessAspectLocalizations");
+
+                    b.Navigation("EntityRuleSpecifications");
 
                     b.Navigation("RuleTypeBusinessAspects");
                 });

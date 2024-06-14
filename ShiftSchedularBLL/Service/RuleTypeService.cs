@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.APIManagement;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 
 namespace ShiftSchedularBLL.Service
@@ -37,14 +39,15 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="strNewRuleType"></param>
         /// <returns></returns>
-        public async Task<int> AddRuleType(string strNewRuleType)
+        public async Task<int> AddRuleType(AddRuleTypeDTO newRuleType)
         {
             int id = 0;
-            if (!string.IsNullOrEmpty(strNewRuleType))
+            if (!string.IsNullOrEmpty(newRuleType.NewRuleType))
             {
                 RuleType ruleType = new RuleType
                 {
-                    RuleTypeName = strNewRuleType
+                    RuleTypeName = newRuleType.NewRuleType,
+                    MultipleSpecification = newRuleType.MultipleSpecification
                 };
 
                 ruleType = await _ruleTypeRepository.Add(ruleType);

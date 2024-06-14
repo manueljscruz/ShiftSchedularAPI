@@ -289,8 +289,6 @@ namespace ShiftSchedularDAL.Data
             modelBuilder.Entity<BusinessAspect>()
                 .HasKey(ba => ba.BusinessAspectId);
 
-
-
             #endregion
 
             #region Business Aspect Localization Configuration

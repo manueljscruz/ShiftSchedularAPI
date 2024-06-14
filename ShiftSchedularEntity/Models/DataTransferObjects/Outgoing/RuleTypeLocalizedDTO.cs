@@ -4,6 +4,7 @@
     {
         public int RuleTypeId { get; set; }
         public string RuleTypeLocalizedName { get; private set; }
+        public bool MultipleSpecification { get; set; }
         public List<BusinessAspectLocalizedDTO> BusinessAspectLocalizedDTOs { get; set; }
 
         public RuleTypeLocalizedDTO()

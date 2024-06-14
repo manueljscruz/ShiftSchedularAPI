@@ -342,6 +342,37 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Entity Skills
+
+        /// <summary>
+        /// Gets all the entity skills
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="lcode"></param>
+        /// <returns></returns>
+        public async Task<List<SkillLocalizedDTO>> GetEntitySkills(string entityId, string lcode)
+        {
+            List<SkillLocalizedDTO> skillLocalizedDTOs = new List<SkillLocalizedDTO>();
+            
+            if(!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(lcode))
+            {
+                // Gets all skills
+                List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(lcode);
+
+                // Gets all working members
+                IEnumerable<int> entitySkills = await _entityWorkerRepository.GetDistinctSkillsByEntityId(entityId);
+
+                // Add the localized skills into the list, based on what exists in the entity skillset
+                skillLocalizedDTOs = allSkills
+                    .Where(skill => entitySkills.Contains(skill.SkillId))
+                    .ToList();
+            }
+
+            return skillLocalizedDTOs;
+        }
+
+        #endregion
+
         #region Get Entity Profile View Model
 
         public async Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest)

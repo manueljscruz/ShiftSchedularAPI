@@ -7,6 +7,7 @@ namespace ShiftSchedularEntity.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RuleTypeId { get; set; }
         public string RuleTypeName { get; set; }
+        public bool MultipleSpecification { get; set; }
 
         #region Navigation Properties
 

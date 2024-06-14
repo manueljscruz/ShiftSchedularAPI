@@ -21,6 +21,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityRuleRepository _entityRuleRepository;
         private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
+        private readonly IGenericRepository<RuleType> _ruleTypeRepository;
         private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
         private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
         private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
@@ -35,6 +36,7 @@ namespace ShiftSchedularBLL.Service
             IEntityRuleRepository entityRuleRepository,
             IEntityWorkerRepository entityWorkerRepository,
             IEntityRuleSpecificationRepository entityRuleSpecificationRepository,
+            IGenericRepository<RuleType> ruleTypeRepository,
             IRuleTypeLocalizationRepository ruleTypeLocalizationRepository,
             IBusinessAspectLocalizationRepository businessAspectLocalizationRepository,
             IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository)
@@ -46,6 +48,7 @@ namespace ShiftSchedularBLL.Service
             _entityRuleRepository = entityRuleRepository;
             _entityWorkerRepository = entityWorkerRepository;
             _entityRuleSpecificationRepository = entityRuleSpecificationRepository;
+            _ruleTypeRepository = ruleTypeRepository;
             _ruleTypeLocalizationRepository = ruleTypeLocalizationRepository;
             _businessAspectLocalizationRepository = businessAspectLocalizationRepository;
             _ruleTypeBusinessAspectRepository = ruleTypeBusinessAspectRepository;
@@ -388,6 +391,8 @@ namespace ShiftSchedularBLL.Service
                         // Map it to transferable object
                         RuleTypeLocalizedDTO ruleTypeLocalizedDTO = new RuleTypeLocalizedDTO();
                         ruleTypeLocalizedDTO = _mapper.Map<RuleTypeLocalizedDTO>(ruleTypeLocalization);
+                        RuleType ruleType = await _ruleTypeRepository.GetById(ruleTypeLocalizedDTO.RuleTypeId);
+                        ruleTypeLocalizedDTO.MultipleSpecification = ruleType.MultipleSpecification;
 
                         // Get relations between this rule type and its business aspect
                         List<RuleTypeBusinessAspect> ruleTypeBusinessAspects = await _ruleTypeBusinessAspectRepository.GetRuleTypeBusinessAspectsByRuleTypeId(ruleTypeLocalization.RuleTypeId);
@@ -396,7 +401,7 @@ namespace ShiftSchedularBLL.Service
                         foreach(RuleTypeBusinessAspect ruleTypeBusinessAspect in ruleTypeBusinessAspects)
                         {
                             // Get Business aspect localized record and add it to the rule type
-                            BusinessAspectLocalizedDTO businessAspectLocalizedDTO = entityRuleViewModel.BusinessAspectsLocalizeds.Where(i => i.BusinessAspectId == ruleTypeLocalization.RuleTypeId).FirstOrDefault();
+                            BusinessAspectLocalizedDTO businessAspectLocalizedDTO = entityRuleViewModel.BusinessAspectsLocalizeds.Where(i => i.BusinessAspectId == ruleTypeBusinessAspect.BusinessAspectId).FirstOrDefault();
                             if (businessAspectLocalizedDTO != null)
                                 ruleTypeLocalizedDTO.BusinessAspectLocalizedDTOs.Add(businessAspectLocalizedDTO);
 

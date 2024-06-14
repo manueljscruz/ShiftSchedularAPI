@@ -2,6 +2,7 @@
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.APIManagement;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -84,16 +85,16 @@ namespace ShiftSchedularAPI.Controllers
         /// <returns></returns>
         [HttpPost("add")]
         [ProducesResponseType(201)]
-        public async Task<IActionResult> AddRuleType(string strNewRuleType)
+        public async Task<IActionResult> AddRuleType(AddRuleTypeDTO newRuleType)
         {
-            int newRuleTypeId = await _ruleTypeService.AddRuleType(strNewRuleType);
+            int newRuleTypeId = await _ruleTypeService.AddRuleType(newRuleType);
 
             return Created($"/api/ruletype/{newRuleTypeId}", "Rule Type Added");
         }
 
         #endregion
 
-        #region Add Gender Localization
+        #region Add Rule Type Localization
 
         /// <summary>
         /// Adds a new rule type localization entry

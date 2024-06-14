@@ -9,8 +9,6 @@ namespace ShiftSchedularEntity.Entities
         public string BusinessAspectName { get; set; }
 
         #region Navigation Properties
-
-        public virtual ICollection<EntityRuleSpecification> EntityRuleSpecifications { get; set; }
         public virtual ICollection<BusinessAspectLocalization> BusinessAspectLocalizations { get; set; }
         public virtual ICollection<RuleTypeBusinessAspect> RuleTypeBusinessAspects { get; set; }
 

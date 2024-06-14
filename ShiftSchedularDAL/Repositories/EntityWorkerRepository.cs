@@ -96,6 +96,25 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get Distinct Skills By Entity Id
+
+        public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId)
+        {
+            List<int> skillIds = new List<int>();
+
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add("@EntityId", entityId);
+
+                return await _sqlRawRepository.ExecuteQuery<int>(EntityWorkerSQL.GetDistinctEntitySkillsByEntityId, parameters);
+            }
+
+            return skillIds;
+        }
+
+        #endregion
+
         #region Get Entity Owner Id
 
         public async Task<string> GetEntityOwnerId(string entityId)

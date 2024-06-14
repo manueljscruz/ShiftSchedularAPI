@@ -409,6 +409,36 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Entity Shifts
+
+        /// <summary>
+        /// Get Entity Shifts
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<ShiftDTO>> GetEntityShifts(string entityId)
+        {
+            List<ShiftDTO> shiftsDTO = new List<ShiftDTO>();
+
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                Entity entity = await _entityRepository.GetById(entityId);
+                if(entity != null)
+                {
+                    IEnumerable<Shift> shifts = await _shiftRepository.GetEntityShifts(entityId);
+                    foreach(Shift shift in shifts)
+                    {
+                        ShiftDTO shiftDTO = _mapper.Map<ShiftDTO>(shift);
+                        shiftsDTO.Add(shiftDTO);
+                    }
+
+                }
+            }
+            return shiftsDTO;
+        }
+
+        #endregion
+
         #region Handle Shift Data 
 
         /// <summary>

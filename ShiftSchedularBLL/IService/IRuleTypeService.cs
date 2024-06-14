@@ -1,5 +1,6 @@
 ﻿using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.APIManagement;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace ShiftSchedularBLL.IService
 {
     public interface IRuleTypeService
     {
-        Task<int> AddRuleType(string strNewRuleType);
+        Task<int> AddRuleType(AddRuleTypeDTO newRuleType);
         Task<bool> AddRuleTypeLocalization(RuleTypeLocalizationSubmissionModel ruleTypeLocalizationSubmissionModel);
         Task DeleteRuleTypeById(int id);
         Task<IEnumerable<RuleType>> GetAllRuleTypes();
