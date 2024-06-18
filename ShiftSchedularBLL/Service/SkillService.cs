@@ -15,10 +15,10 @@ namespace ShiftSchedularBLL.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISkillRepository _skillRepository;
         private readonly ILocalizationRepository _localizationRepository;
-        private readonly IGenericRepository<SkillLocalization> _skillLocalizationRepository;
+        private readonly ISkillLocalizationRepository _skillLocalizationRepository;
         private readonly IMapper _mapper;
 
-        public SkillService(IUnitOfWork unitOfWork, ISkillRepository skillRepository, ILocalizationRepository localizationRepository, IGenericRepository<SkillLocalization> skillLocalizationRepository, IMapper mapper)
+        public SkillService(IUnitOfWork unitOfWork, ISkillRepository skillRepository, ILocalizationRepository localizationRepository, ISkillLocalizationRepository skillLocalizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _skillRepository = skillRepository;
@@ -156,5 +156,21 @@ namespace ShiftSchedularBLL.Service
         }
 
         #endregion
+
+        #region Get Skill Localized
+
+        public async Task<SkillLocalizedDTO> GetSkillLocalized(int skillId, string lcode)
+        {
+            if (!string.IsNullOrEmpty(lcode) && skillId != 0)
+            {
+                SkillLocalization skillLocalization = await _skillLocalizationRepository.GetSkillByCodeAndId(skillId, lcode);
+                SkillLocalizedDTO skillLocalizedDTO = _mapper.Map<SkillLocalizedDTO>(skillLocalization);
+                return skillLocalizedDTO;
+            }
+            else return null;
+        }
+
+        #endregion
+
     }
 }

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using ShiftSchedularBLL.IService;
+using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
@@ -18,13 +20,16 @@ namespace ShiftSchedularBLL.Service
         private readonly IGeneralService _generalService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Entity> _entityRepository;
+        private readonly ISkillService _skillService;
         private readonly IEntityRuleRepository _entityRuleRepository;
         private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
         private readonly IGenericRepository<RuleType> _ruleTypeRepository;
         private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
+        private readonly IGenericRepository<BusinessAspect> _bussinessAspectRepository;
         private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
         private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
+        private readonly IShiftService _shiftService;
 
         #region Constructor
 
@@ -33,25 +38,31 @@ namespace ShiftSchedularBLL.Service
             IGeneralService generalService, 
             IUnitOfWork unitOfWork, 
             IGenericRepository<Entity> entityRepository,
+            ISkillService skillService,
             IEntityRuleRepository entityRuleRepository,
             IEntityWorkerRepository entityWorkerRepository,
             IEntityRuleSpecificationRepository entityRuleSpecificationRepository,
             IGenericRepository<RuleType> ruleTypeRepository,
             IRuleTypeLocalizationRepository ruleTypeLocalizationRepository,
+            IGenericRepository<BusinessAspect> businessAspectRepository,
             IBusinessAspectLocalizationRepository businessAspectLocalizationRepository,
-            IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository)
+            IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository,
+            IShiftService shiftService)
         {
             _mapper = mapper;
             _generalService = generalService;
             _unitOfWork = unitOfWork;
             _entityRepository = entityRepository;
+            _skillService = skillService;
             _entityRuleRepository = entityRuleRepository;
             _entityWorkerRepository = entityWorkerRepository;
             _entityRuleSpecificationRepository = entityRuleSpecificationRepository;
             _ruleTypeRepository = ruleTypeRepository;
+            _bussinessAspectRepository = businessAspectRepository;
             _ruleTypeLocalizationRepository = ruleTypeLocalizationRepository;
             _businessAspectLocalizationRepository = businessAspectLocalizationRepository;
             _ruleTypeBusinessAspectRepository = ruleTypeBusinessAspectRepository;
+            _shiftService = shiftService;
         }
 
         #endregion
@@ -109,6 +120,7 @@ namespace ShiftSchedularBLL.Service
                         {
                             foreach (AddEntityRuleSpecificationDTO specification in addEntityRuleDTO.EntityRuleSpecifications)
                             {
+                                specification.EntityRuleId = newRule.EntityRuleId;
                                 BaseResponse<EntityRuleSpecificationDTO> ruleSpecificationResponse = await this.AddEntityRuleSpecification(specification);
                                 if (!ruleSpecificationResponse.Success)
                                 {
@@ -165,13 +177,55 @@ namespace ShiftSchedularBLL.Service
                 EntityRuleSpecification ruleSpecification = _mapper.Map<EntityRuleSpecification>(addEntityRuleSpecificationDTO);
                 ruleSpecification = await _entityRuleSpecificationRepository.AddEntityRuleSpecification(ruleSpecification);
 
+                EntityRuleSpecificationDTO entityRuleSpecification = _mapper.Map<EntityRuleSpecificationDTO>(ruleSpecification);
+                entityRuleSpecification = await HandleEntityRuleSpecReferences(entityRuleSpecification, addEntityRuleSpecificationDTO.LanguageCode);
+
                 // Return success results
-                response.Result = _mapper.Map<EntityRuleSpecificationDTO>(ruleSpecification);
+                response.Result = entityRuleSpecification;
                 response.Success = true;
                 response.Message = EntityRulesRelatedMessages.AddEntityRuleSpecSuccessful;
             }
 
             return response;
+        }
+
+        #endregion
+
+        #region Handle Entity Rule Spec References
+
+        private async Task<EntityRuleSpecificationDTO> HandleEntityRuleSpecReferences(EntityRuleSpecificationDTO entityRuleSpecificationDTO, string lcode)
+        {
+            if (!string.IsNullOrEmpty(entityRuleSpecificationDTO.AspectReferenceId) && entityRuleSpecificationDTO.BusinessAspectId != 0)
+            {
+                BusinessAspect businessAspect = await _bussinessAspectRepository.GetById(entityRuleSpecificationDTO.BusinessAspectId);
+                if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
+                {
+                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId, LocalizationConstants.ENGLISH);
+                    entityRuleSpecificationDTO.ReferenceName = !string.IsNullOrEmpty(shiftDTO.ShiftName) ? shiftDTO.ShiftName : "";
+                }
+                else if(businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SKILLS))
+                {
+                    SkillLocalizedDTO skillLocalizedDTO = await _skillService.GetSkillLocalized(int.Parse(entityRuleSpecificationDTO.AspectReferenceId), lcode);
+                    entityRuleSpecificationDTO.ReferenceName = skillLocalizedDTO.SkillLocalizedName;
+                }
+            }
+
+            if(!string.IsNullOrEmpty(entityRuleSpecificationDTO.AspectReferenceId2) && entityRuleSpecificationDTO.BusinessAspectId2 != 0)
+            {
+                BusinessAspect businessAspect = await _bussinessAspectRepository.GetById(entityRuleSpecificationDTO.BusinessAspectId2);
+                if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
+                {
+                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId2, LocalizationConstants.ENGLISH);
+                    entityRuleSpecificationDTO.ReferenceName2 = !string.IsNullOrEmpty(shiftDTO.ShiftName) ? shiftDTO.ShiftName : "";
+                }
+                else if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SKILLS))
+                {
+                    SkillLocalizedDTO skillLocalizedDTO = await _skillService.GetSkillLocalized(int.Parse(entityRuleSpecificationDTO.AspectReferenceId2), lcode);
+                    entityRuleSpecificationDTO.ReferenceName2 = skillLocalizedDTO.SkillLocalizedName;
+                }
+            }
+
+            return entityRuleSpecificationDTO;
         }
 
         #endregion
@@ -351,12 +405,26 @@ namespace ShiftSchedularBLL.Service
             // Get entity rule specifications
             IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _entityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId);
 
-            foreach (EntityRuleSpecification entityRuleSpec in entityRule.EntityRuleSpecifications)
+            if(entityRule.EntityRuleSpecifications != null)
             {
-                EntityRuleSpecificationDTO entityRuleSpecDTO = _mapper.Map<EntityRuleSpecificationDTO>(entityRuleSpec);
-                entityRuleDTO.EntityRuleSpecificationDTOs.Add(entityRuleSpecDTO);
-            }
+                foreach (EntityRuleSpecification entityRuleSpec in entityRule.EntityRuleSpecifications)
+                {
+                    EntityRuleSpecificationDTO entityRuleSpecDTO = _mapper.Map<EntityRuleSpecificationDTO>(entityRuleSpec);
 
+                    if (entityRuleSpecDTO.BusinessAspectId != 0)
+                        entityRuleSpecDTO.BusinessAspectDisplayValue = businessAspectLocalizations.Where(i => i.BusinessAspectId.Equals(entityRuleSpecDTO.BusinessAspectId)).FirstOrDefault().BusinessAspectDisplayValue;
+                    else
+                        entityRuleSpecDTO.BusinessAspectDisplayValue = "NA";
+
+                    if (entityRuleSpecDTO.BusinessAspectId2 != 0)
+                        entityRuleSpecDTO.BusinessAspect2DisplayValue = businessAspectLocalizations.Where(i => i.BusinessAspectId.Equals(entityRuleSpecDTO.BusinessAspectId2)).FirstOrDefault().BusinessAspectDisplayValue;
+                    else
+                        entityRuleSpecDTO.BusinessAspect2DisplayValue = "NA";
+
+                    entityRuleDTO.EntityRuleSpecificationDTOs.Add(entityRuleSpecDTO);
+                }
+            }
+            
             return entityRuleDTO;
         }
 

@@ -71,7 +71,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-        #region Update Entity Shift
+        #region Update Entity Rule
 
         [HttpPut("update-entity-rule")]
         [ProducesResponseType(204)]

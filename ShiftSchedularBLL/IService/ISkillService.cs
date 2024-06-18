@@ -13,5 +13,6 @@ namespace ShiftSchedularBLL.IService
         Task DeleteSkill(int skillId);
         Task<bool> AddSkillLocalization(SkillLocalizationSubmissionModel skillLocalizationSubmission);
         Task<List<SkillLocalizedDTO>> GetAllSkillsByLocalization(string lcode);
+        Task<SkillLocalizedDTO> GetSkillLocalized(int skillId, string lcode);
     }
 }

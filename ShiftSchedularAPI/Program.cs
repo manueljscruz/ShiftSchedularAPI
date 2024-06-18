@@ -58,7 +58,7 @@ builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRe
 builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
 builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
-builder.Services.AddScoped<IGenericRepository<SkillLocalization>, GenericRepository<SkillLocalization>>();
+builder.Services.AddScoped<ISkillLocalizationRepository, SkillLocalizationRepository>();
 builder.Services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
 builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
 builder.Services.AddScoped<IEntityWorkerInvitationRepository, EntityWorkerInvitationRepository>();
