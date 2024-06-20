@@ -26,7 +26,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (entityRuleSpecification != null)
             {
-                int maxSpecId = await _entityRuleSpecificationsDbSet.Where(i => i.EntityRuleId.Equals(entityRuleSpecification)).MaxAsync(i => (int?)i.SpecificationId) ?? 0;
+                int maxSpecId = await _entityRuleSpecificationsDbSet.Where(i => i.EntityRuleId.Equals(entityRuleSpecification.EntityRuleId)).MaxAsync(i => (int?)i.SpecificationId) ?? 0;
                 entityRuleSpecification.SpecificationId = maxSpecId + 1;
                 await _entityRuleSpecificationsDbSet.AddAsync(entityRuleSpecification);
                 await _unitOfWork.SaveChangesAsync();

@@ -119,6 +119,18 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Delete Rule Specifications
+
+        [HttpDelete("delete-entity-rule-specs/{entityRuleId}")]
+        [ProducesResponseType(204)]
+        public async Task<IActionResult> DeleteEntityRuleSpecs(string entityRuleId)
+        {
+            var response = await _entityRuleService.DeleteEntityRuleSpecifications(entityRuleId);
+            return Ok(response);
+        }
+
+        #endregion
+
         #endregion
     }
 }
