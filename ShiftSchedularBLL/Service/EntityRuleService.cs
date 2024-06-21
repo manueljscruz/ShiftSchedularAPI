@@ -115,7 +115,7 @@ namespace ShiftSchedularBLL.Service
                         newRule.EntityRuleId = _generalService.GenerateGuid();
 
                         // Clear the list due to mapping
-                        if(newRule.EntityRuleSpecifications.Count != 0)
+                        if (newRule.EntityRuleSpecifications.Count != 0)
                             newRule.EntityRuleSpecifications = new List<EntityRuleSpecification>();
 
                         await _entityRuleRepository.Add(newRule);
@@ -200,7 +200,7 @@ namespace ShiftSchedularBLL.Service
         #region Handle Entity Rule Spec References
 
         private async Task<EntityRuleSpecificationDTO> HandleEntityRuleSpecReferences(EntityRuleSpecificationDTO entityRuleSpecificationDTO, string lcode)
-         {
+        {
             if (!string.IsNullOrEmpty(entityRuleSpecificationDTO.AspectReferenceId) && entityRuleSpecificationDTO.BusinessAspectId != 0)
             {
                 BusinessAspect businessAspect = await _bussinessAspectRepository.GetById(entityRuleSpecificationDTO.BusinessAspectId);
@@ -380,7 +380,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
                     IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
-                    entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations);
+                    entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, lcode);
                 }
             }
 
@@ -398,7 +398,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="ruleTypeLocalizations"></param>
         /// <param name="businessAspectLocalizations"></param>
         /// <returns></returns>
-        private async Task<EntityRuleDTO> HandleEntityRuleData(EntityRule entityRule, IEnumerable<RuleTypeLocalization> ruleTypeLocalizations, IEnumerable<BusinessAspectLocalization> businessAspectLocalizations)
+        private async Task<EntityRuleDTO> HandleEntityRuleData(EntityRule entityRule, IEnumerable<RuleTypeLocalization> ruleTypeLocalizations, IEnumerable<BusinessAspectLocalization> businessAspectLocalizations, string languageCode)
         {
             EntityRuleDTO entityRuleDTO = new EntityRuleDTO();
 
@@ -417,6 +417,8 @@ namespace ShiftSchedularBLL.Service
                 foreach (EntityRuleSpecification entityRuleSpec in entityRule.EntityRuleSpecifications)
                 {
                     EntityRuleSpecificationDTO entityRuleSpecDTO = _mapper.Map<EntityRuleSpecificationDTO>(entityRuleSpec);
+
+                    entityRuleSpecDTO = await HandleEntityRuleSpecReferences(entityRuleSpecDTO, languageCode);
 
                     if (entityRuleSpecDTO.BusinessAspectId != 0)
                         entityRuleSpecDTO.BusinessAspectDisplayValue = businessAspectLocalizations.Where(i => i.BusinessAspectId.Equals(entityRuleSpecDTO.BusinessAspectId)).FirstOrDefault().BusinessAspectDisplayValue;
@@ -489,7 +491,7 @@ namespace ShiftSchedularBLL.Service
                     IEnumerable<EntityRule> entityRules = await _entityRuleRepository.GetEntityRules(entityRuleViewModelRequestDTO.EntityId);
                     foreach (EntityRule entityRule in entityRules)
                     {
-                        EntityRuleDTO entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations);
+                        EntityRuleDTO entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, entityRuleViewModelRequestDTO.LanguageCode);
                         entityRuleViewModel.EntityRules.Add(entityRuleDTO);
                     }
                 }
@@ -591,13 +593,14 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Delete Entity Rule Specifications
 
         public async Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(string entityRuleId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Message = EntityRulesRelatedMessages.DeleteEntityRuleSpecUnexpectedError;
 
-            if(string.IsNullOrEmpty(entityRuleId))
+            if (string.IsNullOrEmpty(entityRuleId))
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleIdentifierIsEmpty;
                 return response;
@@ -613,6 +616,7 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
 
         #endregion
     }

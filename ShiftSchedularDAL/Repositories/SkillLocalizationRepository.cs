@@ -30,7 +30,7 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<SkillLocalization> GetSkillByCodeAndId(int skillId, string lcode)
         {
-            if (skillId > 0 && string.IsNullOrEmpty(lcode))
+            if (skillId > 0 && !string.IsNullOrEmpty(lcode))
             {
                 Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
                 if(localization != null)

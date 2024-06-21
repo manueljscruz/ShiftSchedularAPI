@@ -146,6 +146,12 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.RuleTypeDescription, opt => opt.MapFrom(src => src.RuleTypeDescription))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
 
+            CreateMap<EntityRuleDTO, EntityRule>()
+                .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
+                .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId))
+                .ForMember(dest => dest.RuleTypeDescription, opt => opt.MapFrom(src => src.RuleTypeDescription))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
+
             CreateMap<EntityRule, EntityRuleDTO>()
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
                 .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId))
@@ -165,6 +171,15 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
                 .ForMember(dest => dest.RuleSpecificationValue, opt => opt.MapFrom(src => src.SpecificationValue))
+                .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId))
+                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
+                .ForMember(dest => dest.AspectReferenceId2, opt => opt.MapFrom(src => src.AspectReferenceId2))
+                .ForMember(dest => dest.BusinessAspectId2, opt => opt.MapFrom(src => src.BusinessAspectId2));
+
+            CreateMap<EntityRuleSpecificationDTO, EntityRuleSpecification>()
+                .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
+                .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
+                .ForMember(dest => dest.SpecificationValue, opt => opt.MapFrom(src => src.RuleSpecificationValue))
                 .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId))
                 .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
                 .ForMember(dest => dest.AspectReferenceId2, opt => opt.MapFrom(src => src.AspectReferenceId2))
