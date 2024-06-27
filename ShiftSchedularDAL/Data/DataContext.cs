@@ -48,6 +48,9 @@ namespace ShiftSchedularDAL.Data
         public DbSet<BusinessAspect> BusinessAspects { get; set; }
         public DbSet<BusinessAspectLocalization> BusinessAspectLocalizations { get; set; }
         public DbSet<RuleTypeBusinessAspect> RuleTypeBusinessAspects { get; set; }
+        public DbSet<AbsenceType> AbsenceTypes { get; set; }
+        public DbSet<AbsenceTypeLocalization> AbsenceTypeLocalizations { get; set; }
+        public DbSet<EntityWorkerAbsence> WorkerEntityAbsences { get; set; }
 
         #endregion
 
@@ -375,6 +378,47 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(rtba => rtba.BusinessAspect)
                 .WithMany(ba => ba.RuleTypeBusinessAspects)
                 .HasForeignKey(rtba => rtba.BusinessAspectId);
+
+            #endregion
+
+            #region Absence Type Configuration
+
+            modelBuilder.Entity<AbsenceType>()
+                .HasKey(at => at.AbsenceTypeId);
+
+            #endregion
+
+            #region Absence Type Localization Configuration
+
+            modelBuilder.Entity<AbsenceTypeLocalization>()
+                .HasKey(atl => new { atl.AbsenceTypeId, atl.LocalizationId });
+
+            modelBuilder.Entity<AbsenceTypeLocalization>()
+                .HasOne(atl => atl.AbsenceType)
+                .WithMany(at => at.AbsenceTypeLocalizations)
+                .HasForeignKey(atl => atl.AbsenceTypeId);
+
+            modelBuilder.Entity<AbsenceTypeLocalization>()
+                .HasOne(atl => atl.Localization)
+                .WithMany(l => l.AbsenceTypeLocalizations)
+                .HasForeignKey(atl => atl.LocalizationId);
+
+            #endregion
+
+            #region Entity Worker Absences Configuration
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasKey(ewa => ewa.EntityWorkerAbsenceId);
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasOne(ewa => ewa.Worker)
+                .WithMany(w => w.EntityWorkerAbsences)
+                .HasForeignKey(ewa => ewa.WorkerId);
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasOne(ewa => ewa.Entity)
+                .WithMany(e => e.EntityWorkerAbsences)
+                .HasForeignKey(ewa => ewa.EntityId);
 
             #endregion
         }
