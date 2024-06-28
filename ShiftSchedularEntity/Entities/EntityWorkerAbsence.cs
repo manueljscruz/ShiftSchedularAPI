@@ -10,6 +10,7 @@
         public DateTime AbsenceStartDate { get; set; }
         public DateTime AbsenceEndDate { get; set; }
         public bool AbsenceApproved { get; set; }
+        public string AbsenceDecisionOwner { get; set; }
         public DateTime AbsenceDateDecision { get; set; }
 
         #region Navigation Properties

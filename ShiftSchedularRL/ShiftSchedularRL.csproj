@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Update="Resources\AbsenceManagement\AbsenceRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AbsenceRelatedMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\Dashboard\EntitiesRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -40,6 +45,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Update="Resources\AbsenceManagement\AbsenceRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>AbsenceRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Update="Resources\Dashboard\EntitiesRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>EntitiesRelatedMessages.Designer.cs</LastGenOutput>

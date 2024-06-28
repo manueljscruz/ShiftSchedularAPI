@@ -20,7 +20,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Shift By Id
 
         [HttpGet("get-by-id/{id}/{lcode}")]
-        [ProducesResponseType(200, Type = typeof(Shift))]
+        [ProducesResponseType(200, Type = typeof(ShiftDTO))]
         public async Task<IActionResult> GetShiftById(string id, string lcode)
         {
             var shifts = await _shiftService.GetShiftById(id, lcode);
