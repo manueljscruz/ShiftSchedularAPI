@@ -14,5 +14,6 @@ namespace ShiftSchedularDAL.IRepositories
         Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId);
         Task<int> GetTotalCountByEntity(string entityId);
         Task<string> GetEntityOwnerId(string entityId);
+        Task<bool> IsMemberOwner(string entityId, string workerId);
     }
 }

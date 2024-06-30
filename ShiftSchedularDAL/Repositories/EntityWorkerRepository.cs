@@ -154,7 +154,7 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<bool> IsWorkerInEntity(string entityId, string workerId)
         {
-            if(string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(workerId))
+            if (string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(workerId))
             {
                 return false;
             }
@@ -164,5 +164,21 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
+
+
+        public async Task<bool> IsMemberOwner(string entityId, string workerId)
+        {
+            bool result = false;
+
+            if (!string.IsNullOrEmpty(workerId))
+            {
+                EntityWorker entityWorker = await _entityWorkerDbSet.Where(i => i.WorkerId.Equals(workerId) && i.EntityId.Equals(entityId)).FirstOrDefaultAsync();
+                if (entityWorker != null && entityWorker.IsOwner)
+                    result = true;
+            }
+
+            return result;
+        }
+
     }
 }

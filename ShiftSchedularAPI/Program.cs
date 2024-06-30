@@ -78,7 +78,10 @@ builder.Services.AddScoped<IGenericRepository<RuleType>, GenericRepository<RuleT
 builder.Services.AddScoped<IEntityRuleRepository, EntityRuleRepository>();
 builder.Services.AddScoped<IEntityRuleSpecificationRepository, EntityRuleSpecificationRepository>();
 builder.Services.AddScoped<IRuleTypeBusinessAspectRepository, RuleTypeBusinessAspectRepository>();
-
+// Repositories - Absences
+builder.Services.AddScoped<IAbsenceTypeLocalizationRepository, AbsenceTypeLocalizationRepository>();
+builder.Services.AddScoped<IGenericRepository<AbsenceType>, GenericRepository<AbsenceType>>();
+builder.Services.AddScoped<IEntityWorkerAbsenceRepository, EntityWorkerAbsenceRepository>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
@@ -93,6 +96,8 @@ builder.Services.AddScoped<IShiftTemplateService, ShiftTemplateService>();
 builder.Services.AddScoped<IBusinessAspectService, BusinessAspectService>();
 builder.Services.AddScoped<IEntityRuleService, EntityRuleService>();
 builder.Services.AddScoped<IRuleTypeService, RuleTypeService>();
+builder.Services.AddScoped<IEntityWorkerAbsenceService, EntityWorkerAbsenceService>();
+builder.Services.AddScoped<IAbsenceTypeService, AbsenceTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Infrastructure

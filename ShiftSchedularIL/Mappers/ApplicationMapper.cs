@@ -63,27 +63,9 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
                 .ForMember(dest => dest.ShiftDescription, opt => opt.MapFrom(src => src.ShiftDescription))
                 .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
-                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
+                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration)).ReverseMap();
 
             CreateMap<AddShiftBreakDTO, ShiftBreak>()
-                .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
-                .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
-                .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
-                .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
-                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
-
-            CreateMap<ShiftDTO, Shift>()
-                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
-                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.ShiftName))
-                .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
-                .ForMember(dest => dest.ShiftDescription, opt => opt.MapFrom(src => src.ShiftDescription))
-                .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
-                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
-
-            CreateMap<ShiftBreakDTO, ShiftBreak>()
-                .ForMember(dest => dest.ShiftBreakId, opt => opt.MapFrom(src => src.ShiftBreakId))
-                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftParentId))
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
                 .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
@@ -97,7 +79,7 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftBreakStartTime, opt => opt.MapFrom(src => src.ShiftBreakStartTime))
                 .ForMember(dest => dest.ShiftBreakDuration, opt => opt.MapFrom(src => src.ShiftBreakDuration))
                 .ForMember(dest => dest.IncludedInShift, opt => opt.MapFrom(src => src.IncludedInShift))
-                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible));
+                .ForMember(dest => dest.IsTimeFlexible, opt => opt.MapFrom(src => src.IsTimeFlexible)).ReverseMap();
 
             CreateMap<ShiftBreakTypeLocalization, ShiftBreakTypeLocalizedDTO>()
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))
@@ -146,17 +128,11 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.RuleTypeDescription, opt => opt.MapFrom(src => src.RuleTypeDescription))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
 
-            CreateMap<EntityRuleDTO, EntityRule>()
-                .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
-                .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId))
-                .ForMember(dest => dest.RuleTypeDescription, opt => opt.MapFrom(src => src.RuleTypeDescription))
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
-
             CreateMap<EntityRule, EntityRuleDTO>()
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
                 .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId))
                 .ForMember(dest => dest.RuleTypeDescription, opt => opt.MapFrom(src => src.RuleTypeDescription))
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId));
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId)).ReverseMap();
 
             CreateMap<AddEntityRuleSpecificationDTO, EntityRuleSpecification>()
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
@@ -166,7 +142,6 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.AspectReferenceId2, opt => opt.MapFrom(src => src.AspectReferenceId2))
                 .ForMember(dest => dest.BusinessAspectId2, opt => opt.MapFrom(src => src.BusinessAspectId2));
 
-
             CreateMap<EntityRuleSpecification, EntityRuleSpecificationDTO>()
                 .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
                 .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
@@ -174,17 +149,31 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId))
                 .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
                 .ForMember(dest => dest.AspectReferenceId2, opt => opt.MapFrom(src => src.AspectReferenceId2))
-                .ForMember(dest => dest.BusinessAspectId2, opt => opt.MapFrom(src => src.BusinessAspectId2));
+                .ForMember(dest => dest.BusinessAspectId2, opt => opt.MapFrom(src => src.BusinessAspectId2)).ReverseMap();
 
-            CreateMap<EntityRuleSpecificationDTO, EntityRuleSpecification>()
-                .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
-                .ForMember(dest => dest.EntityRuleId, opt => opt.MapFrom(src => src.EntityRuleId))
-                .ForMember(dest => dest.SpecificationValue, opt => opt.MapFrom(src => src.RuleSpecificationValue))
-                .ForMember(dest => dest.AspectReferenceId, opt => opt.MapFrom(src => src.AspectReferenceId))
-                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId))
-                .ForMember(dest => dest.AspectReferenceId2, opt => opt.MapFrom(src => src.AspectReferenceId2))
-                .ForMember(dest => dest.BusinessAspectId2, opt => opt.MapFrom(src => src.BusinessAspectId2));
+            CreateMap<AbsenceTypeLocalization, AbsenceTypeLocalizedDTO>()
+                .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
+                .ForMember(dest => dest.AbsenceTypeLocalizedName, opt => opt.MapFrom(src => src.AbsenceTypeDisplayValue));
 
+            CreateMap<AddEntityWorkerAbsenceDTO, EntityWorkerAbsence>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
+                .ForMember(dest => dest.AbsenceStartDate, opt => opt.MapFrom(src => src.AbsenceStartDate))
+                .ForMember(dest => dest.AbsenceEndDate, opt => opt.MapFrom(src => src.AbsenceEndDate))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations));
+
+            CreateMap<EntityWorkerAbsence, EntityWorkerAbsenceDTO>()
+                .ForMember(dest => dest.EntityWorkerAbsenceId, opt => opt.MapFrom(src => src.EntityWorkerAbsenceId))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
+                .ForMember(dest => dest.AbsenceStartDate, opt => opt.MapFrom(src => src.AbsenceStartDate))
+                .ForMember(dest => dest.AbsenceEndDate, opt => opt.MapFrom(src => src.AbsenceEndDate))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
+                .ForMember(dest => dest.AbsenceApproved, opt => opt.MapFrom(src => src.AbsenceApproved))
+                .ForMember(dest => dest.AbsenceDecisionOwner, opt => opt.MapFrom(src => src.AbsenceDecisionOwner))
+                .ForMember(dest => dest.AbsenceDateDecision, opt => opt.MapFrom(src => src.AbsenceDateDecision)).ReverseMap();
         }
     }
 }

@@ -24,6 +24,12 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Worker Absence By Id
 
+        /// <summary>
+        /// Gets the instance of the absence by identifier
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="lcode"></param>
+        /// <returns></returns>
         [HttpGet("get-by-id/{id}/{lcode}")]
         [ProducesResponseType(200, Type = typeof(EntityWorkerAbsenceDTO))]
         public async Task<IActionResult> GetEntityWorkerAbsenceById(string id, string lcode)
@@ -36,6 +42,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Worker Absences View Model
 
+        /// <summary>
+        /// Gets the View model for the absence page
+        /// </summary>
+        /// <param name="viewModelRequestDTO"></param>
+        /// <returns></returns>
         [HttpPost("get-entity-worker-absence-model")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetEntityWorkerAbsencesViewModel(BaseViewModelRequest viewModelRequestDTO)
@@ -48,6 +59,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Add Entity Worker Absence
 
+        /// <summary>
+        /// Adds a new absence to the database
+        /// </summary>
+        /// <param name="addEntityWorkerAbsence"></param>
+        /// <returns></returns>
         [HttpPost("add-entity-worker-absence")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> AddEntityWorkerAbsence([FromBody] AddEntityWorkerAbsenceDTO addEntityWorkerAbsence)
@@ -60,6 +76,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Update Entity Worker Absence
 
+        /// <summary>
+        /// Updates the abstence instance
+        /// </summary>
+        /// <param name="entityWorkerAbsenceDTO"></param>
+        /// <returns></returns>
         [HttpPut("update-entity-worker-absence")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> UpdateEntityWorkerAbsence(EntityWorkerAbsenceDTO entityWorkerAbsenceDTO)
@@ -72,6 +93,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Absence Approval Decision
 
+        /// <summary>
+        /// Updates the absence approval decision
+        /// </summary>
+        /// <param name="absenceApprovalDecisionDTO"></param>
+        /// <returns></returns>
         [HttpPut("absence-approval-decision")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> AbsenceApprovalDecision(AbsenceApprovalDecisionDTO absenceApprovalDecisionDTO)
@@ -84,6 +110,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Entity Worker Absence
 
+        /// <summary>
+        /// Deletes the absence instance by its identifier
+        /// </summary>
+        /// <param name="absenceId"></param>
+        /// <returns></returns>
         [HttpDelete("delete-entity-worker-absence/{absenceId}")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteEntityWorkerAbsence(string absenceId)

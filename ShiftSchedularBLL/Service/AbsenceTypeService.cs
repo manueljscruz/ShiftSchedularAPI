@@ -21,7 +21,7 @@ namespace ShiftSchedularBLL.Service
         public AbsenceTypeService(IUnitOfWork unitOfWork, 
             IGenericRepository<AbsenceType> absenceTypeRepository, 
             IAbsenceTypeLocalizationRepository absenceTypeLocalizationRepository, 
-            ILocalizationRepository localizationRepository, 
+            ILocalizationRepository localizationRepository,
             IMapper mapper) 
         {
             _unitOfWork = unitOfWork;

@@ -117,11 +117,35 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AbsenceDatesInvalidInterval" xml:space="preserve">
+    <value>Selected dates are in an invalid format.</value>
+  </data>
+  <data name="AbsenceDecisionApprovalSubmitted" xml:space="preserve">
+    <value>Absence decision was submitted successfuly.</value>
+  </data>
+  <data name="AbsenceDecisionApproverIsNotOwner" xml:space="preserve">
+    <value>The decision approver is not eligible for performing this action.</value>
+  </data>
+  <data name="AbsenceDecisionApproverIsNull" xml:space="preserve">
+    <value>The identifier of the approval decision is required.</value>
+  </data>
+  <data name="AbsenceDecisionUnexpectedError" xml:space="preserve">
+    <value>An unexpected error occured while submitting the decision for absence approval. Please try again later.</value>
+  </data>
+  <data name="AbsenceEndDateEmpty" xml:space="preserve">
+    <value>The absence must have an end date.</value>
+  </data>
   <data name="AbsenceIdIsNull" xml:space="preserve">
     <value>Absence identifier is required to perform this operation.</value>
   </data>
   <data name="AbsenceNotFound" xml:space="preserve">
     <value>Absence not found. If this persists, contact support to resolve this issue.</value>
+  </data>
+  <data name="AbsenceStartDateEmpty" xml:space="preserve">
+    <value>The absence must have an start date.</value>
+  </data>
+  <data name="AbsenceTypeIsInvalid" xml:space="preserve">
+    <value>The absence type is required.</value>
   </data>
   <data name="AddEntityWorkerAbsenceSuccessMessage" xml:space="preserve">
     <value>Absence was added successfuly.</value>
@@ -135,10 +159,22 @@
   <data name="DeleteEntityWorkerAbsenceUnexpectedError" xml:space="preserve">
     <value>An expected error occured while deleting the absence. Please try again later.</value>
   </data>
+  <data name="EntityIdIsEmpty" xml:space="preserve">
+    <value>The identifier of the entity is required.</value>
+  </data>
+  <data name="EntityNotFound" xml:space="preserve">
+    <value>No entity was found to be associated with the absence. If this error persists, please contact support.</value>
+  </data>
   <data name="UpdateEntityWorkerAbsenceSuccessMessage" xml:space="preserve">
     <value>Absence was updated successfuly.</value>
   </data>
   <data name="UpdateEntityWorkerAbsenceUnexpectedError" xml:space="preserve">
     <value>An expected error occured while updating the absence. Please try again later.</value>
+  </data>
+  <data name="WorkerIdIsEmpty" xml:space="preserve">
+    <value>The identifier of the worker is required.</value>
+  </data>
+  <data name="WorkerNotFound" xml:space="preserve">
+    <value>No worker was found to be associated with the absence. If this error continues, please contact support.</value>
   </data>
 </root>

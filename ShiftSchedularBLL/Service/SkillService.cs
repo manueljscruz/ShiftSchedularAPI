@@ -18,6 +18,8 @@ namespace ShiftSchedularBLL.Service
         private readonly ISkillLocalizationRepository _skillLocalizationRepository;
         private readonly IMapper _mapper;
 
+        #region Constructor
+
         public SkillService(IUnitOfWork unitOfWork, ISkillRepository skillRepository, ILocalizationRepository localizationRepository, ISkillLocalizationRepository skillLocalizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
@@ -25,8 +27,9 @@ namespace ShiftSchedularBLL.Service
             _localizationRepository = localizationRepository;
             _skillLocalizationRepository = skillLocalizationRepository;
             _mapper = mapper;
-
         }
+
+        #endregion
 
         #region Add Skill Localization
 

@@ -61,6 +61,60 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Selected dates are in an invalid format..
+        /// </summary>
+        public static string AbsenceDatesInvalidInterval {
+            get {
+                return ResourceManager.GetString("AbsenceDatesInvalidInterval", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Absence decision was submitted successfuly..
+        /// </summary>
+        public static string AbsenceDecisionApprovalSubmitted {
+            get {
+                return ResourceManager.GetString("AbsenceDecisionApprovalSubmitted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The decision approver is not eligible for performing this action..
+        /// </summary>
+        public static string AbsenceDecisionApproverIsNotOwner {
+            get {
+                return ResourceManager.GetString("AbsenceDecisionApproverIsNotOwner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The identifier of the approval decision is required..
+        /// </summary>
+        public static string AbsenceDecisionApproverIsNull {
+            get {
+                return ResourceManager.GetString("AbsenceDecisionApproverIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occured while submitting the decision for absence approval. Please try again later..
+        /// </summary>
+        public static string AbsenceDecisionUnexpectedError {
+            get {
+                return ResourceManager.GetString("AbsenceDecisionUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The absence must have an end date..
+        /// </summary>
+        public static string AbsenceEndDateEmpty {
+            get {
+                return ResourceManager.GetString("AbsenceEndDateEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Absence identifier is required to perform this operation..
         /// </summary>
         public static string AbsenceIdIsNull {
@@ -75,6 +129,24 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         public static string AbsenceNotFound {
             get {
                 return ResourceManager.GetString("AbsenceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The absence must have an start date..
+        /// </summary>
+        public static string AbsenceStartDateEmpty {
+            get {
+                return ResourceManager.GetString("AbsenceStartDateEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The absence type is required..
+        /// </summary>
+        public static string AbsenceTypeIsInvalid {
+            get {
+                return ResourceManager.GetString("AbsenceTypeIsInvalid", resourceCulture);
             }
         }
         
@@ -115,6 +187,24 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The identifier of the entity is required..
+        /// </summary>
+        public static string EntityIdIsEmpty {
+            get {
+                return ResourceManager.GetString("EntityIdIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No entity was found to be associated with the absence. If this error persists, please contact support..
+        /// </summary>
+        public static string EntityNotFound {
+            get {
+                return ResourceManager.GetString("EntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Absence was updated successfuly..
         /// </summary>
         public static string UpdateEntityWorkerAbsenceSuccessMessage {
@@ -129,6 +219,24 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         public static string UpdateEntityWorkerAbsenceUnexpectedError {
             get {
                 return ResourceManager.GetString("UpdateEntityWorkerAbsenceUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The identifier of the worker is required..
+        /// </summary>
+        public static string WorkerIdIsEmpty {
+            get {
+                return ResourceManager.GetString("WorkerIdIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No worker was found to be associated with the absence. If this error continues, please contact support..
+        /// </summary>
+        public static string WorkerNotFound {
+            get {
+                return ResourceManager.GetString("WorkerNotFound", resourceCulture);
             }
         }
     }
