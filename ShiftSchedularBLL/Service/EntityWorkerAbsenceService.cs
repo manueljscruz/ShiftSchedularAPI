@@ -58,9 +58,9 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="absenceApprovalDecisionDTO"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> AbsenceApprovalDecision(AbsenceApprovalDecisionDTO absenceApprovalDecisionDTO)
+        public async Task<BaseResponse<EntityWorkerAbsenceDTO>> AbsenceApprovalDecision(AbsenceApprovalDecisionDTO absenceApprovalDecisionDTO)
         {
-            BaseResponse<bool> response = new BaseResponse<bool>();
+            BaseResponse<EntityWorkerAbsenceDTO> response = new BaseResponse<EntityWorkerAbsenceDTO>();
             response.Success = false;
             response.Message = AbsenceRelatedMessages.AbsenceDecisionUnexpectedError;
 
@@ -98,9 +98,12 @@ namespace ShiftSchedularBLL.Service
                 // Assign values and update absence entry
                 entityWorkerAbsence.AbsenceApproved = absenceApprovalDecisionDTO.AbsenceDecision;
                 entityWorkerAbsence.AbsenceDecisionOwner = absenceApprovalDecisionDTO.AbsenceDecisionSignature;
+                entityWorkerAbsence.AbsenceDateDecisionOffset = new DateTimeOffset(DateTime.Now).Offset;
                 entityWorkerAbsence.AbsenceDateDecision = DateTime.UtcNow;
 
                 await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
+
+                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, absenceApprovalDecisionDTO.LanguageCode);
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.AbsenceDecisionApprovalSubmitted;
             }
@@ -181,15 +184,26 @@ namespace ShiftSchedularBLL.Service
                 entityWorkerAbsence.EntityWorkerAbsenceId = _generalService.GenerateGuid();
                 entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
                 entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
+                entityWorkerAbsence.DateOffset = new DateTimeOffset(entityWorkerAbsence.AbsenceStartDate).Offset;
+                entityWorkerAbsence.AbsenceDecisionOwner = string.Empty;
 
                 // Add Instance
-                entityWorkerAbsence = await _entityWorkerAbsenceRepository.Add(entityWorkerAbsence);
+                try
+                {
+                    entityWorkerAbsence = await _entityWorkerAbsenceRepository.Add(entityWorkerAbsence);
+                }
+                catch (Exception ex)
+                {
+                    string error = ex.Message;
+                    return response;
+                }
+                
 
                 // Get Localized Absence types
                 IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _absenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(addEntityWorkerAbsence.LanguageCode);
 
                 // Map added object to DTO instance
-                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
+                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
 
                 response.Result = entityWorkerAbsenceDTO;
                 response.Success = true;
@@ -256,7 +270,7 @@ namespace ShiftSchedularBLL.Service
                 IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _absenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(lcode);
 
                 // Map added object to DTO instance
-                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
+                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
 
                 return entityWorkerAbsenceDTO;
             }
@@ -273,13 +287,19 @@ namespace ShiftSchedularBLL.Service
         /// <param name="instance"></param>
         /// <param name="absenceTypeLocalizeds"></param>
         /// <returns></returns>
-        private EntityWorkerAbsenceDTO HandleEntityWorkerAbsenceData(EntityWorkerAbsence instance, IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds)
+        private async Task<EntityWorkerAbsenceDTO> HandleEntityWorkerAbsenceData(EntityWorkerAbsence instance, IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds)
         {
             EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = _mapper.Map<EntityWorkerAbsenceDTO>(instance);
 
             AbsenceTypeLocalization absenceType = absenceTypeLocalizeds.Where(i => i.AbsenceTypeId.Equals(entityWorkerAbsenceDTO.AbsenceTypeId)).FirstOrDefault();
             if (absenceType != null)
                 entityWorkerAbsenceDTO.AbsenceTypeDisplayValue = absenceType.AbsenceTypeDisplayValue;
+
+            if (!string.IsNullOrEmpty(entityWorkerAbsenceDTO.AbsenceDecisionOwner))
+            {
+                Worker approver = await _workerRepository.GetById(entityWorkerAbsenceDTO.AbsenceDecisionOwner);
+                entityWorkerAbsenceDTO.AbsenceApproverName = approver.WorkerName;
+            }
 
             return entityWorkerAbsenceDTO;
         }
@@ -310,7 +330,7 @@ namespace ShiftSchedularBLL.Service
                 // Gets the entity worker absences of everyone if it is the owner, otherwise only of the user requesting it
                 IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _entityWorkerAbsenceRepository.GetEntityWorkerAbsences(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId, viewModel.IsOwner);
                 foreach(EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
-                    viewModel.EntityWorkerAbsences.Add(HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds));
+                    viewModel.EntityWorkerAbsences.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds));
                 
             }
 
@@ -326,9 +346,9 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="entityWorkerAbsenceDTO"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> UpdateEntityWorkerAbsence(EntityWorkerAbsenceDTO entityWorkerAbsenceDTO)
+        public async Task<BaseResponse<EntityWorkerAbsenceDTO>> UpdateEntityWorkerAbsence(EntityWorkerAbsenceDTO entityWorkerAbsenceDTO)
         {
-            BaseResponse<bool> response = new BaseResponse<bool>();
+            BaseResponse<EntityWorkerAbsenceDTO> response = new BaseResponse<EntityWorkerAbsenceDTO>();
             response.Success = false;
             response.Message = AbsenceRelatedMessages.UpdateEntityWorkerAbsenceUnexpectedError;
 
@@ -395,20 +415,30 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                entityWorkerAbsence = _mapper.Map<EntityWorkerAbsence>(entityWorkerAbsenceDTO);
+                _mapper.Map(entityWorkerAbsenceDTO, entityWorkerAbsence);
+                entityWorkerAbsence.DateOffset = new DateTimeOffset(entityWorkerAbsenceDTO.AbsenceStartDate).Offset;
 
                 // if there is an previous approval decision, reset it
-                if(entityWorkerAbsence.AbsenceDecisionOwner != null && entityWorkerAbsence.AbsenceDateDecision != new DateTime())
+                if (entityWorkerAbsence.AbsenceDecisionOwner != null && entityWorkerAbsence.AbsenceDateDecision != new DateTime())
                 {
                     entityWorkerAbsence.AbsenceDecisionOwner = string.Empty;
                     entityWorkerAbsence.AbsenceDateDecision = new DateTime();
+                    entityWorkerAbsence.AbsenceDateDecisionOffset = new TimeSpan();
                     entityWorkerAbsence.AbsenceApproved = false;
                 }
 
-                await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
+                try
+                {
+                    await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
-                response.Success = true;
-                response.Message = AbsenceRelatedMessages.UpdateEntityWorkerAbsenceSuccessMessage;
+                    response.Result = _mapper.Map(entityWorkerAbsence, entityWorkerAbsenceDTO);
+                    response.Success = true;
+                    response.Message = AbsenceRelatedMessages.UpdateEntityWorkerAbsenceSuccessMessage;
+                }
+                catch (Exception ex)
+                {
+                    string strError = ex.Message;
+                }
             }
 
             return response;

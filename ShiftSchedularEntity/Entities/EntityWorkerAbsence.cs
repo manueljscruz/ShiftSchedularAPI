@@ -9,9 +9,11 @@
         public string Observations { get; set; }
         public DateTime AbsenceStartDate { get; set; }
         public DateTime AbsenceEndDate { get; set; }
+        public TimeSpan DateOffset { get; set; }
         public bool AbsenceApproved { get; set; }
         public string AbsenceDecisionOwner { get; set; }
         public DateTime AbsenceDateDecision { get; set; }
+        public TimeSpan AbsenceDateDecisionOffset { get; set; }
 
         #region Navigation Properties
 

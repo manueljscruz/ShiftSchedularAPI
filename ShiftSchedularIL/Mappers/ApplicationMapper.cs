@@ -170,9 +170,11 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
                 .ForMember(dest => dest.AbsenceStartDate, opt => opt.MapFrom(src => src.AbsenceStartDate))
                 .ForMember(dest => dest.AbsenceEndDate, opt => opt.MapFrom(src => src.AbsenceEndDate))
+                .ForMember(dest => dest.DateOffset, opt => opt.MapFrom(src => src.DateOffset))
                 .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
                 .ForMember(dest => dest.AbsenceApproved, opt => opt.MapFrom(src => src.AbsenceApproved))
                 .ForMember(dest => dest.AbsenceDecisionOwner, opt => opt.MapFrom(src => src.AbsenceDecisionOwner))
+                .ForMember(dest => dest.AbsenceDateDecisionOffset, opt => opt.MapFrom(src => src.AbsenceDateDecisionOffset))
                 .ForMember(dest => dest.AbsenceDateDecision, opt => opt.MapFrom(src => src.AbsenceDateDecision)).ReverseMap();
         }
     }
