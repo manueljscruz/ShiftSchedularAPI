@@ -421,6 +421,40 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(ewa => ewa.EntityId);
 
             #endregion
+
+            #region Schedule Entry Configuration
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasKey(se => se.ScheduleEntryId);
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasOne(se => se.Shift)
+                .WithMany(s => s.ScheduleEntries)
+                .HasForeignKey(se => se.ShiftId);
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasOne(se => se.Entity)
+                .WithMany(e => e.ScheduleEntries)
+                .HasForeignKey(se => se.EntityId);
+
+            #endregion
+
+            #region Schedule Entry Workers Configuration
+
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasKey(sew => new { sew.ScheduleEntryId, sew.WorkerId });
+
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasOne(sew => sew.ScheduleEntry)
+                .WithMany(se => se.ScheduleEntryWorkers)
+                .HasForeignKey(sew => sew.ScheduleEntryId);
+
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasOne(sew => sew.Worker)
+                .WithMany(w => w.ScheduleEntryWorkers)
+                .HasForeignKey(sew => sew.WorkerId);
+
+            #endregion
         }
 
         #endregion

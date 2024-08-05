@@ -25,7 +25,8 @@
 
         public virtual Entity Entity { get; set; }
         public virtual IEnumerable<ShiftBreak> ShiftBreaks { get; set; }
-
+        public virtual IEnumerable<ScheduleEntry> ScheduleEntries { get; set; }
+        
         #endregion
     }
 }

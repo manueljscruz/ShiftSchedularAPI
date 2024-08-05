@@ -19,7 +19,8 @@
         public virtual ICollection<Shift> EntityShifts { get; set; }
         public virtual ICollection<EntityRule> EntityRules { get; set; }
         public virtual ICollection<EntityWorkerAbsence> EntityWorkerAbsences { get; set; }
-
+        public virtual ICollection<ScheduleEntry> ScheduleEntries { get; set; }
+        
         #endregion
     }
 }
