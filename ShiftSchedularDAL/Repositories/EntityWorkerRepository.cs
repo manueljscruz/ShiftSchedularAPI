@@ -96,6 +96,29 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get Distinct Members By Entity Id
+
+        public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId, List<string> workers)
+        {
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                string listInString = string.Join(",", workers.Select(v => $"'{v}'"));
+                string filterFormat = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersListFilter, listInString);
+
+                string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, filterFormat);
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add("@EntityId", entityId);
+
+                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+
+
+            }
+            else
+                return null;
+        }
+
+        #endregion
+
         #region Get Distinct Skills By Entity Id
 
         public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId)
@@ -165,6 +188,7 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Is Member Owner
 
         public async Task<bool> IsMemberOwner(string entityId, string workerId)
         {
@@ -180,5 +204,8 @@ namespace ShiftSchedularDAL.Repositories
             return result;
         }
 
+        #endregion
+
+        
     }
 }

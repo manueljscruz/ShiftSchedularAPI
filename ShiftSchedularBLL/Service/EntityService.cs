@@ -342,6 +342,43 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Entity Member By Id
+
+        public async Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(string entityId, List<string> workers, string lcode)
+        {
+            List<EntityWorkerMemberDTO> entityWorkerMembers = new List<EntityWorkerMemberDTO>();
+            if (!string.IsNullOrEmpty(entityId) && workers.Count != 0 && !string.IsNullOrEmpty(lcode))
+            {
+                List<SkillLocalizedDTO> skillLocalizeds = await _skillService.GetAllSkillsByLocalization(lcode);
+                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId, workers);
+
+                foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMemberModels)
+                {
+                    EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
+                    entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
+
+                    int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
+
+                    entityWorkerMemberDTO.SkillSet = skillLocalizeds.Where(i => skillIds.Contains(i.SkillId))
+                                                .Select(s => new SkillLocalizedDTO
+                                                {
+                                                    SkillId = s.SkillId,
+                                                    SkillLocalizedName = s.SkillLocalizedName,
+                                                    SkillHexBGColor = s.SkillHexBGColor,
+                                                    SkillHexFontColor = s.SkillHexFontColor
+                                                }).ToList();
+
+                    entityWorkerMembers.Add(entityWorkerMemberDTO);
+
+                }
+            }
+
+            return entityWorkerMembers;
+        }
+
+
+        #endregion
+
         #region Get Entity Skills
 
         /// <summary>

@@ -41,6 +41,15 @@ namespace ShiftSchedularDAL.Repositories
             else return null;
         }
 
+        public async Task<IEnumerable<Shift>> GetEntityShifts(List<string> shiftIdentifiers)
+        {
+            if (shiftIdentifiers.Count != 0)
+            {
+                return await _dbSet.Where(i => shiftIdentifiers.Contains(i.ShiftId)).ToListAsync();
+            }
+            else return null;
+        }
+
         #endregion
     }
 }

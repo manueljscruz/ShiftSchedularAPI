@@ -1,15 +1,16 @@
-﻿using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+﻿using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.IService
 {
     public interface IEntityScheduleService
     {
-        Task<EntityScheduleViewModel> GetEntityScheduleViewModel(BaseViewModelRequest viewModelRequest);
+        Task<EntityScheduleViewModel> GetEntityScheduleViewModel(ScheduleViewModelRequestDTO viewModelRequest);
+        Task<BaseResponse<ScheduleEntryDTO>> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO);
+        Task<BaseResponse<ScheduleEntryDTO>> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp);
+        Task<ScheduleEntryDTO> GetScheduleEntryById(string scheduleEntryId, string languageCode);
+        Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO);
     }
 }

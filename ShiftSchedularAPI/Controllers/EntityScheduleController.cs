@@ -26,14 +26,60 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Methods
 
+        #region Get Entity Schedule View Model
+
+        /// <summary>
+        /// Get Entity Schedule View Model
+        /// </summary>
+        /// <param name="viewModelRequest"></param>
+        /// <returns></returns>
         [HttpPost("get-entity-schedule-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetEntityScheduleViewModel(BaseViewModelRequest viewModelRequest)
+        public async Task<IActionResult> GetEntityScheduleViewModel(ScheduleViewModelRequestDTO viewModelRequest)
         {
             var viewModel = await _entityScheduleService.GetEntityScheduleViewModel(viewModelRequest);
 
             return Ok(viewModel);
         }
+
+        #endregion
+
+        #region Get Schedule Entry By Id
+
+        [HttpGet("get-schedule-entry-by-id")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetScheduleEntryById(string scheduleEntryId, string languageCode)
+        {
+            var scheduleEntry = await _entityScheduleService.GetScheduleEntryById(scheduleEntryId, languageCode);
+            return Ok(scheduleEntry);
+        }
+
+        #endregion
+
+        #region Add Schedule Entry
+
+        [HttpPost("add-schedule-entry")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO)
+        {
+            var scheduleEntryResult = await _entityScheduleService.AddScheduleEntry(addScheduleEntryDTO);
+            return Ok(scheduleEntryResult);
+        }
+
+        #endregion
+
+        #region Add Schedule Participant
+
+        [HttpPost("add-schedule-participant")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp)
+        {
+            var scheduleParticipantResult = await _entityScheduleService.AddScheduleParticipant(scheduleParticipantOp);
+            return Ok(scheduleParticipantResult);
+        }
+
+        #endregion
+
 
         #endregion
     }

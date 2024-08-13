@@ -389,6 +389,36 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Entity Rules
+
+        /// <summary>
+        /// Gets all entity rules of an entity
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="lcode"></param>
+        /// <returns></returns>
+        public async Task<List<EntityRuleDTO>> GetEntityRules(string entityId, string lcode)
+        {
+            List<EntityRuleDTO> entityRuleDTOs = new List<EntityRuleDTO>();
+
+            if (!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(lcode))
+            {
+                IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
+                IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
+
+                IEnumerable<EntityRule> entityRules = await _entityRuleRepository.GetEntityRules(entityId);
+                foreach (EntityRule entityRule in entityRules)
+                {
+                    EntityRuleDTO entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, lcode);
+                    entityRuleDTOs.Add(entityRuleDTO);
+                }
+            }
+
+            return entityRuleDTOs;
+        }
+
+        #endregion
+
         #region Handle Entity Rule Data
 
         /// <summary>

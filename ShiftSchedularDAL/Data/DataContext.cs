@@ -51,6 +51,8 @@ namespace ShiftSchedularDAL.Data
         public DbSet<AbsenceType> AbsenceTypes { get; set; }
         public DbSet<AbsenceTypeLocalization> AbsenceTypeLocalizations { get; set; }
         public DbSet<EntityWorkerAbsence> WorkerEntityAbsences { get; set; }
+        public DbSet<ScheduleEntry> ScheduleEntries { get; set; }
+        public DbSet<ScheduleEntryWorkers> ScheduleEntryWorkers { get; set; }
 
         #endregion
 
@@ -425,17 +427,13 @@ namespace ShiftSchedularDAL.Data
             #region Schedule Entry Configuration
 
             modelBuilder.Entity<ScheduleEntry>()
+                .ToTable("ScheduleEntry")
                 .HasKey(se => se.ScheduleEntryId);
 
             modelBuilder.Entity<ScheduleEntry>()
                 .HasOne(se => se.Shift)
                 .WithMany(s => s.ScheduleEntries)
                 .HasForeignKey(se => se.ShiftId);
-
-            modelBuilder.Entity<ScheduleEntry>()
-                .HasOne(se => se.Entity)
-                .WithMany(e => e.ScheduleEntries)
-                .HasForeignKey(se => se.EntityId);
 
             #endregion
 

@@ -12,9 +12,11 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteEntityRule(string entityId, string entityRuleId);
         Task<BaseResponse<bool>> DeleteEntityRuleSpecification(string entityRuleId, int specificationId);
         Task<EntityRuleViewModel> GetEntityRuleViewModel(BaseViewModelRequest entityRuleViewModelRequestDTO);
+        Task<List<EntityRuleDTO>> GetEntityRules(string entityId, string lcode);
         Task<EntityRuleDTO> GetEntityRuleById(string entityRuleId, string lcode);
         Task<BaseResponse<bool>> UpdateEntityRule(EntityRuleDTO entityRule);
         Task<BaseResponse<bool>> UpdateEntityRuleSpecification(EntityRuleSpecificationDTO entityRuleSpecification);
         Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(string entityRuleId);
+        Task<List<EntityRuleDTO>> GetSpecificRules(List<string> filteredRules, string languageCode);
     }
 }

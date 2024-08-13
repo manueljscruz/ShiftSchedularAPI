@@ -17,5 +17,6 @@ namespace ShiftSchedularBLL.IService
         Task<IEnumerable<ShiftDTO>> GetEntityShifts(string entityId);
         Task<BaseResponse<bool>> UpdateEntityShift(ShiftDTO shift);
         Task<BaseResponse<bool>> UpdateEntityShiftBreak(ShiftBreakDTO shiftBreak);
+        Task<List<ShiftDTO>> GetSpecificShifts(List<string> shiftIdentifiers);
     }
 }

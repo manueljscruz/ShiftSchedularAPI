@@ -82,6 +82,9 @@ builder.Services.AddScoped<IRuleTypeBusinessAspectRepository, RuleTypeBusinessAs
 builder.Services.AddScoped<IAbsenceTypeLocalizationRepository, AbsenceTypeLocalizationRepository>();
 builder.Services.AddScoped<IGenericRepository<AbsenceType>, GenericRepository<AbsenceType>>();
 builder.Services.AddScoped<IEntityWorkerAbsenceRepository, EntityWorkerAbsenceRepository>();
+// Repositories - Schedule
+builder.Services.AddScoped<IEntityScheduleRepository, EntityScheduleRepository>();
+builder.Services.AddScoped<IEntityScheduleWorkersRepository, EntityScheduleWorkersRepository>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
@@ -99,6 +102,7 @@ builder.Services.AddScoped<IRuleTypeService, RuleTypeService>();
 builder.Services.AddScoped<IEntityWorkerAbsenceService, EntityWorkerAbsenceService>();
 builder.Services.AddScoped<IAbsenceTypeService, AbsenceTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IEntityScheduleService, EntityScheduleService>();
 
 // Infrastructure
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));

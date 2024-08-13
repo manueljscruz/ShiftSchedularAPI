@@ -32,7 +32,12 @@
 	            LEFT JOIN EntityWorkers EW on W.WorkerId = EW.WorkerId
             WHERE
 	            EW.EntityId = @EntityId
+                {0}
             GROUP BY W.WorkerId, W.WorkerName, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
+        ";
+
+        public static readonly string GetDistinctEntityWorkersListFilter = @"
+            AND W.WorkerId IN ({0})
         ";
 
         public static readonly string GetEntityWorkersCount = @"

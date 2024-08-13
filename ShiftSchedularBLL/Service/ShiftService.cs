@@ -597,8 +597,34 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Specific Shifts
+
+        /// <summary>
+        /// Gets specific shifts data based on a list of shift identifiers 
+        /// </summary>
+        /// <param name="shiftIdentifiers"></param>
+        /// <returns></returns>
+        public async Task<List<ShiftDTO>> GetSpecificShifts(List<string> shiftIdentifiers)
+        {
+            List<ShiftDTO> shiftDTOs = new List<ShiftDTO>();
+
+            if(shiftIdentifiers.Count != 0)
+            {
+                List<Shift> shifts = (List<Shift>) await _shiftRepository.GetEntityShifts(shiftIdentifiers);
+
+                foreach (Shift shift in shifts)
+                {
+                    ShiftDTO shiftDTO = _mapper.Map<ShiftDTO>(shift);
+                    shiftDTOs.Add(shiftDTO);
+                }
+            }
+
+            return shiftDTOs;
+        }
+
+
         #endregion
 
-
+        #endregion
     }
 }
