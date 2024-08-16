@@ -53,6 +53,8 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityWorkerAbsence> WorkerEntityAbsences { get; set; }
         public DbSet<ScheduleEntry> ScheduleEntries { get; set; }
         public DbSet<ScheduleEntryWorkers> ScheduleEntryWorkers { get; set; }
+        public DbSet<BaseEntityRule> BaseEntityRules { get; set; }
+        public DbSet<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
 
         #endregion
 
@@ -453,6 +455,31 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(sew => sew.WorkerId);
 
             #endregion
+
+            #region Base Entity Rule Configuration
+
+            modelBuilder.Entity<BaseEntityRule>()
+                .HasKey(ber => ber.BaseEntityRuleId);
+
+            modelBuilder.Entity<BaseEntityRule>()
+                .HasOne(ber => ber.RuleType)
+                .WithMany(e => e.BaseEntityRules)
+                .HasForeignKey(ber => ber.RuleTypeId);
+
+            #endregion
+
+            #region Base Entity Rule Specification
+
+            modelBuilder.Entity<BaseEntityRuleSpecification>()
+                .HasKey(bers => new { bers.BaseEntityRuleId, bers.SpecificationId });
+
+            modelBuilder.Entity<BaseEntityRuleSpecification>()
+                .HasOne(bers => bers.BaseEntityRule)
+                .WithMany(ber => ber.BaseEntityRuleSpecifications)
+                .HasForeignKey(bers => bers.BaseEntityRuleId);
+
+            #endregion
+
         }
 
         #endregion

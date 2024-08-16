@@ -646,6 +646,11 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        public Task<List<EntityRuleDTO>> GetSpecificRules(List<string> filteredRules, string languageCode)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #endregion

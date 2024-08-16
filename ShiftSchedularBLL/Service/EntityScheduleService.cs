@@ -333,10 +333,43 @@ namespace ShiftSchedularBLL.Service
                         else
                             ruleDTOs = await _entityRuleService.GetSpecificRules(createEntityScheduleDTO.FilteredRules, createEntityScheduleDTO.LanguageCode);
 
+                        // For each day
                         for(int i = 0; i < dateDifference.Days; i++)
                         {
+                            // For each shift
+                            foreach(ShiftDTO shift in shifts)
+                            {
+                                // Create Schedule Entry
+                                ScheduleEntry scheduleEntry = new ScheduleEntry
+                                {
+                                    ScheduleEntryId = _generalService.GenerateGuid(),
+                                    ShiftId = shift.ShiftId,
+                                    ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
+                                };
 
+                                // Calculate and set schedule end date based on shift breaks
+                                TimeSpan totalBreakIncludedDuration = shift.ShiftBreakDTOs
+                                    .Where(sb => sb.IncludedInShift)
+                                    .Select(sb => sb.ShiftBreakDuration)
+                                    .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
+
+                                scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftDuration).Add(totalBreakIncludedDuration);
+
+                                // Add entry to the database
+                                scheduleEntry = await _entityScheduleRepository.Add(scheduleEntry);
+
+                                // Map it, add shift info and include entry to the list
+                                ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
+                                scheduleEntryDTO.ShiftDTO = shift;
+                                scheduleEntryDTO.ScheduleParticipants = new List<EntityWorkerMemberDTO>();
+                                scheduleEntryDTOs.Add(scheduleEntryDTO);
+                            }
+
+                            // Increment to the next day
+                            cycleDate.AddDays(1);
                         }
+
+
 
                     }
                     catch (Exception ex)

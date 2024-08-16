@@ -85,6 +85,9 @@ builder.Services.AddScoped<IEntityWorkerAbsenceRepository, EntityWorkerAbsenceRe
 // Repositories - Schedule
 builder.Services.AddScoped<IEntityScheduleRepository, EntityScheduleRepository>();
 builder.Services.AddScoped<IEntityScheduleWorkersRepository, EntityScheduleWorkersRepository>();
+// Repositories - Base Entity Rule
+builder.Services.AddScoped<IGenericRepository<BaseEntityRule>, GenericRepository<BaseEntityRule>>();
+builder.Services.AddScoped<IBaseEntityRuleSpecificationRepository, BaseEntityRuleSpecificationRepository>();
 
 // Services
 builder.Services.AddScoped<IGenderService, GenderService>();
@@ -103,6 +106,7 @@ builder.Services.AddScoped<IEntityWorkerAbsenceService, EntityWorkerAbsenceServi
 builder.Services.AddScoped<IAbsenceTypeService, AbsenceTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEntityScheduleService, EntityScheduleService>();
+builder.Services.AddScoped<IBaseEntityRuleService, BaseEntityRuleService>();
 
 // Infrastructure
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
