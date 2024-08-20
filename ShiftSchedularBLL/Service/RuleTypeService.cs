@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
@@ -14,6 +15,7 @@ namespace ShiftSchedularBLL.Service
     public class RuleTypeService : IRuleTypeService
     {
         private readonly IMapper _mapper;
+        private readonly ILogger<RuleTypeService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILocalizationRepository _localizationRepository;
         private readonly IGenericRepository<RuleType> _ruleTypeRepository;
@@ -21,9 +23,10 @@ namespace ShiftSchedularBLL.Service
 
         #region Constructor
 
-        public RuleTypeService(IMapper mapper, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository, IGenericRepository<RuleType> ruleTypeRepository, IRuleTypeLocalizationRepository ruleTypeLocalizationRepository)
+        public RuleTypeService(IMapper mapper, ILogger<RuleTypeService> logger, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository, IGenericRepository<RuleType> ruleTypeRepository, IRuleTypeLocalizationRepository ruleTypeLocalizationRepository)
         {
             _mapper = mapper;
+            _logger = logger;
             _unitOfWork = unitOfWork;
             _localizationRepository = localizationRepository;
             _ruleTypeRepository = ruleTypeRepository;
@@ -152,8 +155,20 @@ namespace ShiftSchedularBLL.Service
             if (lcode.Contains("-"))
                 lcode = lcode.Split('-')[0];
 
+
+            _logger.LogInformation($"Fetching rule type localizations for code: {lcode}");
+
+            _logger.LogInformation("Entering GetAllRuleTypesByLocalization");
             IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
+
+            _logger.LogInformation("Exiting GetAllRuleTypesByLocalization");
+
+            _logger.LogInformation("Entering GetLocalizationByLanguageCode");
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
+
+            _logger.LogInformation("Exiting GetLocalizationByLanguageCode");
+
+            await Task.Yield();
 
             // If data found, add it to list to be returned
             if (localization != null && localization.RuleTypeLocalizations.Count() != 0)

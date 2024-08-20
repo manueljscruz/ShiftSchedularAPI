@@ -86,10 +86,11 @@ builder.Services.AddScoped<IEntityWorkerAbsenceRepository, EntityWorkerAbsenceRe
 builder.Services.AddScoped<IEntityScheduleRepository, EntityScheduleRepository>();
 builder.Services.AddScoped<IEntityScheduleWorkersRepository, EntityScheduleWorkersRepository>();
 // Repositories - Base Entity Rule
-builder.Services.AddScoped<IGenericRepository<BaseEntityRule>, GenericRepository<BaseEntityRule>>();
+builder.Services.AddScoped<IBaseEntityRuleRepository, BaseEntityRuleRepository>();
 builder.Services.AddScoped<IBaseEntityRuleSpecificationRepository, BaseEntityRuleSpecificationRepository>();
 
 // Services
+builder.Services.AddLogging();
 builder.Services.AddScoped<IGenderService, GenderService>();
 builder.Services.AddScoped<ILocalizationService, LocalizationService>();
 builder.Services.AddScoped<IWorkerService, WorkerService>();

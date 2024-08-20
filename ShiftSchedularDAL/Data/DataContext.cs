@@ -468,7 +468,7 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
-            #region Base Entity Rule Specification
+            #region Base Entity Rule Specification Configuration
 
             modelBuilder.Entity<BaseEntityRuleSpecification>()
                 .HasKey(bers => new { bers.BaseEntityRuleId, bers.SpecificationId });

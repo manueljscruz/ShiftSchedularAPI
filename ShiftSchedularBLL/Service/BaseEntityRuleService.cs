@@ -5,6 +5,7 @@ using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.APIManagement;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using System.Data;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -14,21 +15,23 @@ namespace ShiftSchedularBLL.Service
 
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<BaseEntityRule> _baseEntityRuleRepository;
+        private readonly IBaseEntityRuleRepository _baseEntityRuleRepository;
         private readonly IBaseEntityRuleSpecificationRepository _baseEntityRuleSpecificationRepository;
+        private readonly ISQLRawRepository<object> _sqlRawRepository;
         private readonly IRuleTypeService _ruleTypeService;
 
         #endregion
 
         #region Constructor
 
-        public BaseEntityRuleService(IMapper mapper, IUnitOfWork unitOfWork, IGenericRepository<BaseEntityRule> baseEntityRuleRepository, IBaseEntityRuleSpecificationRepository baseEntityRuleSpecificationRepository,
-            IRuleTypeService ruleTypeService)
+        public BaseEntityRuleService(IMapper mapper, IUnitOfWork unitOfWork, IBaseEntityRuleRepository baseEntityRuleRepository, IBaseEntityRuleSpecificationRepository baseEntityRuleSpecificationRepository,
+            IRuleTypeService ruleTypeService, ISQLRawRepository<object> sqlRawRepository)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWork;
             _baseEntityRuleRepository = baseEntityRuleRepository;
             _baseEntityRuleSpecificationRepository = baseEntityRuleSpecificationRepository;
+            _sqlRawRepository = sqlRawRepository;
             _ruleTypeService = ruleTypeService;
         }
 
@@ -59,6 +62,7 @@ namespace ShiftSchedularBLL.Service
                         foreach (BaseEntityRuleSpecificationSubmissionModel baseEntityRuleSpecificationSubmissionModel in baseEntityRuleSubmissionModel.BaseEntityRuleSpecificationSubmissionModels)
                         {
                             BaseEntityRuleSpecification baseEntityRuleSpecification = _mapper.Map<BaseEntityRuleSpecification>(baseEntityRuleSpecificationSubmissionModel);
+                            baseEntityRuleSpecification.BaseEntityRuleId = baseEntityRule.BaseEntityRuleId;
                             baseEntityRuleSpecification = await _baseEntityRuleSpecificationRepository.AddBaseEntityRuleSpecification(baseEntityRuleSpecification);
                         }
                     }
@@ -167,17 +171,37 @@ namespace ShiftSchedularBLL.Service
 
             if (!string.IsNullOrEmpty(lcode))
             {
-                IEnumerable<BaseEntityRule> baseEntityRules = await _baseEntityRuleRepository.GetAll();
-                List<RuleTypeLocalizedDTO> ruleTypeLocalizedDTOs = await _ruleTypeService.GetAllRuleTypesByLocalization(lcode);
-
-                foreach (BaseEntityRule baseEntityRule in baseEntityRules)
+                try
                 {
-                    BaseEntityRuleDTO baseEntityRuleDTO = _mapper.Map<BaseEntityRuleDTO>(baseEntityRule);
-                    baseEntityRuleDTO.RuleTypeDisplayValue = ruleTypeLocalizedDTOs.Where(i => i.RuleTypeId.Equals(baseEntityRule.RuleTypeId)).FirstOrDefault().RuleTypeLocalizedName ?? "";
-                    baseEntityRuleDTO.BaseEntityRuleSpecifications = (List<BaseEntityRuleSpecification>)await _baseEntityRuleSpecificationRepository.GetRuleSpecificationsById(baseEntityRule.BaseEntityRuleId);
+                    Dictionary<string, object> parameters = new Dictionary<string, object>();
+                    List<RuleTypeLocalizedDTO> ruleTypeLocalizedDTOs = await _ruleTypeService.GetAllRuleTypesByLocalization(lcode);
 
-                    baseEntityRuleDTOs.Add(baseEntityRuleDTO);
+                    //DataTable dt = await _sqlRawRepository.GetDataTableAsync("SELECT * FROM BaseEntityRules", parameters);
+                   
+                    //List<BaseEntityRule> baseEntityRules = (from rw in dt.AsEnumerable()
+                    //                                        select new BaseEntityRule()
+                    //                                        {
+                    //                                            BaseEntityRuleId = Convert.ToInt32(rw["BaseEntityRuleId"]),
+                    //                                            RuleTypeId = Convert.ToInt32(rw["RuleTypeId"])
+                    //                                        }).ToList();
+                    //// IEnumerable<BaseEntityRule> baseEntityRules = await _sqlRawRepository.ExecuteQuery<BaseEntityRule>("SELECT * FROM BaseEntityRules", parameters);
+                    //// IEnumerable<BaseEntityRule> baseEntityRules = await _baseEntityRuleRepository.GetBaseEntityRules();
+                    
+
+                    //foreach (BaseEntityRule baseEntityRule in baseEntityRules)
+                    //{
+                    //    BaseEntityRuleDTO baseEntityRuleDTO = _mapper.Map<BaseEntityRuleDTO>(baseEntityRule);
+                    //    baseEntityRuleDTO.RuleTypeDisplayValue = ruleTypeLocalizedDTOs.Where(i => i.RuleTypeId.Equals(baseEntityRule.RuleTypeId)).FirstOrDefault().RuleTypeLocalizedName ?? "";
+                    //    baseEntityRuleDTO.BaseEntityRuleSpecifications = (List<BaseEntityRuleSpecification>)await _baseEntityRuleSpecificationRepository.GetRuleSpecificationsById(baseEntityRule.BaseEntityRuleId);
+
+                    //    baseEntityRuleDTOs.Add(baseEntityRuleDTO);
+                    //}
                 }
+                catch (Exception ex)
+                {
+                    string error = ex.Message;
+                }
+                
             }
 
             return baseEntityRuleDTOs;
