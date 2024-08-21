@@ -80,7 +80,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllBaseEntityRulesByLocalization(string lcode)
         {
-            var baseEntityRules = _baseEntityRuleService.GetBaseEntityRules(lcode);
+            var baseEntityRules = await _baseEntityRuleService.GetBaseEntityRules(lcode);
             return Ok(baseEntityRules);
         }
 

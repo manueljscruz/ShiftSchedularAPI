@@ -10,7 +10,7 @@ namespace ShiftSchedularEntity.Entities
 
         #region Navigation Properties
 
-        public virtual IEnumerable<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
+        public virtual ICollection<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
         public virtual RuleType RuleType { get; set; }
 
         #endregion

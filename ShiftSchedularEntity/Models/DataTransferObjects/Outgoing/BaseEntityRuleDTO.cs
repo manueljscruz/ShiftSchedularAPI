@@ -7,11 +7,11 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
         public int BaseEntityRuleId { get; set; }
         public int RuleTypeId { get; set; }
         public string RuleTypeDisplayValue { get; set; }
-        public List<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
+        public List<BaseEntityRuleSpecificationDTO> BaseEntityRuleSpecifications { get; set; }
 
         public BaseEntityRuleDTO()
         {
-            BaseEntityRuleSpecifications = new List<BaseEntityRuleSpecification>();
+            BaseEntityRuleSpecifications = new List<BaseEntityRuleSpecificationDTO>();
         }
     }
 }

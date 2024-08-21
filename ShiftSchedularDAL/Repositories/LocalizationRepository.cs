@@ -27,14 +27,21 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<Localization> GetLocalizationByLanguageCode(string strLanguageCode)
         {
+            Localization localization = null;
             if (!string.IsNullOrEmpty(strLanguageCode))
             {
-                return await _localizationDbSet.Where(x => x.LocalizationCode == strLanguageCode).FirstOrDefaultAsync();
+                try
+                {
+
+                    localization = await _localizationDbSet.Where(x => x.LocalizationCode == strLanguageCode).FirstOrDefaultAsync();
+                }
+                catch (Exception ex)
+                {
+                    string strError = ex.Message;
+                }
             }
-            else
-            {
-                return null;
-            }
+
+            return localization;
         }
 
         #endregion

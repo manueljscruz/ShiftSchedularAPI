@@ -19,9 +19,9 @@ namespace ShiftSchedularDAL.Repositories
             _dbSet = _dataContext.Set<BaseEntityRule>();
         }
 
-        public async Task<IEnumerable<BaseEntityRule>> GetBaseEntityRules()
+        public async Task<List<BaseEntityRule>> GetBaseEntityRules()
         {
-            IEnumerable<BaseEntityRule> baseEntityRules = new List<BaseEntityRule>();
+            List<BaseEntityRule> baseEntityRules = new List<BaseEntityRule>();
             string strError = string.Empty;
 
             try
@@ -29,7 +29,7 @@ namespace ShiftSchedularDAL.Repositories
                 var cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(60)); // Set timeout to 60 seconds
 
-                baseEntityRules = await _dbSet.ToListAsync(cancellationTokenSource.Token);
+                baseEntityRules = await _dbSet.ToListAsync();
             }
             catch (OperationCanceledException ex)
             {

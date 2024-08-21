@@ -196,6 +196,13 @@ namespace ShiftSchedularIL.Mappers
             CreateMap<BaseEntityRule, BaseEntityRuleDTO>()
                 .ForMember(dest => dest.BaseEntityRuleId, opt => opt.MapFrom(src => src.BaseEntityRuleId))
                 .ForMember(dest => dest.RuleTypeId, opt => opt.MapFrom(src => src.RuleTypeId));
+
+            CreateMap<BaseEntityRuleSpecification, BaseEntityRuleSpecificationDTO>()
+                .ForMember(dest => dest.BaseEntityRuleId, opt => opt.MapFrom(src => src.BaseEntityRuleId))
+                .ForMember(dest => dest.SpecificationId, opt => opt.MapFrom(src => src.SpecificationId))
+                .ForMember(dest => dest.SpecificationValue, opt => opt.MapFrom(src => src.SpecificationValue))
+                .ForMember(dest => dest.IsSpecValueBoolean, opt => opt.MapFrom(src => src.IsSpecValueBoolean))
+                .ForMember(dest => dest.BusinessAspectId, opt => opt.MapFrom(src => src.BusinessAspectId)).ReverseMap();
         }
     }
 }

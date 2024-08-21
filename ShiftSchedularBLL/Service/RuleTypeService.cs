@@ -156,24 +156,19 @@ namespace ShiftSchedularBLL.Service
                 lcode = lcode.Split('-')[0];
 
 
-            _logger.LogInformation($"Fetching rule type localizations for code: {lcode}");
-
-            _logger.LogInformation("Entering GetAllRuleTypesByLocalization");
-            IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
-
-            _logger.LogInformation("Exiting GetAllRuleTypesByLocalization");
-
-            _logger.LogInformation("Entering GetLocalizationByLanguageCode");
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
 
-            _logger.LogInformation("Exiting GetLocalizationByLanguageCode");
-
-            await Task.Yield();
+            IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
 
             // If data found, add it to list to be returned
-            if (localization != null && localization.RuleTypeLocalizations.Count() != 0)
-                ruleTypeLocalizedDTOs = localization.RuleTypeLocalizations.AsQueryable().ProjectTo<RuleTypeLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
-            
+            if (localization != null && ruleTypeLocalizations.Count() != 0)
+            {
+                localization.RuleTypeLocalizations = ruleTypeLocalizations.ToList();
+                if (localization.RuleTypeLocalizations.Count() != 0)
+                    ruleTypeLocalizedDTOs = localization.RuleTypeLocalizations.AsQueryable().ProjectTo<RuleTypeLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
+
+            }
+
             return ruleTypeLocalizedDTOs;
         }
 

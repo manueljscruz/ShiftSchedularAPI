@@ -56,11 +56,13 @@ namespace ShiftSchedularDAL.Repositories
             return result;
         }
 
-        public async Task<IEnumerable<BaseEntityRuleSpecification>> GetRuleSpecificationsById(int ruleSpecId)
+        public async Task<List<BaseEntityRuleSpecification>> GetRuleSpecificationsById(int ruleSpecId)
         {
             if(ruleSpecId != 0)
             {
-                return _baseEntityRuleSpecificationDbSet.Where(i => i.BaseEntityRuleId.Equals(ruleSpecId));
+                List<BaseEntityRuleSpecification> baseEntityRuleSpecifications = new List<BaseEntityRuleSpecification>();
+                baseEntityRuleSpecifications = _baseEntityRuleSpecificationDbSet.Where(i => i.BaseEntityRuleId.Equals(ruleSpecId)).ToList();
+                return baseEntityRuleSpecifications;
             }
             return null;
         }

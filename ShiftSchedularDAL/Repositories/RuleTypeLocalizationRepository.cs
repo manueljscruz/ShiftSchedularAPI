@@ -40,9 +40,18 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(languageCode))
             {
-                Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);
-                if (localization != null)
-                    return _rulesTypeLocalizationDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId));
+                try
+                {
+                    Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);
+                    if (localization != null)
+                        return _rulesTypeLocalizationDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId));
+                }
+                catch (Exception ex)
+                {
+                    string strError = ex.Message;
+                    return null;
+                }
+                
             }
             else
                 return null;

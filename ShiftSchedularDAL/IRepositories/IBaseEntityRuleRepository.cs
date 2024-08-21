@@ -4,6 +4,6 @@ namespace ShiftSchedularDAL.IRepositories
 {
     public interface IBaseEntityRuleRepository : IGenericRepository<BaseEntityRule>
     {
-        Task<IEnumerable<BaseEntityRule>> GetBaseEntityRules();
+        Task<List<BaseEntityRule>> GetBaseEntityRules();
     }
 }
