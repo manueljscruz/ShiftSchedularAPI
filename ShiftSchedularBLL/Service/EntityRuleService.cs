@@ -500,6 +500,7 @@ namespace ShiftSchedularBLL.Service
                         ruleTypeLocalizedDTO = _mapper.Map<RuleTypeLocalizedDTO>(ruleTypeLocalization);
                         RuleType ruleType = await _ruleTypeRepository.GetById(ruleTypeLocalizedDTO.RuleTypeId);
                         ruleTypeLocalizedDTO.MultipleSpecification = ruleType.MultipleSpecification;
+                        ruleTypeLocalizedDTO.IsSpecValuesBoolean = ruleType.IsSpecValuesBoolean;
 
                         // Get relations between this rule type and its business aspect
                         List<RuleTypeBusinessAspect> ruleTypeBusinessAspects = await _ruleTypeBusinessAspectRepository.GetRuleTypeBusinessAspectsByRuleTypeId(ruleTypeLocalization.RuleTypeId);

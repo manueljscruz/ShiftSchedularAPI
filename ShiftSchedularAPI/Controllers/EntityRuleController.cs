@@ -47,7 +47,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-        #region Add Entity Shift
+        #region Add Entity Rule
 
         [HttpPost("add-entity-rule")]
         [ProducesResponseType(200)]
@@ -83,7 +83,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-        #region Update Entity Shift Break
+        #region Update Entity Rule Spec
 
         [HttpPut("update-entity-rule-spec")]
         [ProducesResponseType(204)]

@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using ShiftSchedularBLL.IService;
-using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.APIManagement;
@@ -193,6 +191,31 @@ namespace ShiftSchedularBLL.Service
             }
             
             return baseEntityRuleDTOs;
+        }
+
+        #endregion
+
+        #region Get Base Entity Rules as Entity Rules
+
+        public async Task<List<EntityRuleDTO>> GetBaseEntityRulesAsEntityRules(string lcode)
+        {
+            List<EntityRuleDTO> entityRuleDTOs = new List<EntityRuleDTO>();
+
+            if (!string.IsNullOrEmpty(lcode))
+            {
+                List<BaseEntityRuleDTO> baseEntityRuleDTOs = await this.GetBaseEntityRules(lcode);
+
+                foreach(BaseEntityRuleDTO baseEntityRuleDTO in baseEntityRuleDTOs)
+                {
+                    EntityRuleDTO entityRuleDTO = _mapper.Map<EntityRuleDTO>(baseEntityRuleDTO);
+                    foreach(BaseEntityRuleSpecificationDTO baseEntityRuleSpecificationDTO in baseEntityRuleDTO.BaseEntityRuleSpecifications)
+                        entityRuleDTO.EntityRuleSpecificationDTOs.Add(_mapper.Map<EntityRuleSpecificationDTO>(baseEntityRuleSpecificationDTO));
+
+                    entityRuleDTOs.Add(entityRuleDTO);
+                }
+            }
+
+            return entityRuleDTOs;
         }
 
         #endregion

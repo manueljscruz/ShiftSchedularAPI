@@ -5,6 +5,7 @@
         public int RuleTypeId { get; set; }
         public int LocalizationId { get; set; }
         public string RuleTypeDisplayValue { get; set; }
+        public string RuleTypeDescriptionDisplayValue { get; set; }
 
         #region Navigation Properties
 

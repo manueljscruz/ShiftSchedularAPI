@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20240826142247_RuleTypeSpecBoolCol")]
+    partial class RuleTypeSpecBoolCol
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -425,10 +428,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<bool>("MultipleSpecification")
                         .HasColumnType("bit");
 
-                    b.Property<string>("RuleTypeDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("RuleTypeName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -460,10 +459,6 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Property<int>("LocalizationId")
                         .HasColumnType("int");
-
-                    b.Property<string>("RuleTypeDescriptionDisplayValue")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RuleTypeDisplayValue")
                         .IsRequired()

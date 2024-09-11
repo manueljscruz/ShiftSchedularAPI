@@ -6,6 +6,8 @@
 
         public string NewRuleType { get; set; }
         public bool MultipleSpecification { get; set; }
+        public bool IsSpecValuesBoolean { get; set; }
+        public string RuleTypeDescription { get; set; }
 
         #endregion
 
@@ -15,6 +17,8 @@
         {
             NewRuleType = string.Empty;
             MultipleSpecification = false;
+            IsSpecValuesBoolean = false;
+            RuleTypeDescription = string.Empty;
         }
 
         #endregion

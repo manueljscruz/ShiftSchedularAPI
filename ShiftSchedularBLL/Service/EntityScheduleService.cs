@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
+using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
@@ -34,6 +35,8 @@ namespace ShiftSchedularBLL.Service
         private readonly IShiftService _shiftService;
         private readonly IEntityRuleService _entityRuleService;
         private readonly IEntityService _entityService;
+        private readonly IBaseEntityRuleService _baseEntityRuleService;
+        private readonly IScheduleGeneratorService _scheduleGeneratorService;
 
         #endregion
 
@@ -41,7 +44,7 @@ namespace ShiftSchedularBLL.Service
 
         public EntityScheduleService(IMapper mapper, IGeneralService generalService, IUnitOfWork unitOfWork, IEntityScheduleRepository entityScheduleRepository,
             IEntityScheduleWorkersRepository scheduleEntryWorkersRepository, IGenericRepository<Entity> entityRepository, IEntityWorkerRepository entityWorkerRepository, 
-            IShiftService shiftService, IEntityRuleService entityRuleService, IEntityService entityService)
+            IShiftService shiftService, IEntityRuleService entityRuleService, IEntityService entityService, IScheduleGeneratorService scheduleGeneratorService)
         {
             _mapper = mapper;
             _generalService = generalService;
@@ -53,6 +56,7 @@ namespace ShiftSchedularBLL.Service
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
             _entityService = entityService;
+            _scheduleGeneratorService = scheduleGeneratorService;
         }
 
         #endregion
@@ -296,6 +300,8 @@ namespace ShiftSchedularBLL.Service
                     List<ScheduleEntryDTO> scheduleEntryDTOs = new List<ScheduleEntryDTO>();
                     try
                     {
+                        #region Delete Entries
+
                         // Get Entity Schedules within a specific time period
                         List<ScheduleEntry> scheduleEntries = await _entityScheduleRepository.GetScheduleEntries(createEntityScheduleDTO.EntityId, string.Empty, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
 
@@ -312,6 +318,9 @@ namespace ShiftSchedularBLL.Service
                             }
                         }
 
+                        #endregion
+
+                        #region Get Relevant Data
 
                         // Get date differential between start and end date
                         TimeSpan dateDifference = createEntityScheduleDTO.EndDate - createEntityScheduleDTO.StartDate;
@@ -327,18 +336,42 @@ namespace ShiftSchedularBLL.Service
                         else
                             shifts = await _shiftService.GetSpecificShifts(createEntityScheduleDTO.FilteredShifts);
 
+                        // Get Base Entity Rules
+                        List<EntityRuleDTO> baseEntityRuleDTOs = await _baseEntityRuleService.GetBaseEntityRulesAsEntityRules(createEntityScheduleDTO.LanguageCode);
+
                         // Get Rules
                         if(createEntityScheduleDTO.FilteredRules.Count() == 0)
                             ruleDTOs = await _entityRuleService.GetEntityRules(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.LanguageCode);
                         else
                             ruleDTOs = await _entityRuleService.GetSpecificRules(createEntityScheduleDTO.FilteredRules, createEntityScheduleDTO.LanguageCode);
 
-                        // For each day
-                        for(int i = 0; i < dateDifference.Days; i++)
+                        // Add missing Base Entity Rules to ruleDTOs
+                        foreach (var baseEntityRule in baseEntityRuleDTOs)
                         {
+                            if (!ruleDTOs.Any(r => r.RuleTypeId == baseEntityRule.RuleTypeId))
+                            {
+                                ruleDTOs.Add(baseEntityRule);
+                            }
+                        }
+
+                        #endregion
+
+                        #region Create Shift Entries
+
+                        // For each day
+                        for (int i = 0; i < dateDifference.Days; i++)
+                        {
+                            // Check if its the weekend
+                            bool isWeekend = cycleDate.DayOfWeek == DayOfWeek.Saturday || cycleDate.DayOfWeek == DayOfWeek.Sunday;
                             // For each shift
                             foreach(ShiftDTO shift in shifts)
                             {
+                                // If there isnt a rule to include this shift on the weekends
+                                if(isWeekend && !ruleDTOs.Any(i => i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
+                                {
+                                    continue;
+                                }
+
                                 // Create Schedule Entry
                                 ScheduleEntry scheduleEntry = new ScheduleEntry
                                 {
@@ -369,8 +402,9 @@ namespace ShiftSchedularBLL.Service
                             cycleDate.AddDays(1);
                         }
 
+                        #endregion
 
-
+                        scheduleEntryDTOs = await _scheduleGeneratorService.FillOutSchedule(scheduleEntryDTOs, shifts, ruleDTOs, entityWorkerMemberDTOs);
                     }
                     catch (Exception ex)
                     {
@@ -381,8 +415,6 @@ namespace ShiftSchedularBLL.Service
                     {
                         _unitOfWork.Dispose();
                     }
-
-                    
                 }
             }
 
@@ -428,6 +460,11 @@ namespace ShiftSchedularBLL.Service
 
         //    return response;
         //}
+
+        #region Rule Validation - Methods
+
+
+        #endregion
 
         #endregion
 

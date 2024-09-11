@@ -50,7 +50,8 @@ namespace ShiftSchedularBLL.Service
                 RuleType ruleType = new RuleType
                 {
                     RuleTypeName = newRuleType.NewRuleType,
-                    MultipleSpecification = newRuleType.MultipleSpecification
+                    MultipleSpecification = newRuleType.MultipleSpecification,
+                    IsSpecValuesBoolean = newRuleType.IsSpecValuesBoolean
                 };
 
                 ruleType = await _ruleTypeRepository.Add(ruleType);
@@ -158,6 +159,7 @@ namespace ShiftSchedularBLL.Service
 
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
 
+            IEnumerable<RuleType> ruleTypes = await _ruleTypeRepository.GetAll();
             IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
 
             // If data found, add it to list to be returned
@@ -165,7 +167,13 @@ namespace ShiftSchedularBLL.Service
             {
                 localization.RuleTypeLocalizations = ruleTypeLocalizations.ToList();
                 if (localization.RuleTypeLocalizations.Count() != 0)
+                {
                     ruleTypeLocalizedDTOs = localization.RuleTypeLocalizations.AsQueryable().ProjectTo<RuleTypeLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
+                    foreach(RuleTypeLocalizedDTO ruleTypeLocalized in ruleTypeLocalizedDTOs)
+                    {
+                        ruleTypeLocalized.IsSpecValuesBoolean = ruleTypes.Where(i=> i.RuleTypeId.Equals(ruleTypeLocalized.RuleTypeId)).FirstOrDefault().IsSpecValuesBoolean;
+                    }
+                }
 
             }
 

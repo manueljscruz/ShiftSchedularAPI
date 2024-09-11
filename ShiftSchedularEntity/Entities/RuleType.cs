@@ -8,6 +8,8 @@ namespace ShiftSchedularEntity.Entities
         public int RuleTypeId { get; set; }
         public string RuleTypeName { get; set; }
         public bool MultipleSpecification { get; set; }
+        public bool IsSpecValuesBoolean { get; set; }
+        public string RuleTypeDescription { get; set; }
 
         #region Navigation Properties
 

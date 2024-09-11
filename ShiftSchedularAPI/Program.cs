@@ -108,6 +108,7 @@ builder.Services.AddScoped<IAbsenceTypeService, AbsenceTypeService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IEntityScheduleService, EntityScheduleService>();
 builder.Services.AddScoped<IBaseEntityRuleService, BaseEntityRuleService>();
+builder.Services.AddScoped<IScheduleGeneratorService, ScheduleGeneratorService>();
 
 // Infrastructure
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
