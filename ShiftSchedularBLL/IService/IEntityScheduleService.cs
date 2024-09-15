@@ -8,6 +8,7 @@ namespace ShiftSchedularBLL.IService
     public interface IEntityScheduleService
     {
         Task<EntityScheduleViewModel> GetEntityScheduleViewModel(ScheduleViewModelRequestDTO viewModelRequest);
+        Task<List<ScheduleEntryDTO>> GetScheduleEntries(ScheduleViewModelRequestDTO viewModelRequest);
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO);
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp);
         Task<ScheduleEntryDTO> GetScheduleEntryById(string scheduleEntryId, string languageCode);

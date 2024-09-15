@@ -404,7 +404,7 @@ namespace ShiftSchedularBLL.Service
 
                         #endregion
 
-                        scheduleEntryDTOs = await _scheduleGeneratorService.FillOutSchedule(scheduleEntryDTOs, shifts, ruleDTOs, entityWorkerMemberDTOs);
+                        scheduleEntryDTOs = await _scheduleGeneratorService.FillOutSchedule(scheduleEntryDTOs, shifts, ruleDTOs, entityWorkerMemberDTOs, createEntityScheduleDTO);
                     }
                     catch (Exception ex)
                     {
