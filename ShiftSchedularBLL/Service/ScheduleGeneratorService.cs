@@ -80,10 +80,20 @@ namespace ShiftSchedularBLL.Service
 
         #region Validate Worker Selection
 
+        /// <summary>
+        /// Validates the worker selection for a current schedule entry
+        /// </summary>
+        /// <param name="currentScheduleEntry"></param>
+        /// <param name="scheduleEntryDTOs"></param>
+        /// <param name="entityWorkerMemberDTO"></param>
+        /// <param name="entityRules"></param>
+        /// <param name="shiftDTOs"></param>
+        /// <param name="createEntityScheduleDTO"></param>
+        /// <returns></returns>
         private async Task<bool> ValidateWorkerSelection(ScheduleEntryDTO currentScheduleEntry, List<ScheduleEntryDTO> scheduleEntryDTOs, EntityWorkerMemberDTO entityWorkerMemberDTO, List<EntityRuleDTO> entityRules, List<ShiftDTO> shiftDTOs, CreateEntityScheduleDTO createEntityScheduleDTO)
         {
             // Get Max Daily hours rule
-            EntityRuleDTO maxDailyHoursRule = entityRules.Where(i => i.RuleTypeId.Equals(RuleTypeConstants.MAX_HOURS_DAY_ID)).FirstOrDefault();
+            EntityRuleDTO maxDailyHoursRule = entityRules.FirstOrDefault((i => i.RuleTypeId.Equals(RuleTypeConstants.MAX_HOURS_DAY_ID)));
             
             IEnumerable<ScheduleEntryDTO> presentDayEntries = scheduleEntryDTOs.Where(i => i.ScheduleEndDate.Date.Equals(currentScheduleEntry.ScheduleEndDate.Date) && i.ScheduleParticipants.Any(j => j.WorkerId.Equals(entityWorkerMemberDTO.WorkerId)));
             // Checks Max Hours per day
@@ -99,13 +109,78 @@ namespace ShiftSchedularBLL.Service
                 return false;
 
             // Check for turns of the same type
-            EntityRuleDTO limitOfTurnsRule = entityRules.Where(i => i.RuleTypeId.Equals(RuleTypeConstants.MAX_CONSECUTIVE_SHIFTS_ID)).FirstOrDefault();
-
-            IEnumerable<ScheduleEntryDTO> previousShiftEntries = scheduleEntryDTOs.Where(i => i != null); // TO DO
-            if (limitOfTurnsRule != null && !CheckForTurnsOfTheSameType(currentScheduleEntry, previousShiftEntries, entityWorkerMemberDTO, limitOfTurnsRule, shiftDTOs))
-                return false;
+            EntityRuleDTO limitOfTurnsRule = entityRules.FirstOrDefault(i => i.RuleTypeId.Equals(RuleTypeConstants.MAX_CONSECUTIVE_SHIFTS_ID) && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(currentScheduleEntry.ShiftId)));
+            
+            if(limitOfTurnsRule != null)
+            {
+                List<ScheduleEntryDTO> previousShiftEntries = await FilterEntriesForConsecutiveTurns(currentScheduleEntry, scheduleEntryDTOs, createEntityScheduleDTO, limitOfTurnsRule.EntityRuleSpecificationDTOs.First().RuleSpecificationValue);
+                if (limitOfTurnsRule != null && !CheckForTurnsOfTheSameType(currentScheduleEntry, previousShiftEntries, entityWorkerMemberDTO, limitOfTurnsRule, shiftDTOs))
+                    return false;
+            }
 
             // Check if worker has performed a shift and requires rest
+            EntityRuleDTO postShiftRestRule = entityRules.FirstOrDefault(i => i.RuleTypeId.Equals(RuleTypeConstants.POST_SHIFT_REST_HOURS_ID));
+            if(limitOfTurnsRule != null && !CheckForPostShiftRest(currentScheduleEntry, scheduleEntryDTOs, entityWorkerMemberDTO, postShiftRestRule))
+                return false;
+
+            return true;
+        }
+
+        #endregion
+
+        #region Check For Turns of the same Type
+
+        /// <summary>
+        /// Checks if worker is part of too many turns of the same type
+        /// </summary>
+        /// <param name="currentScheduleEntry"></param>
+        /// <param name="previousShiftEntries"></param>
+        /// <param name="entityWorkerMemberDTO"></param>
+        /// <param name="limitOfTurnsRule"></param>
+        /// <param name="shiftDTOs"></param>
+        /// <returns></returns>
+        private bool CheckForTurnsOfTheSameType(ScheduleEntryDTO currentScheduleEntry, IEnumerable<ScheduleEntryDTO> previousShiftEntries, EntityWorkerMemberDTO entityWorkerMemberDTO, EntityRuleDTO limitOfTurnsRule, List<ShiftDTO> shiftDTOs)
+        {
+            if(limitOfTurnsRule != null && limitOfTurnsRule.EntityRuleSpecificationDTOs.Count != 0)
+            {
+                EntityRuleSpecificationDTO entityRuleSpecificationDTO = limitOfTurnsRule.EntityRuleSpecificationDTOs.FirstOrDefault();
+
+                // If there is a specification 
+                if(entityRuleSpecificationDTO.RuleSpecificationValue != 0)
+                {
+                    // Sort previous shift entries by ScheduleStartDate (latest first)
+                    var sortedPreviousShifts = previousShiftEntries
+                        .OrderByDescending(i => i.ScheduleStartDate)
+                        .ToList();
+
+                    int consecutiveShiftsCount = 1; // Start with 1 since current shift counts
+
+                    // Iterate through the sorted previous shifts
+                    for (int i = 0; i < sortedPreviousShifts.Count - 1; i++)
+                    {
+                        var currentShift = sortedPreviousShifts[i];
+                        var nextShift = sortedPreviousShifts[i + 1];
+
+                        // Check if the current shift ends just before or overlaps the next shift
+                        if (currentShift.ScheduleEndDate >= nextShift.ScheduleStartDate)
+                        {
+                            // Increase the consecutive shifts count
+                            consecutiveShiftsCount++;
+                        }
+                        else
+                        {
+                            // If there's a gap, break the consecutive chain
+                            break;
+                        }
+
+                        // If consecutive shifts exceed the allowed limit, return false
+                        if (consecutiveShiftsCount > entityRuleSpecificationDTO.RuleSpecificationValue)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
 
             return true;
         }
@@ -305,17 +380,6 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Check For Turns of the same Type
-
-        private bool CheckForTurnsOfTheSameType(ScheduleEntryDTO currentScheduleEntry, IEnumerable<ScheduleEntryDTO> previousShiftEntries, EntityWorkerMemberDTO entityWorkerMemberDTO, EntityRuleDTO limitOfTurnsRule, List<ShiftDTO> shiftDTOs)
-        {
-
-
-            return true;
-        }
-
-        #endregion
-
         #region Filter Weekly Sessions
 
         private async Task<List<ScheduleEntryDTO>> FilterWeeklySessions(ScheduleEntryDTO currentScheduleEntry, List<ScheduleEntryDTO> scheduleEntryDTOs, CreateEntityScheduleDTO createEntityScheduleDTO)
@@ -391,6 +455,89 @@ namespace ShiftSchedularBLL.Service
             filteredWeeklyEntries = filteredWeeklyEntries.Concat(scheduleEntryDTOs.Where(i => i.ScheduleStartDate > currentScheduleEntry.ScheduleStartDate.AddDays(backtrackDaysQty) && i.ScheduleEndDate < currentScheduleEntry.ScheduleStartDate.AddDays(forwardDaysQty))).ToList();
 
             return filteredWeeklyEntries;
+        }
+
+        #endregion
+
+        #region Check For Post Shift Rest
+
+        /// <summary>
+        /// Checks if worker is valid for this entry in case of post shift rest
+        /// </summary>
+        /// <param name="currentScheduleEntry"></param>
+        /// <param name="previousShiftEntries"></param>
+        /// <param name="entityWorkerMemberDTO"></param>
+        /// <param name="postShiftRestRule"></param>
+        /// <returns></returns>
+        private bool CheckForPostShiftRest(ScheduleEntryDTO currentScheduleEntry, IEnumerable<ScheduleEntryDTO> previousShiftEntries, EntityWorkerMemberDTO entityWorkerMemberDTO, EntityRuleDTO? postShiftRestRule)
+        {
+            if (postShiftRestRule != null)
+            {
+                // For each shift post rest rule specification 
+                foreach (EntityRuleSpecificationDTO entityRuleSpecificationDTO in postShiftRestRule.EntityRuleSpecificationDTOs)
+                {
+                    if (entityRuleSpecificationDTO.BusinessAspectId != null && entityRuleSpecificationDTO.RuleSpecificationValue != null)
+                    {
+                        // Check entries where the worker is part of shifts before the current entry
+                        ScheduleEntryDTO lastPreCurrentScheduleEntry = previousShiftEntries.Where(i => i.ShiftId.Equals(entityRuleSpecificationDTO.BusinessAspectId)
+                    && i.ScheduleStartDate < currentScheduleEntry.ScheduleStartDate
+                    && i.ScheduleParticipants.Any(j => j.WorkerId.Equals(entityWorkerMemberDTO.WorkerId))).OrderByDescending(i => i.ScheduleStartDate).FirstOrDefault();
+
+                        if (lastPreCurrentScheduleEntry != null)
+                        {
+                            // Check if from the end of the schedule entry, plus the time of rest, if it overlaps the current entry, if so it cannot happen
+                            if (lastPreCurrentScheduleEntry.ScheduleEndDate + TimeSpan.FromHours(entityRuleSpecificationDTO.RuleSpecificationValue) >= currentScheduleEntry.ScheduleStartDate)
+                                return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Filter Entries for Consecutive Turns
+
+        /// <summary>
+        /// Checks and filters entries both to be generated or existing in the db
+        /// for consecutive turns validations
+        /// </summary>
+        /// <param name="currentScheduleEntry"></param>
+        /// <param name="scheduleEntryDTOs"></param>
+        /// <param name="createEntityScheduleDTO"></param>
+        /// <param name="ruleSpecificationValue"></param>
+        /// <returns></returns>
+        private async Task<List<ScheduleEntryDTO>> FilterEntriesForConsecutiveTurns(ScheduleEntryDTO currentScheduleEntry, List<ScheduleEntryDTO> scheduleEntryDTOs, CreateEntityScheduleDTO createEntityScheduleDTO, int ruleSpecificationValue)
+        {
+            List<ScheduleEntryDTO> filteredEntries = new List<ScheduleEntryDTO>();
+            
+            // Get the previous shift entries
+            IEnumerable<ScheduleEntryDTO> previousShiftEntries = scheduleEntryDTOs.Where(i => i.ScheduleStartDate < currentScheduleEntry.ScheduleStartDate && i.ShiftId.Equals(currentScheduleEntry.ShiftId)).OrderByDescending(i => i.ScheduleStartDate);
+
+            filteredEntries = filteredEntries.Concat(previousShiftEntries).ToList();
+
+            // if there are entries and are greater than the rule specification value
+            if (ruleSpecificationValue != 0 && previousShiftEntries.Count() > 0 && previousShiftEntries.Count() < ruleSpecificationValue)
+            {
+                int daysToGoBack = ruleSpecificationValue - previousShiftEntries.Count();
+                DateTime startDate = previousShiftEntries.Last().ScheduleStartDate.AddDays(-daysToGoBack);
+                DateTime endDate = previousShiftEntries.Last().ScheduleStartDate;
+
+                ScheduleViewModelRequestDTO requestDTO = new ScheduleViewModelRequestDTO
+                {
+                    EntityId = createEntityScheduleDTO.EntityId,
+                    WorkerId = createEntityScheduleDTO.WorkerId,
+                    LanguageCode = createEntityScheduleDTO.LanguageCode,
+                    StartDateSearch = startDate,
+                    EndDateSearch = endDate
+                };
+
+                filteredEntries = filteredEntries.Concat(await _entityScheduleService.GetScheduleEntries(requestDTO)).ToList();
+            }
+
+            return filteredEntries.OrderByDescending(i => i.ScheduleStartDate).ToList();
         }
 
         #endregion
