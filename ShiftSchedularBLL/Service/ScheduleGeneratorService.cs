@@ -1,16 +1,10 @@
 ﻿using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Migrations;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -37,14 +31,15 @@ namespace ShiftSchedularBLL.Service
 
         public async Task<List<ScheduleEntryDTO>> FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, CreateEntityScheduleDTO createEntityScheduleDTO)
         {
+            Random rand = new Random();
+
             foreach(ScheduleEntryDTO scheduleEntryDTO in scheduleEntryDTOs)
             {
                 List<EntityWorkerMemberDTO> assignedWorkers = new List<EntityWorkerMemberDTO>();
+                List<EntityWorkerMemberDTO> notEligible = new List<EntityWorkerMemberDTO>();
 
                 // Filter valid workers for this entry
                 List<EntityWorkerMemberDTO> filteredWorkers = FilterWorkersForRequiredSkillset(scheduleEntryDTO, entityRules, entityWorkerMemberDTOs);
-
-                List<EntityWorkerMemberDTO> notEligible = new List<EntityWorkerMemberDTO>();
 
                 // Get the max workers assignable to this shift
                 int maxWorkers = ReturnMaxWorkersPerShift(entityRules, scheduleEntryDTO);
@@ -57,20 +52,73 @@ namespace ShiftSchedularBLL.Service
                 {
                     bool hasMinSkillSet = false;
 
-                    int numberOfTries = 0;
-
-                    while(hasMinSkillSet == false || numberOfTries != filteredWorkers.Count)
+                    // While the skillset is not satisfied or all workers have been assigned
+                    while(hasMinSkillSet == false || assignedWorkers.Count + notEligible.Count != filteredWorkers.Count)
                     {
-                        // EntityWorkerMemberDTO entityWorkerMemberDTO = ;
+                        // TODO: Get worker from filtered
+                        EntityWorkerMemberDTO selectedWorker = filteredWorkers[rand.Next(filteredWorkers.Count)];
 
+                        // Check if the worker has already been assigned or marked as not eligible
+                        if (assignedWorkers.Contains(selectedWorker) || notEligible.Contains(selectedWorker))
+                            continue;
+
+                        // Validate worker selection
+                        bool validateSelection = await ValidateWorkerSelection(scheduleEntryDTO, scheduleEntryDTOs, selectedWorker, entityRules, shifts, createEntityScheduleDTO);
+
+                        // Eligible for this entry
+                        if(validateSelection)
+                        {
+                            // Add worker and signal that this worker has been assigned
+                            scheduleEntryDTO.ScheduleParticipants.Add(selectedWorker);
+                            assignedWorkers.Add(selectedWorker);
+                        }
+                        // Not Eligible for this entry
+                        else
+                        {
+                            notEligible.Add(selectedWorker);
+                        }
+
+                        // If there is a max workers for this shift restriction and its reached
+                        if(maxWorkers != 0 && assignedWorkers.Count == maxWorkers)
+                            break;
 
                         hasMinSkillSet = IsSkillSetFullfilled(assignedWorkers, quantityPerSkillset);
                     }
                 }
 
-
                 // Regular assign
+                else
+                {
+                    while (assignedWorkers.Count + notEligible.Count != entityWorkerMemberDTOs.Count)
+                    {
+                        // Select a random worker from the full pool of workers
+                        EntityWorkerMemberDTO selectedWorker = entityWorkerMemberDTOs[rand.Next(entityWorkerMemberDTOs.Count)];
 
+                        // Check if the worker has already been assigned or marked as not eligible
+                        if (assignedWorkers.Contains(selectedWorker) || notEligible.Contains(selectedWorker))
+                            continue;
+
+                        // Validate worker selection
+                        bool validateSelection = await ValidateWorkerSelection(scheduleEntryDTO, scheduleEntryDTOs, selectedWorker, entityRules, shifts, createEntityScheduleDTO);
+
+                        // Eligible for this entry
+                        if (validateSelection)
+                        {
+                            // Add worker and signal that this worker has been assigned
+                            scheduleEntryDTO.ScheduleParticipants.Add(selectedWorker);
+                            assignedWorkers.Add(selectedWorker);
+                        }
+                        // Not Eligible for this entry
+                        else
+                        {
+                            notEligible.Add(selectedWorker);
+                        }
+
+                        // If there is a max workers for this shift restriction and its reached
+                        if (maxWorkers != 0 && assignedWorkers.Count == maxWorkers)
+                            break;
+                    }
+                }
             }
 
             return scheduleEntryDTOs;

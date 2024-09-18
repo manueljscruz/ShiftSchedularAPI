@@ -405,12 +405,13 @@ namespace ShiftSchedularBLL.Service
                         #endregion
 
                         scheduleEntryDTOs = await _scheduleGeneratorService.FillOutSchedule(scheduleEntryDTOs, shifts, ruleDTOs, entityWorkerMemberDTOs, createEntityScheduleDTO);
+                    
+                        response.Result = scheduleEntryDTOs;
                     }
                     catch (Exception ex)
                     {
                         await _unitOfWork.RollbackAsync();
                     }
-
                     finally
                     {
                         _unitOfWork.Dispose();
