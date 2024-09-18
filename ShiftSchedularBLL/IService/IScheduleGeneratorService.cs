@@ -11,6 +11,6 @@ namespace ShiftSchedularBLL.IService
 {
     public interface IScheduleGeneratorService
     {
-        Task<List<ScheduleEntryDTO>> FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, CreateEntityScheduleDTO createEntityScheduleDTO);
+        // Task<List<ScheduleEntryDTO>> FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, CreateEntityScheduleDTO createEntityScheduleDTO);
     }
 }
