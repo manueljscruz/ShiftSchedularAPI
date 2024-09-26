@@ -315,26 +315,29 @@ namespace ShiftSchedularBLL.Service
 
             IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId);
 
-            foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
+            if(entityWorkerMembers != null)
             {
-                EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
-                entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
+                foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
+                {
+                    EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
+                    entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
 
-                int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
+                    int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
 
-                entityWorkerMemberDTO.SkillSet = viewModel.Skills.Where(i => skillIds.Contains(i.SkillId))
-                                            .Select(s => new SkillLocalizedDTO
-                                            {
-                                                SkillId = s.SkillId,
-                                                SkillLocalizedName = s.SkillLocalizedName,
-                                                SkillHexBGColor = s.SkillHexBGColor,
-                                                SkillHexFontColor = s.SkillHexFontColor
-                                            }).ToList();
+                    entityWorkerMemberDTO.SkillSet = viewModel.Skills.Where(i => skillIds.Contains(i.SkillId))
+                                                .Select(s => new SkillLocalizedDTO
+                                                {
+                                                    SkillId = s.SkillId,
+                                                    SkillLocalizedName = s.SkillLocalizedName,
+                                                    SkillHexBGColor = s.SkillHexBGColor,
+                                                    SkillHexFontColor = s.SkillHexFontColor
+                                                }).ToList();
 
-                viewModel.EntityMembers.Add(entityWorkerMemberDTO);
+                    viewModel.EntityMembers.Add(entityWorkerMemberDTO);
 
+                }
             }
-
+            
             viewModel.EntityOwnerId = await _entityWorkerRepository.GetEntityOwnerId(entityId);
 
             return viewModel;
@@ -419,12 +422,12 @@ namespace ShiftSchedularBLL.Service
             if (entityProfileViewModelRequest != null)
             {
                 Entity entity = await _entityRepository.GetById(entityProfileViewModelRequest.EntityId);
-                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
                 EntityType entityType = await _entityTypeRepository.GetById(entity.EntityTypeId);
                 EntityTypeLocalization entityTypeLocalization = await _entityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
 
                 entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, entityName: entity.EntityName, entityDescription: entity.EntityDescription, entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, await _entityWorkerRepository.GetTotalCountByEntity(entity.EntityId));
-                entityProfileViewModel.AllowEdit = entityWorker.IsOwner;
+                entityProfileViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 if (entityProfileViewModel.AllowEdit)
                 {
@@ -601,6 +604,106 @@ namespace ShiftSchedularBLL.Service
 
             return response;
         }
+
+        #endregion
+
+        #region Update Entity Member
+
+
+        public async Task<BaseResponse<bool>> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = EntityWorkerRelatedMessages.AddNewMemberUnexpectedError;
+            response.Success = false;
+
+            if (updateEntityMemberDTO != null)
+            {
+                if (string.IsNullOrEmpty(updateEntityMemberDTO.WorkerId))
+                {
+                    response.Message = "";
+                    return response;
+                }
+
+                else if(string.IsNullOrEmpty(updateEntityMemberDTO.EntityId))
+                {
+                    response.Message = "";
+                    return response;
+                }
+
+                else if(updateEntityMemberDTO.IsBot && string.IsNullOrEmpty(updateEntityMemberDTO.WorkerName))
+                {
+                    response.Message = "";
+                    return response;
+                }
+
+                else if(updateEntityMemberDTO.AssignedSkills.Count == 0)
+                {
+                    response.Message = "";
+                    return response;
+                }
+
+                Entity entity = await _entityRepository.GetById(updateEntityMemberDTO.EntityId);
+                if(entity != null)
+                {
+                    try
+                    {
+                        await _unitOfWork.BeginTransactionAsync();
+
+                        Worker worker = await _workerRepository.GetById(updateEntityMemberDTO.WorkerId);
+                        if (worker != null && worker.IsBot)
+                        {
+                            worker.WorkerName = updateEntityMemberDTO.WorkerName;
+                            await _workerRepository.Update(worker);
+                        }
+
+                        List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
+                    
+                        if(entityWorkerInstances.Count == 0)
+                        {
+                            response.Message = "";
+                            return response;
+                        }
+
+                        DateTime dateOfJoin = entityWorkerInstances.First().DateOfJoin;
+
+                        await _entityWorkerRepository.DeleteRange(entityWorkerInstances);
+
+                        foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
+                        {
+                            EntityWorker entityWorkerInstance = new EntityWorker
+                            {
+                                EntityId = entity.EntityId,
+                                WorkerId = worker.WorkerId,
+                                ActiveWorkerStatus = true,
+                                CanCreateSchedules = false,
+                                IsOwner = false,
+                                SkillId = skill.SkillId,
+                                DateOfJoin = dateOfJoin
+                            };
+
+                            await _entityWorkerRepository.Add(entityWorkerInstance);
+                        }
+                    
+                    }
+                    catch (Exception ex)
+                    {
+                        await _unitOfWork.RollbackAsync();
+                    }
+                    finally
+                    {
+                        _unitOfWork.Dispose();
+                    }
+                }
+                else
+                {
+
+                }
+
+            }
+
+            return response;
+        }
+
 
         #endregion
 

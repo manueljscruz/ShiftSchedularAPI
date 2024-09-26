@@ -62,12 +62,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get By Worker and Entity
 
-        public async Task<EntityWorker> GetByWorkerAndEntity(string workerId, string entityId)
+        public async Task<List<EntityWorker>> GetByWorkerAndEntity(string workerId, string entityId)
         {
             if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId))
             {
-                EntityWorker entityWorker = _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId)).FirstOrDefault();
-                return entityWorker;
+                return (List<EntityWorker>)_entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId));
             }
             else return null;
         }
@@ -88,7 +87,9 @@ namespace ShiftSchedularDAL.Repositories
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add("@EntityId", entityId);
 
-                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, parameters);
+                string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);
+
+                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
             }
             else
                 return null;

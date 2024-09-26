@@ -348,11 +348,11 @@ namespace ShiftSchedularBLL.Service
             if (shiftViewModelRequestDTO != null && !string.IsNullOrEmpty(shiftViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.LanguageCode))
             {
                 Entity entity = await _entityRepository.GetById(shiftViewModelRequestDTO.EntityId);
-                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
-                shiftViewModel.AllowEdit = entityWorker.IsOwner;
+                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
+                shiftViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 // If it can change data
-                if (entityWorker.IsOwner)
+                if (entityWorkerInstances.Any(i => i.IsOwner))
                 {
                     // Get Shift Break Types Localized
                     IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _shiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(shiftViewModelRequestDTO.LanguageCode);

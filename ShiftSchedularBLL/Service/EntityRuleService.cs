@@ -478,11 +478,11 @@ namespace ShiftSchedularBLL.Service
             if (entityRuleViewModelRequestDTO != null && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.LanguageCode))
             {
                 Entity entity = await _entityRepository.GetById(entityRuleViewModelRequestDTO.EntityId);
-                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
-                entityRuleViewModel.AllowEdit = entityWorker.IsOwner;
+                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
+                entityRuleViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner); 
 
                 // If it can change data
-                if (entityWorker.IsOwner)
+                if (entityWorkerInstances.Any(i => i.IsOwner))
                 {
                     // Get All business aspect localized
                     IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);

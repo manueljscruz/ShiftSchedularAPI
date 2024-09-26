@@ -154,6 +154,14 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        [HttpPut("update-entity-member")]
+        [ProducesResponseType(200)]
+        public async Task<IActionResult> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO)
+        {
+            BaseResponse<bool> response = await _entityService.UpdateEntityMember(updateEntityMemberDTO);
+            return Ok(response);
+        }
+
         #endregion
     }
 }

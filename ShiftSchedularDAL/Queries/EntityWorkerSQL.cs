@@ -24,6 +24,7 @@
             SELECT
 	            W.WorkerId,
 	            W.WorkerName,
+                W.IsBot,
 	            EW.CanCreateSchedules,
 	            EW.IsOwner,
                 EW.DateOfJoin,
@@ -33,7 +34,7 @@
             WHERE
 	            EW.EntityId = @EntityId
                 {0}
-            GROUP BY W.WorkerId, W.WorkerName, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
+            GROUP BY W.WorkerId, W.WorkerName, W.isBot, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
         ";
 
         public static readonly string GetDistinctEntityWorkersListFilter = @"

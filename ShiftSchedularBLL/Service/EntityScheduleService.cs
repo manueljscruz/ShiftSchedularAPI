@@ -72,11 +72,11 @@ namespace ShiftSchedularBLL.Service
             if (viewModelRequest != null && !string.IsNullOrEmpty(viewModelRequest.EntityId) && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
             {
                 Entity entity = await _entityRepository.GetById(viewModelRequest.EntityId);
-                EntityWorker entityWorker = await _entityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
-                viewModel.AllowEdit = entityWorker.IsOwner;
+                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
+                viewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 // If it can change data
-                if (entityWorker.IsOwner)
+                if (entityWorkerInstances.Any(i => i.IsOwner))
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
