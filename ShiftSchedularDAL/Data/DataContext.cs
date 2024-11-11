@@ -67,6 +67,8 @@ namespace ShiftSchedularDAL.Data
             modelBuilder.Entity<Gender>()
                 .HasKey(g => g.GenderId);
 
+            modelBuilder.Entity<Gender>().Property(g => g.GenderValue).HasMaxLength(100).IsRequired();
+
             #endregion
 
             #region Gender Localization Configuration

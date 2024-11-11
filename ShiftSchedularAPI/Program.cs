@@ -1,16 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using ShiftSchedularBLL.IService;
-using ShiftSchedularBLL.Service;
+using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
-using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Repositories;
-using ShiftSchedularDAL.UnitOfWork;
-using ShiftSchedularEntity.Entities;
-using ShiftSchedularIL.IServices;
-using ShiftSchedularIL.Mappers;
-using ShiftSchedularIL.Services;
-using System.ComponentModel;
-using System.Reflection;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,73 +38,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Repositories
-builder.Services.AddScoped<IGenericRepository<Gender>, GenericRepository<Gender>>();
-builder.Services.AddScoped<IGenericRepository<GenderLocalization>, GenericRepository<GenderLocalization>>();
-builder.Services.AddScoped<ILocalizationRepository, LocalizationRepository>();
-builder.Services.AddScoped<IWorkerRepository, WorkerRepository>();
-builder.Services.AddScoped<IGenericRepository<EntityType>, GenericRepository<EntityType>>();
-builder.Services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
-builder.Services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
-builder.Services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
-builder.Services.AddScoped<ISkillRepository, SkillRepository>();
-builder.Services.AddScoped<ISkillLocalizationRepository, SkillLocalizationRepository>();
-builder.Services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
-builder.Services.AddScoped<ISQLRawRepository<object>, SqlRawRepository<object>>();
-builder.Services.AddScoped<IEntityWorkerInvitationRepository, EntityWorkerInvitationRepository>();
-// Repositories - Shifts
-builder.Services.AddScoped<IShiftRepository, ShiftRepository>();
-builder.Services.AddScoped<IShiftBreakRepository, ShiftBreakRepository>();
-builder.Services.AddScoped<IGenericRepository<ShiftBreakType>, GenericRepository<ShiftBreakType>>();
-builder.Services.AddScoped<IShiftBreakTypeLocalizationRepository, ShiftBreakTypeLocalizationRepository>();
-builder.Services.AddScoped<IGenericRepository<ShiftTemplate>, GenericRepository<ShiftTemplate>>();
-builder.Services.AddScoped<IGenericRepository<ShiftBreakTemplate>, GenericRepository<ShiftBreakTemplate>>();
-builder.Services.AddScoped<IShiftTemplateBreaksRepository, ShiftTemplateBreaksRepository>();
-// Repositories - Rules
-builder.Services.AddScoped<IBusinessAspectLocalizationRepository, BusinessAspectLocalizationRepository>();
-builder.Services.AddScoped<IGenericRepository<BusinessAspect>, GenericRepository<BusinessAspect>>();
-builder.Services.AddScoped<IRuleTypeLocalizationRepository, RuleTypeLocalizationRepository>();
-builder.Services.AddScoped<IGenericRepository<RuleType>, GenericRepository<RuleType>>();
-builder.Services.AddScoped<IEntityRuleRepository, EntityRuleRepository>();
-builder.Services.AddScoped<IEntityRuleSpecificationRepository, EntityRuleSpecificationRepository>();
-builder.Services.AddScoped<IRuleTypeBusinessAspectRepository, RuleTypeBusinessAspectRepository>();
-// Repositories - Absences
-builder.Services.AddScoped<IAbsenceTypeLocalizationRepository, AbsenceTypeLocalizationRepository>();
-builder.Services.AddScoped<IGenericRepository<AbsenceType>, GenericRepository<AbsenceType>>();
-builder.Services.AddScoped<IEntityWorkerAbsenceRepository, EntityWorkerAbsenceRepository>();
-// Repositories - Schedule
-builder.Services.AddScoped<IEntityScheduleRepository, EntityScheduleRepository>();
-builder.Services.AddScoped<IEntityScheduleWorkersRepository, EntityScheduleWorkersRepository>();
-// Repositories - Base Entity Rule
-builder.Services.AddScoped<IBaseEntityRuleRepository, BaseEntityRuleRepository>();
-builder.Services.AddScoped<IBaseEntityRuleSpecificationRepository, BaseEntityRuleSpecificationRepository>();
-
-// Services
-builder.Services.AddLogging();
-builder.Services.AddScoped<IGenderService, GenderService>();
-builder.Services.AddScoped<ILocalizationService, LocalizationService>();
-builder.Services.AddScoped<IWorkerService, WorkerService>();
-builder.Services.AddScoped<IEntityTypeService, EntityTypeService>();
-builder.Services.AddScoped<IEntityService, EntityService>();
-builder.Services.AddScoped<ISkillService, SkillService>();
-builder.Services.AddScoped<IShiftService, ShiftService>();
-builder.Services.AddScoped<IShiftBreakTypeService, ShiftBreakTypeService>();
-builder.Services.AddScoped<IShiftTemplateService, ShiftTemplateService>();
-builder.Services.AddScoped<IBusinessAspectService, BusinessAspectService>();
-builder.Services.AddScoped<IEntityRuleService, EntityRuleService>();
-builder.Services.AddScoped<IRuleTypeService, RuleTypeService>();
-builder.Services.AddScoped<IEntityWorkerAbsenceService, EntityWorkerAbsenceService>();
-builder.Services.AddScoped<IAbsenceTypeService, AbsenceTypeService>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IEntityScheduleService, EntityScheduleService>();
-builder.Services.AddScoped<IBaseEntityRuleService, BaseEntityRuleService>();
-builder.Services.AddScoped<IScheduleGeneratorService, ScheduleGeneratorService>();
-
-// Infrastructure
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
-builder.Services.AddScoped<IGeneralService, GeneralService>();
-builder.Services.AddScoped<ICryptographyService, CryptographyService>();
-
+builder.Services.AddServicesInjections();
 
 var app = builder.Build();
 

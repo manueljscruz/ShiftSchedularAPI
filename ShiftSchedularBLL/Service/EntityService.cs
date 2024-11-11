@@ -666,6 +666,8 @@ namespace ShiftSchedularBLL.Service
 
                         DateTime dateOfJoin = entityWorkerInstances.First().DateOfJoin;
 
+                        // entityWorkerInstances.Where(i => i.SkillId)
+
                         await _entityWorkerRepository.DeleteRange(entityWorkerInstances);
 
                         foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
