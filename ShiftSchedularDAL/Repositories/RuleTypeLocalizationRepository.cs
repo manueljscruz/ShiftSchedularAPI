@@ -13,11 +13,11 @@ namespace ShiftSchedularDAL.Repositories
         private readonly ILocalizationRepository _localizationRepository;
         private readonly IUnitOfWork _unitOfWork;
 
-        public RuleTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository) : base(context, unitOfWork)
+        public RuleTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
             _context = context;
             _unitOfWork = unitOfWork;
-            _localizationRepository = localizationRepository;
+            _localizationRepository = unitOfWork.LocalizationRepository;
             _rulesTypeLocalizationDbSet = _context.Set<RuleTypeLocalization>();
         }
 

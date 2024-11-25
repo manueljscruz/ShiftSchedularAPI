@@ -31,9 +31,15 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="newWorkerDTO"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddWorker(NewWorkerDTO newWorkerDTO)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Returns validation errors to the client
+            }
+
             BaseResponse<bool> result = await _workerService.CreateWorker(newWorkerDTO);
 
             return Ok(result);

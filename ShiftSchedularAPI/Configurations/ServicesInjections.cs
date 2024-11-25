@@ -4,6 +4,7 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularIL.Mappers;
 using ShiftSchedularIL.Services;
@@ -13,12 +14,16 @@ namespace ShiftSchedularAPI.Configurations
 {
     public static class ServicesInjections
     {
-        public static void AddServicesInjections(this IServiceCollection services)
+        public static void AddServicesInjections(
+            this IServiceCollection services, 
+            string logDirectory,
+            EmailSettings emailSettings,
+            string baseUrl)
         {
             #region Repositories
 
             services.AddScoped<IGenericRepository<Gender>, GenericRepository<Gender>>();
-            services.AddScoped<IGenericRepository<GenderLocalization>, GenericRepository<GenderLocalization>>();
+            services.AddScoped<IGenderLocalizationRepository, GenderLocalizationRepository>();
             services.AddScoped<ILocalizationRepository, LocalizationRepository>();
             services.AddScoped<IWorkerRepository, WorkerRepository>();
             services.AddScoped<IGenericRepository<EntityType>, GenericRepository<EntityType>>();
@@ -62,6 +67,7 @@ namespace ShiftSchedularAPI.Configurations
             #region Services
 
             services.AddLogging();
+            services.AddScoped<IHomeService, HomeService>();
             services.AddScoped<IGenderService, GenderService>();
             services.AddScoped<ILocalizationService, LocalizationService>();
             services.AddScoped<IWorkerService, WorkerService>();
@@ -85,6 +91,18 @@ namespace ShiftSchedularAPI.Configurations
             services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
             services.AddScoped<IGeneralService, GeneralService>();
             services.AddScoped<ICryptographyService, CryptographyService>();
+            services.AddScoped<ILoggerService>(provider =>
+            {
+                var logger = provider.GetRequiredService<ILogger<LoggerService>>();
+                return new LoggerService(logger, logDirectory);
+            });
+            services.AddScoped<IEmailService, EmailService>();
+            //services.AddScoped<IEmailService>(provider =>
+            //{
+            //    var emailService = provider.GetRequiredService<IEmailService>();
+            //    return new EmailService(emailSettings,baseUrl);
+            //});
+
 
             #endregion
         }

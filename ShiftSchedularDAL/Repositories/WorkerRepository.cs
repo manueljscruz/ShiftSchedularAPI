@@ -39,7 +39,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(email))
             {
-                return await _workerDbSet.Where(x => x.Email == email).FirstOrDefaultAsync();
+                return await _workerDbSet.Where(x => x.Email == email).AsNoTracking().FirstOrDefaultAsync();
             }
             else
             {

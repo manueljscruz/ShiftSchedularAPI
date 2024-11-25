@@ -3,11 +3,6 @@ using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -20,12 +15,12 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Constructor
 
-        public EntityTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository) : base(context, unitOfWork)
+        public EntityTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
             _context = context;
             _entityTypeLocalizationDbSet = _context.Set<EntityTypeLocalization>();
             _unitOfWork = unitOfWork;
-            _localizationRepository = localizationRepository;
+            _localizationRepository = unitOfWork.LocalizationRepository;
         }
 
         #endregion

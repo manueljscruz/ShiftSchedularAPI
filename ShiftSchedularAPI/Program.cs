@@ -1,62 +1,106 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularEntity.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Define a CORS policy name
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+// Add services to the container
+
+// 1. Enable CORS for specific origins (allow Angular app on localhost:4200)
 builder.Services.AddCors(options =>
 {
-
-    options.AddDefaultPolicy(
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:4200")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-        });
+    options.AddPolicy(MyAllowSpecificOrigins, policy =>
+    {
+        //policy.AllowAnyOrigin()
+        //    .AllowAnyHeader()
+        //    .AllowAnyMethod();
+        policy.WithOrigins("http://localhost:4200", "http://192.168.0.9:4200", "https://81a1-188-81-53-74.ngrok-free.app/") // Allow specific origin
+              .AllowAnyHeader()                    // Allow all headers
+              .AllowAnyMethod();                   // Allow all HTTP methods
+    });
 });
 
+// 2. Add controllers and configure JSON options
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
+    // Prevents infinite loops from object cycles in JSON serialization
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase; // Use camelCase or any other naming policy
-    options.JsonSerializerOptions.IgnoreNullValues = true;
+
+    // Enforces camelCase naming for JSON properties
+    options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+
+    // Ignore null values in JSON output
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// 3. Enable Swagger/OpenAPI with XML comments for better documentation
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Adds support for showing controller comments in Swagger UI
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "ShiftSchedularAPI", Version = "v1" });
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath); // Requires an XML comments file to be generated
+});
 
+// 4. Configure database context using SQL Server
 builder.Services.AddDbContext<DataContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddServicesInjections();
+// 5. Add custom services (assumed implemented elsewhere)
+string logDirectory = builder.Configuration.GetValue<string>("LogDirectory");
+string baseUrl = builder.Configuration.GetValue<string>("BaseUrl");
+EmailSettings emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>();
+builder.Services.AddServicesInjections(logDirectory, emailSettings, baseUrl);
+
+// 6. Configure JWT Authentication and Authorization
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateLifetime = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//            ValidAudience = builder.Configuration["Jwt:Audience"],
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+//        };
+//    });
 
 var app = builder.Build();
 
-app.UseCors();
+// Configure the middleware pipeline
 
-// Configure the HTTP request pipeline.
+// 1. Use CORS to allow cross-origin requests
+app.UseCors(MyAllowSpecificOrigins);
+
+// 2. Enable Swagger only in development environment
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// 3. Enable HTTPS redirection
 app.UseHttpsRedirection();
 
-app.UseCors(MyAllowSpecificOrigins);
-
+// 4. Enable Authentication and Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
+// 5. Map controllers
 app.MapControllers();
 
+// Run the application
 app.Run();

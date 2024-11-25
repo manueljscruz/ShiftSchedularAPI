@@ -15,11 +15,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Constructor
 
-        public AbsenceTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository) : base(context, unitOfWork)
+        public AbsenceTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
             _context = context;
             _unitOfWork = unitOfWork;
-            _localizationRepository = localizationRepository;
+            _localizationRepository = unitOfWork.LocalizationRepository;
             _absenceTypeLocalizationDbSet = _context.Set<AbsenceTypeLocalization>();
         }
 
@@ -52,6 +52,9 @@ namespace ShiftSchedularDAL.Repositories
         /// <returns></returns>
         public async Task<IEnumerable<AbsenceTypeLocalization>> GetAbsenceTypesByLocalization(string languageCode)
         {
+            if (string.IsNullOrWhiteSpace(languageCode))
+                return Enumerable.Empty<AbsenceTypeLocalization>();
+
             if (!string.IsNullOrEmpty(languageCode))
             {
                 Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);

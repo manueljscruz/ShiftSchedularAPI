@@ -16,11 +16,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Constructor
 
-        public SkillLocalizationRepository(DataContext context, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository) : base(context, unitOfWork)
+        public SkillLocalizationRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
             _dataContext = context;
             _unitOfWork = unitOfWork;
-            _localizationRepository = localizationRepository;
+            _localizationRepository = unitOfWork.LocalizationRepository;
             _skillLocalizationRepository = _dataContext.Set<SkillLocalization>();
         }
 

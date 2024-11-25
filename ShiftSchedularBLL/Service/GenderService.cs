@@ -14,12 +14,12 @@ namespace ShiftSchedularBLL.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Gender> _genderRepository;
         private readonly ILocalizationRepository _localizationRepository;
-        private readonly IGenericRepository<GenderLocalization> _genderLocalizationRepository;
+        private readonly IGenderLocalizationRepository _genderLocalizationRepository;
         private readonly IMapper _mapper;
 
         #region Constructor
 
-        public GenderService(IUnitOfWork unitOfWork, IGenericRepository<Gender> genderRepository, ILocalizationRepository localizationRepository, IGenericRepository<GenderLocalization> genderLocalizationRepository, IMapper mapper)
+        public GenderService(IUnitOfWork unitOfWork, IGenericRepository<Gender> genderRepository, ILocalizationRepository localizationRepository, IGenderLocalizationRepository genderLocalizationRepository, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _genderRepository = genderRepository;
@@ -88,12 +88,11 @@ namespace ShiftSchedularBLL.Service
                 lcode = lcode.Split('-')[0];
 
             // Get necessary data
-            IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetAll();
-            Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
+            IEnumerable<GenderLocalization> genderLocalizations = await _genderLocalizationRepository.GetGendersByLocalization(lcode);
 
             // If data found, add it to list to be returned
-            if (localization != null && localization.GenderLocalizations.Count() != 0)
-                genderLocalizeds = localization.GenderLocalizations.AsQueryable().ProjectTo<GenderLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
+            if (genderLocalizations.Count() != 0)
+                genderLocalizeds = _mapper.Map<IEnumerable<GenderLocalizedDTO>>(genderLocalizations).ToList();
             
             return genderLocalizeds;
         }

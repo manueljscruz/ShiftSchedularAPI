@@ -12,22 +12,16 @@ namespace ShiftSchedularBLL.Service
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<AbsenceType> _absenceTypeRepository;
-        private readonly IAbsenceTypeLocalizationRepository _absenceTypeLocalizationRepository;
-        private readonly ILocalizationRepository _localizationRepository;
         private readonly IMapper _mapper;
 
         #region Constructor
 
         public AbsenceTypeService(IUnitOfWork unitOfWork, 
-            IGenericRepository<AbsenceType> absenceTypeRepository, 
-            IAbsenceTypeLocalizationRepository absenceTypeLocalizationRepository, 
-            ILocalizationRepository localizationRepository,
+            IGenericRepository<AbsenceType> absenceTypeRepository,
             IMapper mapper) 
         {
             _unitOfWork = unitOfWork;
-            _absenceTypeRepository = absenceTypeRepository;
-            _absenceTypeLocalizationRepository = absenceTypeLocalizationRepository;
-            _localizationRepository = localizationRepository;
+            _absenceTypeRepository = _unitOfWork.GetGenericRepository<AbsenceType>();
             _mapper = mapper;
         }
 
@@ -119,12 +113,11 @@ namespace ShiftSchedularBLL.Service
             if (lcode.Contains("-"))
                 lcode = lcode.Split('-')[0];
 
-            IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizations = await _absenceTypeLocalizationRepository.GetAll();
-            Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(lcode);
-
+            IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizations = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(lcode);
+            
             // If data found, add it to list to be returned
-            if (localization != null && localization.AbsenceTypeLocalizations.Count() != 0)
-                absenceTypeLocalizeds = localization.AbsenceTypeLocalizations.AsQueryable().ProjectTo<AbsenceTypeLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
+            if (absenceTypeLocalizations.Count() != 0)
+                absenceTypeLocalizeds = absenceTypeLocalizations.AsQueryable().ProjectTo<AbsenceTypeLocalizedDTO>(_mapper.ConfigurationProvider).ToList();
 
             return absenceTypeLocalizeds;
         }

@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using ShiftSchedularBLL.IService;
-using ShiftSchedularDAL.IRepositories;
+using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
@@ -14,20 +14,18 @@ namespace ShiftSchedularBLL.Service
     {
         private readonly ICryptographyService _cryptographyService;
         private readonly IGeneralService _generalService;
-        private readonly IWorkerRepository _workerRepository;
         private readonly IMapper _mapper;
-
+        private readonly IUnitOfWork _unitOfWork;
 
         #region Constructor
 
-        public WorkerService(ICryptographyService cryptographyService, IGeneralService generalService, IWorkerRepository workerRepository, IMapper mapper)
+        public WorkerService(ICryptographyService cryptographyService, IGeneralService generalService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _cryptographyService = cryptographyService;
             _generalService = generalService;
-            _workerRepository = workerRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
-
 
         #endregion
 
@@ -47,27 +45,10 @@ namespace ShiftSchedularBLL.Service
 
             try 
             { 
-                if(string.IsNullOrEmpty(newWorker.WorkerName))
+                // Checks if there is already an email in use
+                if(_unitOfWork.WorkerRepository.GetByEmail(newWorker.Email) != null)
                 {
-                    result.Message = WorkerRelatedMessages.WorkerRegistrationNameEmptyError;
-                    return result;
-                }
-
-                if(string.IsNullOrEmpty(newWorker.Password))
-                {
-                    result.Message = WorkerRelatedMessages.WorkerRegistrationPasswordEmptyError;
-                    return result;
-                }
-
-                if(string.IsNullOrEmpty(newWorker.Email))
-                {
-                    result.Message = WorkerRelatedMessages.WorkerEmailEmptyError;
-                    return result;
-                }
-
-                if (!_generalService.ValidateRegexEmail(newWorker.Email))
-                {
-                    result.Message = WorkerRelatedMessages.WorkerRegistrationEmailInvalidError;
+                    result.Message = WorkerRelatedMessages.WorkerEmailInUseError;
                     return result;
                 }
 
@@ -76,7 +57,7 @@ namespace ShiftSchedularBLL.Service
                 worker.WorkerId = _generalService.GenerateGuid();
                 worker.Password = _cryptographyService.HashPassword(worker.Password);
 
-                worker = await _workerRepository.Add(worker);
+                worker = await _unitOfWork.WorkerRepository.Add(worker);
 
                 result.Success = true;
                 result.Result = true;
@@ -121,7 +102,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get worker instance by email
-                Worker worker = await _workerRepository.GetByEmail(loginDTO.Email);
+                Worker worker = await _unitOfWork.WorkerRepository.GetByEmail(loginDTO.Email);
 
                 // Worker found
                 if(worker != null)
@@ -157,7 +138,7 @@ namespace ShiftSchedularBLL.Service
 
             if(workerDTO != null)
             {
-                Worker worker = await _workerRepository.GetById(workerDTO.WorkerId);
+                Worker worker = await _unitOfWork.WorkerRepository.GetById(workerDTO.WorkerId);
                 if(worker != null)
                 {
                     worker.WorkerName = workerDTO.WorkerName;
@@ -165,7 +146,7 @@ namespace ShiftSchedularBLL.Service
                     worker.Email = workerDTO.Email;
 
 
-                    await _workerRepository.Update(worker);
+                    await _unitOfWork.WorkerRepository.Update(worker);
 
                     response.Success = true;
                     response.Result = true;

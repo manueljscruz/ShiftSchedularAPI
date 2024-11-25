@@ -15,11 +15,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Constructor
 
-        public ShiftBreakTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork, ILocalizationRepository localizationRepository) : base(context, unitOfWork)
+        public ShiftBreakTypeLocalizationRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
             _context = context;
             _unitOfWork = unitOfWork;
-            _localizationRepository = localizationRepository;
+            _localizationRepository = unitOfWork.LocalizationRepository;
             _shiftBreakTypeLocalizationDbSet = _context.Set<ShiftBreakTypeLocalization>();
         }
 

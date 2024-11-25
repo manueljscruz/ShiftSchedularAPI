@@ -70,11 +70,38 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Email cannot exceed 255 characters.
+        /// </summary>
+        public static string WorkerEmailExceedsLengthError {
+            get {
+                return ResourceManager.GetString("WorkerEmailExceedsLengthError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This email is already in use..
+        /// </summary>
+        public static string WorkerEmailInUseError {
+            get {
+                return ResourceManager.GetString("WorkerEmailInUseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An unexpected error has occured, please try again later..
         /// </summary>
         public static string WorkerExceptionError {
             get {
                 return ResourceManager.GetString("WorkerExceptionError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected gender value is invalid.
+        /// </summary>
+        public static string WorkerGenderUnexpectedValueError {
+            get {
+                return ResourceManager.GetString("WorkerGenderUnexpectedValueError", resourceCulture);
             }
         }
         
@@ -93,6 +120,15 @@ namespace ShiftSchedularRL.Resources.Home {
         public static string WorkerLoginPasswordIncorrect {
             get {
                 return ResourceManager.GetString("WorkerLoginPasswordIncorrect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name cannot exceed 50 characters.
+        /// </summary>
+        public static string WorkerNameExceedsLengthError {
+            get {
+                return ResourceManager.GetString("WorkerNameExceedsLengthError", resourceCulture);
             }
         }
         
@@ -129,6 +165,15 @@ namespace ShiftSchedularRL.Resources.Home {
         public static string WorkerRegistrationPasswordEmptyError {
             get {
                 return ResourceManager.GetString("WorkerRegistrationPasswordEmptyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password cannot exceed 128 characters.
+        /// </summary>
+        public static string WorkerRegistrationPasswordExceedsLengthError {
+            get {
+                return ResourceManager.GetString("WorkerRegistrationPasswordExceedsLengthError", resourceCulture);
             }
         }
         
