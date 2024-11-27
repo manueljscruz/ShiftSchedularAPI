@@ -34,7 +34,7 @@ namespace ShiftSchedularDAL.Repositories
         public async Task<IEnumerable<ScheduleEntryWorkers>> GetScheduleEntryWorkers(string scheduleEntryId)
         {
             if (!string.IsNullOrEmpty(scheduleEntryId))
-                return await _dbSet.Where(x => x.ScheduleEntryId == scheduleEntryId).ToListAsync();
+                return await _dbSet.Where(x => x.ScheduleEntryId.ToString() == scheduleEntryId).ToListAsync();
             else
                 return null;
         }

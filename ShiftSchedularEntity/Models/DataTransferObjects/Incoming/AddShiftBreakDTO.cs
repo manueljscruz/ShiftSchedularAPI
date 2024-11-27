@@ -2,7 +2,7 @@
 {
     public class AddShiftBreakDTO
     {
-        public string ShiftId { get; set; }
+        public Guid ShiftId { get; set; }
         public int ShiftBreakTypeId { get; set; }
         public TimeSpan ShiftBreakStartTime { get; set; }
         public TimeSpan ShiftBreakDuration { get; set; }

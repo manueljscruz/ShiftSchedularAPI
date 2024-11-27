@@ -76,7 +76,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(workerId))
             {
-                return await _dbSet.Where(i => i.WorkerId.Equals(workerId)).ToListAsync();
+                return await _dbSet.Where(i => i.ApplicationUserId.Equals(workerId)).ToListAsync();
             }
             else return Enumerable.Empty<EntityWorkerInvitation>();
         }
@@ -93,7 +93,7 @@ namespace ShiftSchedularDAL.Repositories
             }
             else
             {
-                return _dbSet.Where(i => i.EntityId.Equals(entityId) && i.Email.Equals(email) && i.WorkerId.Equals(workerId)).FirstOrDefault();
+                return _dbSet.Where(i => i.EntityId.Equals(entityId) && i.Email.Equals(email) && i.ApplicationUserId.Equals(workerId)).FirstOrDefault();
             }
         }
 

@@ -10,8 +10,8 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
     {
         #region Properties
 
-        public string ScheduleEntryId { get; set; }
-        public string ShiftId { get; set; }
+        public Guid ScheduleEntryId { get; set; }
+        public Guid ShiftId { get; set; }
         public DateTime ScheduleStartDate { get; set; }
         public DateTime ScheduleEndDate { get; set; }
         public ShiftDTO ShiftDTO { get; set; }

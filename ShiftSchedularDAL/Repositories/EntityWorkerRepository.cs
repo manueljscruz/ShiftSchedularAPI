@@ -66,7 +66,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId))
             {
-                return (List<EntityWorker>)_entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId));
+                return (List<EntityWorker>)_entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
             }
             else return null;
         }
@@ -145,10 +145,10 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(entityId))
             {
-                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId == entityId);
+                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId.ToString() == entityId);
 
                 if (entityWorker != null)
-                    return entityWorker.WorkerId;
+                    return entityWorker.ApplicationUserId;
             }
             return string.Empty;
         }
@@ -157,9 +157,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Total Count By Entity 
 
-        public async Task<int> GetTotalCountByEntity(string entityId)
+        public async Task<int> GetTotalCountByEntity(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (entityId != Guid.Empty)
             {
                 // GetEntityWorkersCount
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
@@ -183,7 +183,7 @@ namespace ShiftSchedularDAL.Repositories
                 return false;
             }
 
-            return await _entityWorkerDbSet.AnyAsync(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId));
+            return await _entityWorkerDbSet.AnyAsync(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
 
         }
 
@@ -197,7 +197,7 @@ namespace ShiftSchedularDAL.Repositories
 
             if (!string.IsNullOrEmpty(workerId))
             {
-                EntityWorker entityWorker = await _entityWorkerDbSet.Where(i => i.WorkerId.Equals(workerId) && i.EntityId.Equals(entityId)).FirstOrDefaultAsync();
+                EntityWorker entityWorker = await _entityWorkerDbSet.Where(i => i.ApplicationUserId.Equals(workerId) && i.EntityId.Equals(entityId)).FirstOrDefaultAsync();
                 if (entityWorker != null && entityWorker.IsOwner)
                     result = true;
             }

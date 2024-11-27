@@ -90,5 +90,9 @@ namespace ShiftSchedularDAL.Repositories
             throw new NotImplementedException();
         }
 
+        Task<BusinessAspectLocalization> IGenericRepository<BusinessAspectLocalization>.GetById(Guid id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

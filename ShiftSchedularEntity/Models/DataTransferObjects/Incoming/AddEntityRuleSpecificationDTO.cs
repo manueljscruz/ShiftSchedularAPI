@@ -2,7 +2,7 @@
 {
     public class AddEntityRuleSpecificationDTO
     {
-        public string EntityRuleId { get; set; }
+        public Guid EntityRuleId { get; set; }
         public int SpecificationId { get; set; }
         public int RuleSpecificationValue { get; set; }
         public string AspectReferenceId { get; set; }

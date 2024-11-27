@@ -99,11 +99,11 @@ namespace ShiftSchedularBLL.Service
                     {
                         // Add Entity
                         Entity entity = _mapper.Map<Entity>(newEntity);
-                        entity.EntityId = _generalService.GenerateGuid();
+                        entity.EntityId = new Guid();
                         entity = await _entityRepository.Add(entity);
 
                         // If there is no identifier associated to the entity
-                        if (string.IsNullOrEmpty(entity.EntityId))
+                        if (entity.EntityId == Guid.Empty)
                         {
                             await _unitOfWork.RollbackAsync();
                             response.Message = EntitiesRelatedMessages.CreateEntityUnexpectedError;
@@ -117,7 +117,7 @@ namespace ShiftSchedularBLL.Service
                         {
                             EntityWorker entityWorker = new EntityWorker
                             {
-                                WorkerId = newEntity.WorkerId,
+                                ApplicationUserId = newEntity.WorkerId,
                                 EntityId = entity.EntityId,
                                 SkillId = skill.SkillId,
                                 ActiveWorkerStatus = true,
@@ -530,7 +530,7 @@ namespace ShiftSchedularBLL.Service
                                 EntityWorker entityWorkerInstance = new EntityWorker
                                 {
                                     EntityId = entity.EntityId,
-                                    WorkerId = workerGUID,
+                                    ApplicationUserId = workerGUID,
                                     ActiveWorkerStatus = true,
                                     CanCreateSchedules = false,
                                     IsOwner = false,
@@ -581,9 +581,9 @@ namespace ShiftSchedularBLL.Service
 
                         EntityWorkerInvitation entityWorkerInvitation = new EntityWorkerInvitation
                         {
-                            EntityId = newMemberDTO.DestinationEntityId,
+                            EntityId = Guid.Parse(newMemberDTO.DestinationEntityId),
                             Email = newMemberDTO.MemberEmail,
-                            WorkerId = possibleWorker != null ? possibleWorker.WorkerId : null,
+                            ApplicationUserId = possibleWorker != null ? possibleWorker.WorkerId : null,
                             InviteDate = DateTime.UtcNow,
                             SkillsetIds = skillsAggregated
                         };
@@ -675,7 +675,7 @@ namespace ShiftSchedularBLL.Service
                             EntityWorker entityWorkerInstance = new EntityWorker
                             {
                                 EntityId = entity.EntityId,
-                                WorkerId = worker.WorkerId,
+                                ApplicationUserId = worker.WorkerId,
                                 ActiveWorkerStatus = true,
                                 CanCreateSchedules = false,
                                 IsOwner = false,

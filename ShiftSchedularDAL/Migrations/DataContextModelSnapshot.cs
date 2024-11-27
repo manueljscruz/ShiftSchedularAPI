@@ -17,10 +17,143 @@ namespace ShiftSchedularDAL.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.2")
+                .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.AbsenceType", b =>
                 {
@@ -36,7 +169,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("AbsenceTypeId");
 
-                    b.ToTable("AbsenceTypes");
+                    b.ToTable("AbsenceTypes", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.AbsenceTypeLocalization", b =>
@@ -55,7 +188,83 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("AbsenceTypeLocalizations");
+                    b.ToTable("AbsenceTypeLocalizations", (string)null);
+                });
+
+            modelBuilder.Entity("ShiftSchedularEntity.Entities.ApplicationUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("GenderId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GenderId");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BaseEntityRule", b =>
@@ -73,7 +282,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("RuleTypeId");
 
-                    b.ToTable("BaseEntityRules");
+                    b.ToTable("BaseEntityRules", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BaseEntityRuleSpecification", b =>
@@ -95,7 +304,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("BaseEntityRuleId", "SpecificationId");
 
-                    b.ToTable("BaseEntityRuleSpecifications");
+                    b.ToTable("BaseEntityRuleSpecifications", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BusinessAspect", b =>
@@ -112,7 +321,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("BusinessAspectId");
 
-                    b.ToTable("BusinessAspects");
+                    b.ToTable("BusinessAspects", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BusinessAspectLocalization", b =>
@@ -131,21 +340,24 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("BusinessAspectLocalizations");
+                    b.ToTable("BusinessAspectLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Entity", b =>
                 {
-                    b.Property<string>("EntityId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<string>("EntityDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("EntityName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("EntityTypeId")
                         .HasColumnType("int");
@@ -154,17 +366,18 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("EntityTypeId");
 
-                    b.ToTable("Entities");
+                    b.ToTable("Entities", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityRule", b =>
                 {
-                    b.Property<string>("EntityRuleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityRuleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
-                    b.Property<string>("EntityId")
+                    b.Property<byte[]>("EntityId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<string>("RuleTypeDescription")
                         .IsRequired()
@@ -179,13 +392,13 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("RuleTypeId");
 
-                    b.ToTable("EntityRules");
+                    b.ToTable("EntityRules", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityRuleSpecification", b =>
                 {
-                    b.Property<string>("EntityRuleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityRuleId")
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<int>("SpecificationId")
                         .HasColumnType("int");
@@ -209,7 +422,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityRuleId", "SpecificationId");
 
-                    b.ToTable("EntityRuleSpecifications");
+                    b.ToTable("EntityRuleSpecifications", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityType", b =>
@@ -226,7 +439,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityTypeId");
 
-                    b.ToTable("EntityTypes");
+                    b.ToTable("EntityTypes", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityTypeLocalization", b =>
@@ -245,15 +458,15 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("EntityTypeLocalizations");
+                    b.ToTable("EntityTypeLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorker", b =>
                 {
-                    b.Property<string>("EntityId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityId")
+                        .HasColumnType("BINARY(16)");
 
-                    b.Property<string>("WorkerId")
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("SkillId")
@@ -268,22 +481,26 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<DateTime>("DateOfJoin")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("DateToExit")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsOwner")
                         .HasColumnType("bit");
 
-                    b.HasKey("EntityId", "WorkerId", "SkillId");
+                    b.HasKey("EntityId", "ApplicationUserId", "SkillId");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("SkillId");
 
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("EntityWorkers");
+                    b.ToTable("EntityWorkers", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerAbsence", b =>
                 {
-                    b.Property<string>("EntityWorkerAbsenceId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityWorkerAbsenceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<bool>("AbsenceApproved")
                         .HasColumnType("bit");
@@ -307,38 +524,43 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<int>("AbsenceTypeId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<TimeSpan>("DateOffset")
                         .HasColumnType("time");
 
-                    b.Property<string>("EntityId")
+                    b.Property<byte[]>("EntityId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<string>("Observations")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("EntityWorkerAbsenceId");
 
                     b.HasIndex("AbsenceTypeId");
 
+                    b.HasIndex("ApplicationUserId");
+
                     b.HasIndex("EntityId");
 
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("WorkerEntityAbsences");
+                    b.ToTable("WorkerEntityAbsences", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerInvitation", b =>
                 {
-                    b.Property<string>("EntityId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("EntityId")
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("InviteDate")
@@ -348,14 +570,11 @@ namespace ShiftSchedularDAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("WorkerId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("EntityId", "Email");
 
-                    b.HasIndex("WorkerId");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("EntityWorkerInvitations");
+                    b.ToTable("EntityWorkerInvitations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Gender", b =>
@@ -368,11 +587,12 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Property<string>("GenderValue")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("GenderId");
 
-                    b.ToTable("Genders");
+                    b.ToTable("Genders", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.GenderLocalization", b =>
@@ -391,7 +611,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("GenderLocalizations");
+                    b.ToTable("GenderLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Localization", b =>
@@ -408,7 +628,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("LocalizationId");
 
-                    b.ToTable("Localizations");
+                    b.ToTable("Localizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.RuleType", b =>
@@ -435,7 +655,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("RuleTypeId");
 
-                    b.ToTable("RuleTypes");
+                    b.ToTable("RuleTypes", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.RuleTypeBusinessAspect", b =>
@@ -450,7 +670,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("BusinessAspectId");
 
-                    b.ToTable("RuleTypeBusinessAspects");
+                    b.ToTable("RuleTypeBusinessAspects", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.RuleTypeLocalization", b =>
@@ -473,13 +693,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("RuleTypeLocalizations");
+                    b.ToTable("RuleTypeLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ScheduleEntry", b =>
                 {
-                    b.Property<string>("ScheduleEntryId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("ScheduleEntryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<DateTime>("ScheduleEndDate")
                         .HasColumnType("datetime2");
@@ -487,9 +708,9 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<DateTime>("ScheduleStartDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("ShiftId")
+                    b.Property<byte[]>("ShiftId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("BINARY(16)");
 
                     b.HasKey("ScheduleEntryId");
 
@@ -500,27 +721,28 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ScheduleEntryWorkers", b =>
                 {
-                    b.Property<string>("ScheduleEntryId")
+                    b.Property<byte[]>("ScheduleEntryId")
+                        .HasColumnType("BINARY(16)");
+
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("WorkerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasKey("ScheduleEntryId", "ApplicationUserId");
 
-                    b.HasKey("ScheduleEntryId", "WorkerId");
+                    b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("WorkerId");
-
-                    b.ToTable("ScheduleEntryWorkers");
+                    b.ToTable("ScheduleEntryWorkers", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Shift", b =>
                 {
-                    b.Property<string>("ShiftId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("ShiftId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
-                    b.Property<string>("EntityId")
+                    b.Property<byte[]>("EntityId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<string>("ShiftAlias")
                         .IsRequired()
@@ -528,29 +750,32 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Property<string>("ShiftDescription")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<TimeSpan>("ShiftDuration")
-                        .HasColumnType("time");
+                        .HasColumnType("TIME");
 
                     b.Property<string>("ShiftName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<TimeSpan>("ShiftStartHour")
-                        .HasColumnType("time");
+                        .HasColumnType("TIME");
 
                     b.HasKey("ShiftId");
 
                     b.HasIndex("EntityId");
 
-                    b.ToTable("Shifts");
+                    b.ToTable("Shifts", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftBreak", b =>
                 {
-                    b.Property<string>("ShiftBreakId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<byte[]>("ShiftBreakId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BINARY(16)");
 
                     b.Property<bool>("IncludedInShift")
                         .HasColumnType("bit");
@@ -567,9 +792,9 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<int>("ShiftBreakTypeId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ShiftId")
+                    b.Property<byte[]>("ShiftId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("BINARY(16)");
 
                     b.HasKey("ShiftBreakId");
 
@@ -577,7 +802,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("ShiftId");
 
-                    b.ToTable("ShiftBreaks");
+                    b.ToTable("ShiftBreaks", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftBreakTemplate", b =>
@@ -614,7 +839,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("ShiftBreakTypeId");
 
-                    b.ToTable("ShiftBreakTemplates");
+                    b.ToTable("ShiftBreakTemplates", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftBreakType", b =>
@@ -631,7 +856,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ShiftBreakTypeId");
 
-                    b.ToTable("ShiftBreakTypes");
+                    b.ToTable("ShiftBreakTypes", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftBreakTypeLocalization", b =>
@@ -650,7 +875,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("ShiftBreakTypeLocalizations");
+                    b.ToTable("ShiftBreakTypeLocalizations", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftTemplate", b =>
@@ -680,7 +905,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ShiftTemplateId");
 
-                    b.ToTable("ShiftTemplates");
+                    b.ToTable("ShiftTemplates", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ShiftTemplateBreaks", b =>
@@ -695,7 +920,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("ShiftBreakTemplateId");
 
-                    b.ToTable("ShiftTemplateBreaks");
+                    b.ToTable("ShiftTemplateBreaks", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Skill", b =>
@@ -720,7 +945,7 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("SkillId");
 
-                    b.ToTable("Skills");
+                    b.ToTable("Skills", (string)null);
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.SkillLocalization", b =>
@@ -739,40 +964,58 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("LocalizationId");
 
-                    b.ToTable("SkillLocalizations");
+                    b.ToTable("SkillLocalizations", (string)null);
                 });
 
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.Property<string>("WorkerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.Property<int>("GenderId")
-                        .HasColumnType("int");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<bool>("IsBot")
-                        .HasColumnType("bit");
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WorkerName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("WorkerId");
-
-                    b.HasIndex("GenderId");
-
-                    b.ToTable("Workers");
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.AbsenceTypeLocalization", b =>
@@ -792,6 +1035,17 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("AbsenceType");
 
                     b.Navigation("Localization");
+                });
+
+            modelBuilder.Entity("ShiftSchedularEntity.Entities.ApplicationUser", b =>
+                {
+                    b.HasOne("ShiftSchedularEntity.Entities.Gender", "Gender")
+                        .WithMany("ApplicationUsers")
+                        .HasForeignKey("GenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Gender");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BaseEntityRule", b =>
@@ -897,6 +1151,12 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorker", b =>
                 {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany("EntityWorkers")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
                         .WithMany("EntityWorkers")
                         .HasForeignKey("EntityId")
@@ -907,17 +1167,11 @@ namespace ShiftSchedularDAL.Migrations
                         .WithMany("EntityWorkers")
                         .HasForeignKey("SkillId");
 
-                    b.HasOne("ShiftSchedularEntity.Entities.Worker", "Worker")
-                        .WithMany("EntityWorkers")
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("Entity");
 
                     b.Navigation("Skill");
-
-                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerAbsence", b =>
@@ -928,40 +1182,40 @@ namespace ShiftSchedularDAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", "ApplicationUser")
                         .WithMany("EntityWorkerAbsences")
-                        .HasForeignKey("EntityId")
+                        .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShiftSchedularEntity.Entities.Worker", "Worker")
+                    b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
                         .WithMany("EntityWorkerAbsences")
-                        .HasForeignKey("WorkerId")
+                        .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("AbsenceType");
 
-                    b.Navigation("Entity");
+                    b.Navigation("ApplicationUser");
 
-                    b.Navigation("Worker");
+                    b.Navigation("Entity");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorkerInvitation", b =>
                 {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany("EntityWorkerInvitations")
+                        .HasForeignKey("ApplicationUserId");
+
                     b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
                         .WithMany("EntityWorkerInvitations")
                         .HasForeignKey("EntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShiftSchedularEntity.Entities.Worker", "Worker")
-                        .WithMany("EntityWorkerInvitations")
-                        .HasForeignKey("WorkerId");
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("Entity");
-
-                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.GenderLocalization", b =>
@@ -1034,21 +1288,21 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.ScheduleEntryWorkers", b =>
                 {
+                    b.HasOne("ShiftSchedularEntity.Entities.ApplicationUser", "ApplicationUser")
+                        .WithMany("ScheduleEntryWorkers")
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ShiftSchedularEntity.Entities.ScheduleEntry", "ScheduleEntry")
                         .WithMany("ScheduleEntryWorkers")
                         .HasForeignKey("ScheduleEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ShiftSchedularEntity.Entities.Worker", "Worker")
-                        .WithMany("ScheduleEntryWorkers")
-                        .HasForeignKey("WorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("ApplicationUser");
 
                     b.Navigation("ScheduleEntry");
-
-                    b.Navigation("Worker");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Shift", b =>
@@ -1149,22 +1403,22 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("Skill");
                 });
 
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
-                {
-                    b.HasOne("ShiftSchedularEntity.Entities.Gender", "Gender")
-                        .WithMany("Workers")
-                        .HasForeignKey("GenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Gender");
-                });
-
             modelBuilder.Entity("ShiftSchedularEntity.Entities.AbsenceType", b =>
                 {
                     b.Navigation("AbsenceTypeLocalizations");
 
                     b.Navigation("EntityWorkerAbsences");
+                });
+
+            modelBuilder.Entity("ShiftSchedularEntity.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("EntityWorkerAbsences");
+
+                    b.Navigation("EntityWorkerInvitations");
+
+                    b.Navigation("EntityWorkers");
+
+                    b.Navigation("ScheduleEntryWorkers");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.BaseEntityRule", b =>
@@ -1206,9 +1460,9 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Gender", b =>
                 {
-                    b.Navigation("GenderLocalizations");
+                    b.Navigation("ApplicationUsers");
 
-                    b.Navigation("Workers");
+                    b.Navigation("GenderLocalizations");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Localization", b =>
@@ -1275,17 +1529,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("EntityWorkers");
 
                     b.Navigation("SkillLocalizations");
-                });
-
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.Worker", b =>
-                {
-                    b.Navigation("EntityWorkerAbsences");
-
-                    b.Navigation("EntityWorkerInvitations");
-
-                    b.Navigation("EntityWorkers");
-
-                    b.Navigation("ScheduleEntryWorkers");
                 });
 #pragma warning restore 612, 618
         }

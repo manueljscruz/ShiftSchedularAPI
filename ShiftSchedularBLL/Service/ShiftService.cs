@@ -115,7 +115,7 @@ namespace ShiftSchedularBLL.Service
 
                         // Map shift, create Id and add it
                         Shift newShift = _mapper.Map<Shift>(addShiftDTO);
-                        newShift.ShiftId = _generalService.GenerateGuid();
+                        newShift.ShiftId = new Guid();
                         newShift = await _shiftRepository.Add(newShift);
 
                         ShiftDTO shiftDTO = _mapper.Map<ShiftDTO>(newShift);
@@ -183,7 +183,7 @@ namespace ShiftSchedularBLL.Service
 
             if (addShiftBreakDTO != null)
             {
-                if (string.IsNullOrEmpty(addShiftBreakDTO.ShiftId))
+                if (addShiftBreakDTO.ShiftId == Guid.Empty)
                 {
                     response.Message = ShiftRelatedMessages.AddNewShiftBreakEmptyShift;
                     return response;
@@ -210,7 +210,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 ShiftBreak shiftBreak = _mapper.Map<ShiftBreak>(addShiftBreakDTO);
-                shiftBreak.ShiftBreakId = _generalService.GenerateGuid();
+                shiftBreak.ShiftBreakId = new Guid();
 
                 shiftBreak = await _shiftBreakRepository.Add(shiftBreak);
                 response.Success = true;
@@ -455,7 +455,7 @@ namespace ShiftSchedularBLL.Service
             shiftDTO = _mapper.Map<ShiftDTO>(shift);
 
             // Get Shift breaks related to the shift
-            IEnumerable<ShiftBreak> shiftBreaks = await _shiftBreakRepository.GetBreaksByShiftId(shift.ShiftId);
+            IEnumerable<ShiftBreak> shiftBreaks = await _shiftBreakRepository.GetBreaksByShiftId(shift.ShiftId.ToString());
 
             // If any, map them to the 
             if (shiftBreaks.Count() != 0 && shiftBreakTypeLocalizations.Count() != 0)
@@ -498,7 +498,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // No destination entity
-                else if (string.IsNullOrEmpty(shift.EntityId))
+                else if (shift.EntityId == Guid.Empty)
                 {
                     response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
                     return response;
@@ -560,7 +560,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (string.IsNullOrEmpty(shiftBreak.ShiftParentId))
+                else if (shiftBreak.ShiftParentId == Guid.Empty)
                 {
                     response.Message = ShiftRelatedMessages.AddNewShiftBreakEmptyShift;
                     return response;

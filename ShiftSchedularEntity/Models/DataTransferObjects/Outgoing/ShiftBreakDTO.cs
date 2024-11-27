@@ -2,8 +2,8 @@
 {
     public class ShiftBreakDTO
     {
-        public string ShiftBreakId { get; set; }
-        public string ShiftParentId { get; set; }
+        public Guid ShiftBreakId { get; set; }
+        public Guid ShiftParentId { get; set; }
         public int ShiftBreakTypeId { get; set; }
         public string ShiftBreakTypeDisplay { get; set; }
         public TimeSpan ShiftBreakStartTime { get; set; }

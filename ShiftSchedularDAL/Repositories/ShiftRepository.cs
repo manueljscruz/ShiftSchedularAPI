@@ -45,7 +45,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (shiftIdentifiers.Count != 0)
             {
-                return await _dbSet.Where(i => shiftIdentifiers.Contains(i.ShiftId)).ToListAsync();
+                return await _dbSet.Where(i => shiftIdentifiers.Contains(i.ShiftId.ToString())).ToListAsync();
             }
             else return null;
         }

@@ -158,7 +158,7 @@ namespace ShiftSchedularIL.Mappers
 
             CreateMap<AddEntityWorkerAbsenceDTO, EntityWorkerAbsence>()
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
-                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.ApplicationUserId, opt => opt.MapFrom(src => src.WorkerId))
                 .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
                 .ForMember(dest => dest.AbsenceStartDate, opt => opt.MapFrom(src => src.AbsenceStartDate))
                 .ForMember(dest => dest.AbsenceEndDate, opt => opt.MapFrom(src => src.AbsenceEndDate))
@@ -167,7 +167,7 @@ namespace ShiftSchedularIL.Mappers
             CreateMap<EntityWorkerAbsence, EntityWorkerAbsenceDTO>()
                 .ForMember(dest => dest.EntityWorkerAbsenceId, opt => opt.MapFrom(src => src.EntityWorkerAbsenceId))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
-                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.ApplicationUserId))
                 .ForMember(dest => dest.AbsenceTypeId, opt => opt.MapFrom(src => src.AbsenceTypeId))
                 .ForMember(dest => dest.AbsenceStartDate, opt => opt.MapFrom(src => src.AbsenceStartDate))
                 .ForMember(dest => dest.AbsenceEndDate, opt => opt.MapFrom(src => src.AbsenceEndDate))

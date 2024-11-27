@@ -4,11 +4,11 @@
     {
         #region Properties
 
-        public string EntityRuleId { get; set; }
+        public Guid EntityRuleId { get; set; }
         public int RuleTypeId { get; set; }
         public string RuleTypeDisplayValue { get; set; }
         public string RuleTypeDescription { get; set; }
-        public string EntityId { get; set; }
+        public Guid EntityId { get; set; }
         public List<EntityRuleSpecificationDTO> EntityRuleSpecificationDTOs { get; set; }
 
         #endregion
@@ -17,15 +17,15 @@
 
         public EntityRuleDTO()
         {
-            EntityRuleId = string.Empty;
+            EntityRuleId = Guid.Empty;
             RuleTypeId = 0;
             RuleTypeDisplayValue = string.Empty;
             RuleTypeDescription = string.Empty;
-            EntityId = string.Empty;
+            EntityId = Guid.Empty;
             EntityRuleSpecificationDTOs = new List<EntityRuleSpecificationDTO>();
         }
 
-        public EntityRuleDTO(string entityRuleId, int ruletTypeId, string ruleTypeDisplayValue, string ruleTypeDescription, string entityId, List<EntityRuleSpecificationDTO> entityRuleSpecificationDTOs)
+        public EntityRuleDTO(Guid entityRuleId, int ruletTypeId, string ruleTypeDisplayValue, string ruleTypeDescription, Guid entityId, List<EntityRuleSpecificationDTO> entityRuleSpecificationDTOs)
         {
             EntityRuleId = entityRuleId;
             RuleTypeId = ruletTypeId;

@@ -112,7 +112,7 @@ namespace ShiftSchedularBLL.Service
                     {
 
                         EntityRule newRule = _mapper.Map<EntityRule>(addEntityRuleDTO);
-                        newRule.EntityRuleId = _generalService.GenerateGuid();
+                        newRule.EntityRuleId = new Guid();
 
                         // Clear the list due to mapping
                         if (newRule.EntityRuleSpecifications.Count != 0)
@@ -173,7 +173,7 @@ namespace ShiftSchedularBLL.Service
             if (addEntityRuleSpecificationDTO != null)
             {
                 // If the entity rule identifier is empty, send error
-                if (string.IsNullOrEmpty(addEntityRuleSpecificationDTO.EntityRuleId))
+                if (addEntityRuleSpecificationDTO.EntityRuleId == Guid.Empty)
                 {
                     response.Message = EntityRulesRelatedMessages.AddEntityRuleSpecEntityRuleIsEmpty;
                     return response;
@@ -440,7 +440,7 @@ namespace ShiftSchedularBLL.Service
                 entityRuleDTO.RuleTypeDisplayValue = ruleTypeLocalizations.Where(i => i.RuleTypeId.Equals(entityRuleDTO.RuleTypeId)).FirstOrDefault().RuleTypeDisplayValue;
 
             // Get entity rule specifications
-            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _entityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId);
+            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _entityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId.ToString());
 
             if (entityRule.EntityRuleSpecifications != null)
             {
@@ -556,7 +556,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (string.IsNullOrEmpty(entityRule.EntityId))
+                else if (entityRule.EntityId == Guid.Empty)
                 {
                     response.Message = EntityRulesRelatedMessages.AddNewEntityEntityIdEmpty;
                     return response;

@@ -89,7 +89,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Check if member is not eligible to perform this decision
-                else if (!await _entityWorkerRepository.IsMemberOwner(entityWorkerAbsence.EntityId, absenceApprovalDecisionDTO.AbsenceDecisionSignature))
+                else if (!await _entityWorkerRepository.IsMemberOwner(entityWorkerAbsence.EntityId.ToString(), absenceApprovalDecisionDTO.AbsenceDecisionSignature))
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceDecisionApproverIsNotOwner;
                     return response;
@@ -103,7 +103,7 @@ namespace ShiftSchedularBLL.Service
 
                 await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
-                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, absenceApprovalDecisionDTO.LanguageCode);
+                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId.ToString(), absenceApprovalDecisionDTO.LanguageCode);
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.AbsenceDecisionApprovalSubmitted;
             }
@@ -181,7 +181,7 @@ namespace ShiftSchedularBLL.Service
                 EntityWorkerAbsence entityWorkerAbsence = _mapper.Map<EntityWorkerAbsence>(addEntityWorkerAbsence);
 
                 // Add Id and Dates in Universal Time
-                entityWorkerAbsence.EntityWorkerAbsenceId = _generalService.GenerateGuid();
+                entityWorkerAbsence.EntityWorkerAbsenceId = new Guid();
                 entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
                 entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
                 entityWorkerAbsence.DateOffset = new DateTimeOffset(entityWorkerAbsence.AbsenceStartDate).Offset;

@@ -1,9 +1,19 @@
-﻿namespace ShiftSchedularEntity.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace ShiftSchedularEntity.Entities
 {
     public class ShiftBreak
     {
-        public string ShiftBreakId { get; set; }
-        public string ShiftId { get; set; }
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid ShiftBreakId { get; set; }
+
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid ShiftId { get; set; }
+
+        [Required]
         public int ShiftBreakTypeId { get; set; }
         public TimeSpan ShiftBreakStartTime { get; set; }
         public TimeSpan ShiftBreakDuration { get; set; }

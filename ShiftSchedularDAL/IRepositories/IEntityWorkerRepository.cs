@@ -13,7 +13,7 @@ namespace ShiftSchedularDAL.IRepositories
         Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId);
         Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId, List<string> workers);
         Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId);
-        Task<int> GetTotalCountByEntity(string entityId);
+        Task<int> GetTotalCountByEntity(Guid entityId);
         Task<string> GetEntityOwnerId(string entityId);
         Task<bool> IsMemberOwner(string entityId, string workerId);
     }

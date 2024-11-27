@@ -120,7 +120,7 @@ namespace ShiftSchedularBLL.Service
 
                 ScheduleEntry scheduleEntry = _mapper.Map<ScheduleEntry>(addScheduleEntryDTO);
                 scheduleEntry.ScheduleEntryWorkers = new List<ScheduleEntryWorkers>();
-                scheduleEntry.ScheduleEntryId = _generalService.GenerateGuid();
+                scheduleEntry.ScheduleEntryId = new Guid();
                 scheduleEntry.ScheduleStartDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftStartHour);
 
                 TimeSpan totalBreakIncludedDuration = shift.ShiftBreakDTOs
@@ -147,7 +147,7 @@ namespace ShiftSchedularBLL.Service
                                 ScheduleEntryWorkers scheduleEntryWorkers = new ScheduleEntryWorkers
                                 {
                                     ScheduleEntryId = scheduleEntry.ScheduleEntryId,
-                                    WorkerId = workerId
+                                    ApplicationUserId = workerId
                                 };
                                 await _scheduleEntryWorkersRepository.Add(scheduleEntryWorkers);
                             }
@@ -157,7 +157,7 @@ namespace ShiftSchedularBLL.Service
 
                         response.Success = true;
                         response.Message = ScheduleRelatedMessages.AddNewScheduleEntrySuccess;
-                        response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId, addScheduleEntryDTO.LanguageCode);
+                        response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId.ToString(), addScheduleEntryDTO.LanguageCode);
                     }
                     else
                     {
@@ -212,8 +212,8 @@ namespace ShiftSchedularBLL.Service
 
             ScheduleEntryWorkers scheduleEntryWorker = new ScheduleEntryWorkers
             {
-                ScheduleEntryId = scheduleParticipantOp.ScheduleEntryId,
-                WorkerId = scheduleParticipantOp.WorkerId
+                ScheduleEntryId = Guid.Parse(scheduleParticipantOp.ScheduleEntryId),
+                ApplicationUserId = scheduleParticipantOp.WorkerId
             };
 
             scheduleEntryWorker = await _scheduleEntryWorkersRepository.Add(scheduleEntryWorker);
@@ -222,7 +222,7 @@ namespace ShiftSchedularBLL.Service
             {
                 response.Success = true;
                 response.Message = ScheduleRelatedMessages.AddScheduleParticipantSuccess;
-                response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId, scheduleParticipantOp.LanguageCode);
+                response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId.ToString(), scheduleParticipantOp.LanguageCode);
             }
 
             return response;
@@ -248,7 +248,7 @@ namespace ShiftSchedularBLL.Service
             // For each schedule entry
             foreach (ScheduleEntry entry in scheduleEntries)
             {
-                scheduleEntryDTOs.Add(await GetScheduleEntryById(entry.ScheduleEntryId, viewModelRequest.LanguageCode));
+                scheduleEntryDTOs.Add(await GetScheduleEntryById(entry.ScheduleEntryId.ToString(), viewModelRequest.LanguageCode));
             }
 
             return scheduleEntryDTOs;
@@ -263,18 +263,18 @@ namespace ShiftSchedularBLL.Service
             ScheduleEntryDTO scheduleEntryDTO = new ScheduleEntryDTO();
 
             ScheduleEntry scheduleEntry = await _entityScheduleRepository.GetById(scheduleEntryId);
-            ShiftDTO shift = await _shiftService.GetShiftById(scheduleEntry.ShiftId, languageCode);
+            ShiftDTO shift = await _shiftService.GetShiftById(scheduleEntry.ShiftId.ToString(), languageCode);
 
             // Get respective participants of said schedule entry
-            IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _scheduleEntryWorkersRepository.GetScheduleEntryWorkers(scheduleEntry.ScheduleEntryId);
+            IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _scheduleEntryWorkersRepository.GetScheduleEntryWorkers(scheduleEntry.ScheduleEntryId.ToString());
 
             // Extract participant ids
-            List<string> participantsIds = scheduleEntryWorkers.Select(i => i.WorkerId).ToList();
+            List<string> participantsIds = scheduleEntryWorkers.Select(i => i.ApplicationUserId).ToList();
 
             scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
 
             scheduleEntryDTO.ShiftDTO = shift;
-            scheduleEntryDTO.ScheduleParticipants = await _entityService.GetEntityMembersByList(shift.EntityId, participantsIds, languageCode);
+            scheduleEntryDTO.ScheduleParticipants = await _entityService.GetEntityMembersByList(shift.EntityId.ToString(), participantsIds, languageCode);
 
             return scheduleEntryDTO;
         }
@@ -308,7 +308,7 @@ namespace ShiftSchedularBLL.Service
                         // Delete all of them
                         foreach (ScheduleEntry scheduleEntry in scheduleEntries )
                         {
-                            BaseResponse<bool> deleteScheduleResponse = await DeleteScheduleEntry(scheduleEntry.ScheduleEntryId);
+                            BaseResponse<bool> deleteScheduleResponse = await DeleteScheduleEntry(scheduleEntry.ScheduleEntryId.ToString());
 
                             if(!deleteScheduleResponse.Success) 
                             {
@@ -375,7 +375,7 @@ namespace ShiftSchedularBLL.Service
                                 // Create Schedule Entry
                                 ScheduleEntry scheduleEntry = new ScheduleEntry
                                 {
-                                    ScheduleEntryId = _generalService.GenerateGuid(),
+                                    ScheduleEntryId = new Guid(),
                                     ShiftId = shift.ShiftId,
                                     ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
                                 };

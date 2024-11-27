@@ -35,7 +35,7 @@ namespace ShiftSchedularDAL.Repositories
             if (isOwner)
                 return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
             else
-                return await _dbSet.Where(i => i.EntityId.Equals(entityId) && i.WorkerId.Equals(workerId)).ToListAsync();
+                return await _dbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId)).ToListAsync();
         }
 
         #endregion

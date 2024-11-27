@@ -28,6 +28,11 @@ namespace ShiftSchedularDAL.Repositories
             return await _dbSet.FindAsync(id);
         }
 
+        public async Task<T> GetById(Guid id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
         public async Task<IEnumerable<T>> GetAll()
         {
             return await _dbSet.ToListAsync();
@@ -92,5 +97,14 @@ namespace ShiftSchedularDAL.Repositories
             }
         }
 
+        public async Task Delete(Guid id)
+        {
+            T entity = await _dbSet.FindAsync(id);
+            if(entity != null)
+            {
+                _dbSet.Remove(entity);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
     }
 }

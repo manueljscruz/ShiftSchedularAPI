@@ -1,8 +1,14 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,9 +23,6 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(MyAllowSpecificOrigins, policy =>
     {
-        //policy.AllowAnyOrigin()
-        //    .AllowAnyHeader()
-        //    .AllowAnyMethod();
         policy.WithOrigins("http://localhost:4200", "http://192.168.0.9:4200", "https://81a1-188-81-53-74.ngrok-free.app/") // Allow specific origin
               .AllowAnyHeader()                    // Allow all headers
               .AllowAnyMethod();                   // Allow all HTTP methods
@@ -51,9 +54,14 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // 4. Configure database context using SQL Server
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<DataContext>()
+    .AddDefaultTokenProviders();
+
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    options.UseSqlServer(connectionString, b => b.MigrationsAssembly("ShiftSchedularDAL"));
 });
 
 // 5. Add custom services (assumed implemented elsewhere)
@@ -63,20 +71,21 @@ EmailSettings emailSettings = builder.Configuration.GetSection("EmailSettings").
 builder.Services.AddServicesInjections(logDirectory, emailSettings, baseUrl);
 
 // 6. Configure JWT Authentication and Authorization
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(options =>
-//    {
-//        options.TokenValidationParameters = new TokenValidationParameters
-//        {
-//            ValidateIssuer = true,
-//            ValidateAudience = true,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-//            ValidAudience = builder.Configuration["Jwt:Audience"],
-//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-//        };
-//    });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 var app = builder.Build();
 

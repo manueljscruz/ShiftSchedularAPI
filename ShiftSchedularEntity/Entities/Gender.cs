@@ -15,9 +15,7 @@ namespace ShiftSchedularEntity.Entities
         #region Navigation Properties
 
         public virtual ICollection<GenderLocalization> GenderLocalizations { get; set; }
-
-        public virtual ICollection<Worker> Workers { get; set; }
-
+        public virtual ICollection<ApplicationUser> ApplicationUsers { get; set; }
         #endregion
     }
 }

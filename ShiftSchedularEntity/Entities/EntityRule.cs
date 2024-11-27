@@ -1,13 +1,24 @@
-﻿namespace ShiftSchedularEntity.Entities
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ShiftSchedularEntity.Entities
 {
     public class EntityRule
     {
         #region Properties
 
-        public string EntityRuleId { get; set; }
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid EntityRuleId { get; set; }
+
+        [Required]
         public int RuleTypeId { get; set; }
+
         public string RuleTypeDescription { get; set; }
-        public string EntityId { get; set; }
+
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid EntityId { get; set; }
 
         #endregion
 

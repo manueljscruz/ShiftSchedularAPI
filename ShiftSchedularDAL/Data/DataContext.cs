@@ -1,31 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ShiftSchedularEntity.Entities;
 
 namespace ShiftSchedularDAL.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : IdentityDbContext<ApplicationUser>
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options)
-        {
-        }
-
-        #region On Configuring
-
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    optionsBuilder.UseLazyLoadingProxies();
-        //    optionsBuilder.UseSqlServer("Data Source=DESKTOP-T0HQHVC\\SQLEXPRESS;Database=ShiftSchedular; Integrated Security=True; Trusted_Connection=True; Trust Server Certificate=False; MultipleActiveResultSets=True; Encrypt=False");
-        //    // optionsBuilder.UseSqlServer("Data Source=DESKTOP-L6HTG1E\\SQLEXPRESS;Database=ShiftSchedular; Integrated Security=True; Trusted_Connection=True; Trust Server Certificate=False; MultipleActiveResultSets=True; Encrypt=False");
-
-        //}
-
-        #endregion
+        { }
 
         #region Db Sets
 
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Gender> Genders { get; set; }
         public DbSet<GenderLocalization> GenderLocalizations { get; set; }
-        public DbSet<Worker> Workers { get; set; }
         public DbSet<Localization> Localizations { get; set; }
         public DbSet<EntityType> EntityTypes { get; set; }
         public DbSet<Entity> Entities { get; set; }
@@ -62,6 +51,17 @@ namespace ShiftSchedularDAL.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
+            #region Application User
+
+            modelBuilder.Entity<ApplicationUser>()
+                .HasOne(a => a.Gender)
+                .WithMany(g => g.ApplicationUsers)
+                .HasForeignKey(a => a.GenderId);
+
+            #endregion
+
             #region Gender Configuration
 
             modelBuilder.Entity<Gender>()
@@ -119,19 +119,6 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
-            #region Worker Configuration
-
-            modelBuilder.Entity<Worker>()
-                .HasKey(w => w.WorkerId);
-
-            // Configure relationship with Gender
-            modelBuilder.Entity<Worker>()
-                .HasOne(w=>w.Gender)
-                .WithMany(g=>g.Workers)
-                .HasForeignKey(w=>w.GenderId);
-
-            #endregion
-
             #region Entity Type
 
             modelBuilder.Entity<EntityType>()
@@ -166,7 +153,7 @@ namespace ShiftSchedularDAL.Data
             #region Entity Workers
 
             modelBuilder.Entity<EntityWorker>()
-                .HasKey(ew => new { ew.EntityId, ew.WorkerId, ew.SkillId });
+                .HasKey(ew => new { ew.EntityId, ew.ApplicationUserId, ew.SkillId });
 
             modelBuilder.Entity<EntityWorker>()
                 .HasOne(ew => ew.Entity)
@@ -174,9 +161,9 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(ew => ew.EntityId);
 
             modelBuilder.Entity<EntityWorker>()
-                .HasOne(ew => ew.Worker)
+                .HasOne(ew => ew.ApplicationUser)
                 .WithMany(e => e.EntityWorkers)
-                .HasForeignKey(ew => ew.WorkerId);
+                .HasForeignKey(ew => ew.ApplicationUserId);
 
             modelBuilder.Entity<EntityWorker>()
                 .HasOne(ew => ew.Skill)
@@ -197,9 +184,9 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(ewi => ewi.EntityId);
 
             modelBuilder.Entity<EntityWorkerInvitation>()
-                .HasOne(ewi => ewi.Worker)
+                .HasOne(ewi => ewi.ApplicationUser)
                 .WithMany(w => w.EntityWorkerInvitations)
-                .HasForeignKey(ewi => ewi.WorkerId);
+                .HasForeignKey(ewi => ewi.ApplicationUserId);
 
             #endregion
 
@@ -417,9 +404,9 @@ namespace ShiftSchedularDAL.Data
                 .HasKey(ewa => ewa.EntityWorkerAbsenceId);
 
             modelBuilder.Entity<EntityWorkerAbsence>()
-                .HasOne(ewa => ewa.Worker)
+                .HasOne(ewa => ewa.ApplicationUser)
                 .WithMany(w => w.EntityWorkerAbsences)
-                .HasForeignKey(ewa => ewa.WorkerId);
+                .HasForeignKey(ewa => ewa.ApplicationUserId);
 
             modelBuilder.Entity<EntityWorkerAbsence>()
                 .HasOne(ewa => ewa.Entity)
@@ -444,7 +431,7 @@ namespace ShiftSchedularDAL.Data
             #region Schedule Entry Workers Configuration
 
             modelBuilder.Entity<ScheduleEntryWorkers>()
-                .HasKey(sew => new { sew.ScheduleEntryId, sew.WorkerId });
+                .HasKey(sew => new { sew.ScheduleEntryId, sew.ApplicationUserId });
 
             modelBuilder.Entity<ScheduleEntryWorkers>()
                 .HasOne(sew => sew.ScheduleEntry)
@@ -452,9 +439,9 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(sew => sew.ScheduleEntryId);
 
             modelBuilder.Entity<ScheduleEntryWorkers>()
-                .HasOne(sew => sew.Worker)
+                .HasOne(sew => sew.ApplicationUser)
                 .WithMany(w => w.ScheduleEntryWorkers)
-                .HasForeignKey(sew => sew.WorkerId);
+                .HasForeignKey(sew => sew.ApplicationUserId);
 
             #endregion
 
