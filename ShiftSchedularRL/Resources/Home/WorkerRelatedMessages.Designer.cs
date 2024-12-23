@@ -124,7 +124,7 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name cannot exceed 50 characters.
+        ///   Looks up a localized string similar to Name cannot exceed 255 characters.
         /// </summary>
         public static string WorkerNameExceedsLengthError {
             get {
@@ -151,7 +151,7 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name cannot be empty space.
+        ///   Looks up a localized string similar to Name is required..
         /// </summary>
         public static string WorkerRegistrationNameEmptyError {
             get {

@@ -13,6 +13,11 @@ namespace ShiftSchedularIL.Mappers
     {
         public ApplicationMapper()
         {
+            CreateMap<NewUserDTO, ApplicationUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId));
+
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.GenderLocalizedName, opt => opt.MapFrom(src => src.GenderDisplayValue));

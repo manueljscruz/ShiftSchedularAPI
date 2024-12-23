@@ -139,7 +139,7 @@
     <value>Incorrect password</value>
   </data>
   <data name="WorkerNameExceedsLengthError" xml:space="preserve">
-    <value>Name cannot exceed 50 characters</value>
+    <value>Name cannot exceed 255 characters</value>
   </data>
   <data name="WorkerPasswordEmptyError" xml:space="preserve">
     <value>Password cannot be empty.</value>
@@ -148,7 +148,7 @@
     <value>Email is in invalid format.</value>
   </data>
   <data name="WorkerRegistrationNameEmptyError" xml:space="preserve">
-    <value>Name cannot be empty space</value>
+    <value>Name is required.</value>
   </data>
   <data name="WorkerRegistrationPasswordEmptyError" xml:space="preserve">
     <value>Password cannot be empty.</value>
