@@ -14,9 +14,15 @@ namespace ShiftSchedularIL.Mappers
         public ApplicationMapper()
         {
             CreateMap<NewUserDTO, ApplicationUser>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId));
+
+            CreateMap<ApplicationUser, WorkerDTO>()
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.DisplayName))
+                .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
@@ -42,6 +48,9 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityTypeLocalizedName, opt => opt.MapFrom(src => src.EntityTypeDisplayValue));
 
             CreateMap<FormEntityDTO, Entity>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src =>
+                    string.IsNullOrWhiteSpace(src.EntityId) ? Guid.NewGuid() : Guid.Parse(src.EntityId)
+                ))
                 .ForMember(dest => dest.EntityTypeId, opt => opt.MapFrom(src => src.EntityTypeId))
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
                 .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription));

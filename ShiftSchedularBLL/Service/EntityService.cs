@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
@@ -20,16 +21,17 @@ namespace ShiftSchedularBLL.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICryptographyService _cryptographyService;
-        private readonly IWorkerRepository _workerRepository;
-        private readonly IGenericRepository<EntityType> _entityTypeRepository;
-        private readonly IGenericRepository<Entity> _entityRepository;
-        private readonly IGenericRepository<Gender> _genderRepository;
-        private readonly ISkillRepository _skillRepository;
+        private readonly UserManager<ApplicationUser> _userManager;
+        // private readonly IWorkerRepository _workerRepository;
+        //private readonly IGenericRepository<EntityType> _entityTypeRepository;
+        //private readonly IGenericRepository<Entity> _unitOfWork.GetGenericRepository<Entity>();
+        //private readonly IGenericRepository<Gender> _genderRepository;
+        //private readonly ISkillRepository _skillRepository;
         private readonly ISkillService _skillService;
         private readonly IEntityTypeService _entityTypeService;
-        private readonly IEntityWorkerRepository _entityWorkerRepository;
-        private readonly IEntityTypeLocalizationRepository _entityTypeLocalizationRepository;
-        private readonly IEntityWorkerInvitationRepository _entityWorkerInvitationRepository;
+        //private readonly IEntityWorkerRepository _unitOfWork.EntityWorkerRepository;
+        //private readonly IEntityTypeLocalizationRepository _entityTypeLocalizationRepository;
+        //private readonly IEntityWorkerInvitationRepository _entityWorkerInvitationRepository;
         private readonly IGeneralService _generalService;
 
         #region Constructor
@@ -37,31 +39,33 @@ namespace ShiftSchedularBLL.Service
         public EntityService(IUnitOfWork unitOfWork,
             IMapper mapper,
             ICryptographyService cryptographyService,
-            IWorkerRepository workerRepository,
-            IGenericRepository<EntityType> entityTypeRepository,
-            IGenericRepository<Entity> entityRepository,
-            IGenericRepository<Gender> genderRepository,
-            ISkillRepository skillRepository,
+            UserManager<ApplicationUser> userManager,
+            //IWorkerRepository workerRepository,
+            //IGenericRepository<EntityType> entityTypeRepository,
+            //IGenericRepository<Entity> entityRepository,
+            //IGenericRepository<Gender> genderRepository,
+            //ISkillRepository skillRepository,
             ISkillService skillService,
             IEntityTypeService entityTypeService,
-            IEntityWorkerRepository entityWorkerRepository,
-            IEntityTypeLocalizationRepository entityTypeLocalizationRepository,
-            IEntityWorkerInvitationRepository entityWorkerInvitationRepository,
+            //IEntityWorkerRepository entityWorkerRepository,
+            //IEntityTypeLocalizationRepository entityTypeLocalizationRepository,
+            //IEntityWorkerInvitationRepository entityWorkerInvitationRepository,
             IGeneralService generalService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cryptographyService = cryptographyService;
-            _workerRepository = workerRepository;
-            _entityRepository = entityRepository;
+            _userManager = userManager;
+            // _workerRepository = workerRepository;
+            //_unitOfWork.GetGenericRepository<Entity>() = entityRepository;
             _skillService = skillService;
-            _skillRepository = skillRepository;
-            _genderRepository = genderRepository;
+            //_skillRepository = skillRepository;
+            //_genderRepository = genderRepository;
             _entityTypeService = entityTypeService;
-            _entityTypeRepository = entityTypeRepository;
-            _entityWorkerRepository = entityWorkerRepository;
-            _entityTypeLocalizationRepository = entityTypeLocalizationRepository;
-            _entityWorkerInvitationRepository = entityWorkerInvitationRepository;
+            //_entityTypeRepository = entityTypeRepository;
+            //_unitOfWork.EntityWorkerRepository = entityWorkerRepository;
+            //_entityTypeLocalizationRepository = entityTypeLocalizationRepository;
+            //_entityWorkerInvitationRepository = entityWorkerInvitationRepository;
             _generalService = generalService;
         }
 
@@ -71,6 +75,11 @@ namespace ShiftSchedularBLL.Service
 
         #region Add Entity
 
+        /// <summary>
+        /// Adds a new Entity instance
+        /// </summary>
+        /// <param name="newEntity"></param>
+        /// <returns></returns>
         public async Task<BaseResponse<Entity>> AddEntity(FormEntityDTO newEntity)
         {
             BaseResponse<Entity> response = new BaseResponse<Entity>();
@@ -89,7 +98,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                EntityType entityTypeInstance = await _entityTypeRepository.GetById(newEntity.EntityTypeId);
+                EntityType entityTypeInstance = await _unitOfWork.GetGenericRepository<EntityType>().GetById(newEntity.EntityTypeId); // _entityTypeRepository.GetById(newEntity.EntityTypeId);
 
                 if (entityTypeInstance != null && !string.IsNullOrEmpty(newEntity.WorkerId))
                 {
@@ -99,8 +108,7 @@ namespace ShiftSchedularBLL.Service
                     {
                         // Add Entity
                         Entity entity = _mapper.Map<Entity>(newEntity);
-                        entity.EntityId = new Guid();
-                        entity = await _entityRepository.Add(entity);
+                        entity = await _unitOfWork.GetGenericRepository<Entity>().Add(entity);
 
                         // If there is no identifier associated to the entity
                         if (entity.EntityId == Guid.Empty)
@@ -110,8 +118,8 @@ namespace ShiftSchedularBLL.Service
                             return response;
                         }
 
-                        List<Skill> Skills = await _skillRepository.GetSkillsByNames(new List<string> { SkillsConstants.GENERAL_WORKER, SkillsConstants.MANAGEMENT });
-                        ; List<EntityWorker> entityWorkers = new List<EntityWorker>();
+                        List<Skill> Skills = await _unitOfWork.SkillRepository.GetSkillsByNames(new List<string> { SkillsConstants.GENERAL_WORKER, SkillsConstants.MANAGEMENT });
+                        List<EntityWorker> entityWorkers = new List<EntityWorker>();
 
                         foreach (Skill skill in Skills)
                         {
@@ -130,7 +138,7 @@ namespace ShiftSchedularBLL.Service
                         }
 
                         // Add entity worker and commit
-                        await _entityWorkerRepository.AddRange(entityWorkers);
+                        await _unitOfWork.EntityWorkerRepository.AddRange(entityWorkers);
                         await _unitOfWork.CommitAsync();
 
                         // Set response values
@@ -162,6 +170,11 @@ namespace ShiftSchedularBLL.Service
 
         #region Delete Entity By Id
 
+        /// <summary>
+        /// Deletes an entity by its identifier
+        /// </summary>
+        /// <param name="entityId">Identifier of the entity</param>
+        /// <returns></returns>
         public async Task<BaseResponse<bool>> DeleteEntityById(string entityId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
@@ -169,8 +182,8 @@ namespace ShiftSchedularBLL.Service
             // if entity identifier is different than null
             if (!string.IsNullOrEmpty(entityId))
             {
-                Entity entityInstance = await _entityRepository.GetById(entityId);
-                IEnumerable<EntityWorker> entityWorkers = await _entityWorkerRepository.GetByEntityId(entityId);
+                Entity entityInstance = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
+                IEnumerable<EntityWorker> entityWorkers = await _unitOfWork.EntityWorkerRepository.GetByEntityId(entityId);
 
                 if (entityInstance != null && entityInstance.EntityWorkers.Count != 0)
                 {
@@ -178,9 +191,9 @@ namespace ShiftSchedularBLL.Service
 
                     try
                     {
-                        await _entityWorkerRepository.DeleteRange(entityInstance.EntityWorkers);
-                        await _entityWorkerInvitationRepository.DeleteAllByEntity(entityId);
-                        await _entityRepository.Delete(entityInstance.EntityId);
+                        await _unitOfWork.EntityWorkerRepository.DeleteRange(entityInstance.EntityWorkers);
+                        await _unitOfWork.EntityWorkerInvitationRepository.DeleteAllByEntity(entityId);
+                        await _unitOfWork.GetGenericRepository<Entity>().Delete(entityInstance.EntityId);
                         await _unitOfWork.CommitAsync();
 
                         response.Success = true;
@@ -208,19 +221,28 @@ namespace ShiftSchedularBLL.Service
 
         #region Get All Entities
 
+        /// <summary>
+        /// Get All Entities
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<Entity>> GetAllEntities()
         {
-            return await _entityRepository.GetAll();
+            return await _unitOfWork.GetGenericRepository<Entity>().GetAll();
         }
 
         #endregion
 
         #region Get Entity By Id
 
+        /// <summary>
+        /// Get Entity By Id
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <returns></returns>
         public async Task<Entity> GetEntityById(string entityId)
         {
             if (!string.IsNullOrEmpty(entityId))
-                return await _entityRepository.GetById(entityId);
+                return await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
             else
                 return null;
         }
@@ -229,9 +251,13 @@ namespace ShiftSchedularBLL.Service
 
         #region Update Entity
 
+        /// <summary>
+        /// Updates an entity data
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public async Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity)
         {
-            // if(entity != null && !string.IsNullOrEmpty(entity.EntityName) && entity.EntityTypeId != 0)
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Message = EntitiesRelatedMessages.UpdateEntityUnexpectedError;
 
@@ -253,7 +279,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            Entity entityToUpdate = await _entityRepository.GetById(entity.EntityId);
+            Entity entityToUpdate = await _unitOfWork.GetGenericRepository<Entity>().GetById(entity.EntityId);
             if (entityToUpdate == null)
             {
                 response.Message = EntitiesRelatedMessages.UpdateEntityNotFound;
@@ -266,7 +292,7 @@ namespace ShiftSchedularBLL.Service
 
 
             // Update the entity and set the message
-            await _entityRepository.Update(entityToUpdate);
+            await _unitOfWork.GetGenericRepository<Entity>().Update(entityToUpdate);
 
             response.Success = true;
             response.Message = EntitiesRelatedMessages.UpdateEntitySuccess;
@@ -278,6 +304,11 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entities By Worker Id
 
+        /// <summary>
+        /// Get Entities By Worker Id
+        /// </summary>
+        /// <param name="workerId"></param>
+        /// <returns></returns>
         public async Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId)
         {
             List<EntityWorkerDTO> entityWorkers = new List<EntityWorkerDTO>();
@@ -287,7 +318,7 @@ namespace ShiftSchedularBLL.Service
                 try
                 {
                     // Get entity worker instances by worker identifier
-                    IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _entityWorkerRepository.GetByWorkerId(workerId);
+                    IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _unitOfWork.EntityWorkerRepository.GetByWorkerId(workerId);
 
                     if (entityWorkerDTOs != null)
                         entityWorkers = entityWorkerDTOs.ToList();
@@ -307,13 +338,19 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entities Members View Model
 
+        /// <summary>
+        /// Gets the entity members view model
+        /// </summary>
+        /// <param name="entityId">Entity identifier</param>
+        /// <param name="lcode">Language code</param>
+        /// <returns></returns>
         public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode)
         {
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
             viewModel.Skills = await _skillService.GetAllSkillsByLocalization(lcode);
 
-            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId);
+            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId);
 
             if(entityWorkerMembers != null)
             {
@@ -338,7 +375,7 @@ namespace ShiftSchedularBLL.Service
                 }
             }
             
-            viewModel.EntityOwnerId = await _entityWorkerRepository.GetEntityOwnerId(entityId);
+            viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(entityId);
 
             return viewModel;
         }
@@ -347,13 +384,20 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Member By Id
 
+        /// <summary>
+        /// Get Entity Member By Id
+        /// </summary>
+        /// <param name="entityId">Entity identifier</param>
+        /// <param name="workers">List of worker ids</param>
+        /// <param name="lcode">Language Code</param>
+        /// <returns></returns>
         public async Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(string entityId, List<string> workers, string lcode)
         {
             List<EntityWorkerMemberDTO> entityWorkerMembers = new List<EntityWorkerMemberDTO>();
             if (!string.IsNullOrEmpty(entityId) && workers.Count != 0 && !string.IsNullOrEmpty(lcode))
             {
                 List<SkillLocalizedDTO> skillLocalizeds = await _skillService.GetAllSkillsByLocalization(lcode);
-                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _entityWorkerRepository.GetDistinctMembersByEntityId(entityId, workers);
+                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId, workers);
 
                 foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMemberModels)
                 {
@@ -379,7 +423,6 @@ namespace ShiftSchedularBLL.Service
             return entityWorkerMembers;
         }
 
-
         #endregion
 
         #region Get Entity Skills
@@ -400,7 +443,7 @@ namespace ShiftSchedularBLL.Service
                 List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(lcode);
 
                 // Gets all working members
-                IEnumerable<int> entitySkills = await _entityWorkerRepository.GetDistinctSkillsByEntityId(entityId);
+                IEnumerable<int> entitySkills = await _unitOfWork.EntityWorkerRepository.GetDistinctSkillsByEntityId(entityId);
 
                 // Add the localized skills into the list, based on what exists in the entity skillset
                 skillLocalizedDTOs = allSkills
@@ -415,18 +458,23 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Profile View Model
 
+        /// <summary>
+        /// Gets the entity profile view model
+        /// </summary>
+        /// <param name="entityProfileViewModelRequest"></param>
+        /// <returns></returns>
         public async Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest)
         {
             EntityProfileViewModel entityProfileViewModel = new EntityProfileViewModel();
 
             if (entityProfileViewModelRequest != null)
             {
-                Entity entity = await _entityRepository.GetById(entityProfileViewModelRequest.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
-                EntityType entityType = await _entityTypeRepository.GetById(entity.EntityTypeId);
-                EntityTypeLocalization entityTypeLocalization = await _entityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityProfileViewModelRequest.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
+                EntityType entityType = await _unitOfWork.GetGenericRepository<EntityType>().GetById(entity.EntityTypeId);
+                EntityTypeLocalization entityTypeLocalization = await _unitOfWork.EntityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
 
-                entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, entityName: entity.EntityName, entityDescription: entity.EntityDescription, entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, await _entityWorkerRepository.GetTotalCountByEntity(entity.EntityId));
+                entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, entityName: entity.EntityName, entityDescription: entity.EntityDescription, entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, await _unitOfWork.EntityWorkerRepository.GetTotalCountByEntity(entity.EntityId));
                 entityProfileViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 if (entityProfileViewModel.AllowEdit)
@@ -442,6 +490,11 @@ namespace ShiftSchedularBLL.Service
 
         #region Add New Entity Member
 
+        /// <summary>
+        /// Adds a new Entity member
+        /// </summary>
+        /// <param name="newMemberDTO"></param>
+        /// <returns></returns>
         public async Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO)
         {
             BaseResponse<object> response = new BaseResponse<object>();
@@ -478,7 +531,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                Entity entity = await _entityRepository.GetById(newMemberDTO.DestinationEntityId);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(newMemberDTO.DestinationEntityId);
 
                 // Destination Entity exists
                 if(entity != null)
@@ -487,7 +540,7 @@ namespace ShiftSchedularBLL.Service
                     if (newMemberDTO.IsBot)
                     {
                         // Worker of non-binary gender
-                        IEnumerable<Gender> genders = await _genderRepository.GetAll();
+                        IEnumerable<Gender> genders = await _unitOfWork.GetGenericRepository<Gender>().GetAll();
                         Gender gender = genders.Where(i => i.GenderValue == GenderConstants.NONBINARY).FirstOrDefault();
 
                         // If gender not found
@@ -538,7 +591,7 @@ namespace ShiftSchedularBLL.Service
                                     DateOfJoin = nowUTCTime
                                 };
 
-                                await _entityWorkerRepository.Add(entityWorkerInstance);
+                                await _unitOfWork.EntityWorkerRepository.Add(entityWorkerInstance);
                             }
 
                             // Commit changes
@@ -569,9 +622,9 @@ namespace ShiftSchedularBLL.Service
                     else
                     {
                         // Check if there is a entity worker with that email already in the entity
-                        Worker possibleWorker = await _workerRepository.GetByEmail(newMemberDTO.MemberEmail);
+                        ApplicationUser possibleWorker = await _userManager.FindByEmailAsync(newMemberDTO.MemberEmail);
 
-                        if(possibleWorker != null && await _entityWorkerRepository.IsWorkerInEntity(newMemberDTO.DestinationEntityId, possibleWorker.WorkerId))
+                        if(possibleWorker != null && await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(newMemberDTO.DestinationEntityId, possibleWorker.Id))
                         {
                             response.Message = EntityWorkerRelatedMessages.AddNewMemberAlreadyInEntity;
                             return response;
@@ -583,12 +636,12 @@ namespace ShiftSchedularBLL.Service
                         {
                             EntityId = Guid.Parse(newMemberDTO.DestinationEntityId),
                             Email = newMemberDTO.MemberEmail,
-                            ApplicationUserId = possibleWorker != null ? possibleWorker.WorkerId : null,
+                            ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null,
                             InviteDate = DateTime.UtcNow,
                             SkillsetIds = skillsAggregated
                         };
 
-                        await _entityWorkerInvitationRepository.Add(entityWorkerInvitation);
+                        await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
                         response.Result = true;
                         response.Message = EntityWorkerRelatedMessages.AddNewMemberInvitationSuccessful;
                         response.Success = true;
@@ -642,7 +695,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                Entity entity = await _entityRepository.GetById(updateEntityMemberDTO.EntityId);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(updateEntityMemberDTO.EntityId);
                 if(entity != null)
                 {
                     try
@@ -656,7 +709,7 @@ namespace ShiftSchedularBLL.Service
                             await _workerRepository.Update(worker);
                         }
 
-                        List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
+                        List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
                     
                         if(entityWorkerInstances.Count == 0)
                         {
@@ -668,7 +721,7 @@ namespace ShiftSchedularBLL.Service
 
                         // entityWorkerInstances.Where(i => i.SkillId)
 
-                        await _entityWorkerRepository.DeleteRange(entityWorkerInstances);
+                        await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkerInstances);
 
                         foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
                         {
@@ -683,7 +736,7 @@ namespace ShiftSchedularBLL.Service
                                 DateOfJoin = dateOfJoin
                             };
 
-                            await _entityWorkerRepository.Add(entityWorkerInstance);
+                            await _unitOfWork.EntityWorkerRepository.Add(entityWorkerInstance);
                         }
                     
                     }

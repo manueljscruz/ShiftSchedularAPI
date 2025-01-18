@@ -1,0 +1,14 @@
+﻿using ShiftSchedularEntity.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ShiftSchedularDAL.IRepositories
+{
+    public interface IUserBotRepository : IGenericRepository<UserBot>
+    {
+        Task<IEnumerable<UserBot>> GetUserBotsByEntityId(string entityId);
+    }
+}

@@ -142,8 +142,24 @@ namespace ShiftSchedularDAL.Repositories
 
                                     if (!Equals(result[prop.Name], DBNull.Value))
                                     {
-                                        prop.SetValue(obj, result[prop.Name]);
+                                        var value = result[prop.Name];
+
+                                        // Handle byte[] to string conversion, if necessary
+                                        if (value is byte[] byteArray && prop.PropertyType == typeof(string))
+                                        {
+                                            // Convert byte[] to Base64 string
+                                            prop.SetValue(obj, Convert.ToBase64String(byteArray));
+                                        }
+                                        else if (value.GetType() == prop.PropertyType || prop.PropertyType.IsAssignableFrom(value.GetType()))
+                                        {
+                                            prop.SetValue(obj, value);
+                                        }
+                                        else
+                                        {
+                                            throw new InvalidCastException($"Cannot map column '{prop.Name}' of type '{value.GetType()}' to property '{prop.PropertyType}'.");
+                                        }
                                     }
+
                                 }
                                 entities.Add(obj);
                             }

@@ -68,6 +68,8 @@ namespace ShiftSchedularAPI.Configurations
 
             services.AddLogging();
             services.AddScoped<IHomeService, HomeService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IGenderService, GenderService>();
             services.AddScoped<ILocalizationService, LocalizationService>();
             services.AddScoped<IWorkerService, WorkerService>();

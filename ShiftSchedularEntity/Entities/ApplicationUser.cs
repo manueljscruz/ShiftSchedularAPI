@@ -14,6 +14,13 @@ namespace ShiftSchedularEntity.Entities
         public int GenderId { get; set; }
 
         /// <summary>
+        /// Name of the user
+        /// </summary>
+        [Required]
+        [MaxLength(200)]
+        public string DisplayName { get; set; }
+
+        /// <summary>
         /// Refresh Token
         /// </summary>
         public string? RefreshToken { get; set; }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -54,9 +55,9 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _userService.Login(loginDTO);
+            BaseResponse<LoginResponseDTO> response = await _userService.Login(loginDTO);
 
-            if (!response.LoggedSuccessfuly)
+            if (!response.Success)
             {
                 return Unauthorized();
             }

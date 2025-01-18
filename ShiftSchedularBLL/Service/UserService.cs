@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularRL.Resources.Home;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -13,11 +17,15 @@ namespace ShiftSchedularBLL.Service
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
 
-        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper)
+        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, ITokenService tokenService)
         {
             _userManager = userManager;
             _mapper = mapper;
+            _configuration = configuration;
+            _tokenService = tokenService;
         }
 
         #region Register
@@ -39,6 +47,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             ApplicationUser newUser = _mapper.Map<ApplicationUser>(newUserDTO);
+            newUser.UserName = newUserDTO.Email.Split("@")[0];
 
             IdentityResult result = await _userManager.CreateAsync(newUser, newUserDTO.Password);
             if(result.Succeeded)
@@ -60,6 +69,11 @@ namespace ShiftSchedularBLL.Service
 
         #region Login
 
+        /// <summary>
+        /// Login of a user
+        /// </summary>
+        /// <param name="loginDTO"></param>
+        /// <returns></returns>
         public async Task<BaseResponse<LoginResponseDTO>> Login(LoginDTO loginDTO)
         {
             BaseResponse<LoginResponseDTO> loginResponseDTO = new BaseResponse<LoginResponseDTO>();
@@ -71,6 +85,46 @@ namespace ShiftSchedularBLL.Service
             }
 
             bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
+            if (validLogin)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+
+                var authClaims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
+
+                foreach (var userRole in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                }
+
+                var token = _tokenService.GenerateAccessToken(authClaims, _configuration);
+
+                var refreshToken = _tokenService.GenerateRefreshToken();
+
+                _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInMinutes"], out int refreshTokenValidityInMinutes);
+
+                user.RefreshToken = refreshToken;
+
+                user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(refreshTokenValidityInMinutes);
+
+                await _userManager.UpdateAsync(user);
+
+                // TO DO! Implement JWT Token
+                loginResponseDTO.Result = new LoginResponseDTO
+                {
+                    User = _mapper.Map<WorkerDTO>(user),
+                    TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo)
+                };
+                loginResponseDTO.Success = true;
+            }
+            else
+            {
+                loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginPasswordIncorrect;
+            }
+
+            return loginResponseDTO;
         }
 
         #endregion

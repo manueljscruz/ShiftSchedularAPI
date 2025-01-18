@@ -16,21 +16,21 @@
             LEFT JOIN EntityWorkers etw on et.EntityId = etw.EntityId
             WHERE 
                 etw.ActiveWorkerStatus = 1
-                AND etw.WorkerId = @WorkerId
+                AND etw.ApplicationUserId = @WorkerId
             GROUP BY et.EntityId, et.EntityName, etw.IsOwner"
             ;
 
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
             SELECT
-	            W.WorkerId,
-	            W.WorkerName,
+	            W.Id as WorkerId,
+	            W.DisplayName,
                 W.IsBot,
 	            EW.CanCreateSchedules,
 	            EW.IsOwner,
                 EW.DateOfJoin,
 	            STRING_AGG(CAST(EW.SkillId AS VARCHAR), ',') AS SkillIds
-            FROM Workers W
-	            LEFT JOIN EntityWorkers EW on W.WorkerId = EW.WorkerId
+            FROM AspNetUsers W
+	            LEFT JOIN EntityWorkers EW on W.Id = EW.ApplicationUserId
             WHERE
 	            EW.EntityId = @EntityId
                 {0}
@@ -38,7 +38,7 @@
         ";
 
         public static readonly string GetDistinctEntityWorkersListFilter = @"
-            AND W.WorkerId IN ({0})
+            AND W.ApplicationUserId AS WorkerId IN ({0})
         ";
 
         public static readonly string GetEntityWorkersCount = @"

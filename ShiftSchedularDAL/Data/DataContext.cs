@@ -44,6 +44,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<ScheduleEntryWorkers> ScheduleEntryWorkers { get; set; }
         public DbSet<BaseEntityRule> BaseEntityRules { get; set; }
         public DbSet<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
+        public DbSet<UserBot> UserBots { get; set; }
 
         #endregion
 
@@ -469,6 +470,17 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
+            #region User Bot Configuration
+
+            modelBuilder.Entity<UserBot>()
+                .HasKey(ub => ub.UserBotId);
+
+            modelBuilder.Entity<UserBot>()
+                .HasOne(ub => ub.Entity)
+                .WithMany(e => e.UserBots)
+                .HasForeignKey(ub => ub.EntityId);
+
+            #endregion
         }
 
         #endregion
