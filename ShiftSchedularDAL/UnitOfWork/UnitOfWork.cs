@@ -255,6 +255,16 @@ namespace ShiftSchedularDAL.UnitOfWork
             }
         }
 
+        private IUserBotRepository _userBotRepository;
+        public IUserBotRepository UserBotRepository 
+        {
+            get
+            {
+                return _userBotRepository = _userBotRepository
+                    ?? new UserBotRepository(_context, this);
+            }
+        }
+
         #endregion
 
         #region Constructor

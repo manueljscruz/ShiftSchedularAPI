@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
@@ -15,35 +16,20 @@ namespace ShiftSchedularBLL.Service
     public class EntityWorkerAbsenceService : IEntityWorkerAbsenceService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IAbsenceTypeLocalizationRepository _absenceTypeLocalizationRepository;
-        private readonly IEntityWorkerAbsenceRepository _entityWorkerAbsenceRepository;
-        private readonly ILocalizationRepository _localizationRepository;
         private readonly IGeneralService _generalService;
-        private readonly IWorkerRepository _workerRepository;
-        private readonly IGenericRepository<Entity> _entityRepository;
-        private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IMapper _mapper;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         #region Constructor
 
         public EntityWorkerAbsenceService(IUnitOfWork unitOfWork,
-           IAbsenceTypeLocalizationRepository absenceTypeLocalizationRepository,
-           IEntityWorkerAbsenceRepository entityWorkerAbsenceRepository,
-           ILocalizationRepository localizationRepository,
            IGeneralService generalService,
-           IWorkerRepository workerRepository,
-           IGenericRepository<Entity> entityRepository,
-           IEntityWorkerRepository entityWorkerRepository,
+           UserManager<ApplicationUser> userManager,
            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _absenceTypeLocalizationRepository = absenceTypeLocalizationRepository;
-            _entityWorkerAbsenceRepository = entityWorkerAbsenceRepository;
-            _localizationRepository = localizationRepository;
             _generalService = generalService;
-            _workerRepository = workerRepository;
-            _entityRepository = entityRepository;
-            _entityWorkerRepository = entityWorkerRepository;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -74,7 +60,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get Absence instance
-                EntityWorkerAbsence entityWorkerAbsence = await _entityWorkerAbsenceRepository.GetById(absenceApprovalDecisionDTO.EntityWorkerAbsenceId);
+                EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(absenceApprovalDecisionDTO.EntityWorkerAbsenceId);
                 if(entityWorkerAbsence == null)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceNotFound;
@@ -89,7 +75,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Check if member is not eligible to perform this decision
-                else if (!await _entityWorkerRepository.IsMemberOwner(entityWorkerAbsence.EntityId.ToString(), absenceApprovalDecisionDTO.AbsenceDecisionSignature))
+                else if (!await _unitOfWork.EntityWorkerRepository.IsMemberOwner(entityWorkerAbsence.EntityId, absenceApprovalDecisionDTO.AbsenceDecisionSignature))
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceDecisionApproverIsNotOwner;
                     return response;
@@ -101,7 +87,7 @@ namespace ShiftSchedularBLL.Service
                 entityWorkerAbsence.AbsenceDateDecisionOffset = new DateTimeOffset(DateTime.Now).Offset;
                 entityWorkerAbsence.AbsenceDateDecision = DateTime.UtcNow;
 
-                await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
+                await _unitOfWork.EntityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
                 response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId.ToString(), absenceApprovalDecisionDTO.LanguageCode);
                 response.Success = true;
@@ -135,7 +121,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if(await _workerRepository.GetById(addEntityWorkerAbsence.WorkerId) == null)
+                else if(await _userManager.FindByIdAsync(addEntityWorkerAbsence.WorkerId) == null)
                 {
                     response.Message = AbsenceRelatedMessages.WorkerNotFound;
                     return response;
@@ -147,7 +133,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (await _entityRepository.GetById(addEntityWorkerAbsence.EntityId) == null)
+                else if (await _unitOfWork.GetGenericRepository<Entity>().GetById(addEntityWorkerAbsence.EntityId) == null)
                 {
                     response.Message = AbsenceRelatedMessages.EntityNotFound;
                     return response;
@@ -190,7 +176,7 @@ namespace ShiftSchedularBLL.Service
                 // Add Instance
                 try
                 {
-                    entityWorkerAbsence = await _entityWorkerAbsenceRepository.Add(entityWorkerAbsence);
+                    entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.Add(entityWorkerAbsence);
                 }
                 catch (Exception ex)
                 {
@@ -200,7 +186,7 @@ namespace ShiftSchedularBLL.Service
                 
 
                 // Get Localized Absence types
-                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _absenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(addEntityWorkerAbsence.LanguageCode);
+                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(addEntityWorkerAbsence.LanguageCode);
 
                 // Map added object to DTO instance
                 EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
@@ -234,7 +220,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            EntityWorkerAbsence entityWorkerAbsence = await _entityWorkerAbsenceRepository.GetById(absenceId);
+            EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(absenceId);
             if(entityWorkerAbsence == null)
             {
                 response.Message = AbsenceRelatedMessages.AbsenceNotFound;
@@ -242,7 +228,7 @@ namespace ShiftSchedularBLL.Service
             }
             else
             {
-                await _entityWorkerAbsenceRepository.Delete(entityWorkerAbsence.EntityWorkerAbsenceId);
+                await _unitOfWork.EntityWorkerAbsenceRepository.Delete(entityWorkerAbsence.EntityWorkerAbsenceId);
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.DeleteEntityWorkerAbsenceSuccessMessage;
             }
@@ -264,10 +250,10 @@ namespace ShiftSchedularBLL.Service
         {
             if (!string.IsNullOrEmpty(id))
             {
-                EntityWorkerAbsence entityWorkerAbsence = await _entityWorkerAbsenceRepository.GetById(id);
+                EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(id);
 
                 // Get Localized Absence types
-                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _absenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(lcode);
+                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(lcode);
 
                 // Map added object to DTO instance
                 EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
@@ -297,8 +283,8 @@ namespace ShiftSchedularBLL.Service
 
             if (!string.IsNullOrEmpty(entityWorkerAbsenceDTO.AbsenceDecisionOwner))
             {
-                Worker approver = await _workerRepository.GetById(entityWorkerAbsenceDTO.AbsenceDecisionOwner);
-                entityWorkerAbsenceDTO.AbsenceApproverName = approver.WorkerName;
+                ApplicationUser approver = await _userManager.FindByIdAsync(entityWorkerAbsenceDTO.AbsenceDecisionOwner);
+                entityWorkerAbsenceDTO.AbsenceApproverName = approver.DisplayName;
             }
 
             return entityWorkerAbsenceDTO;
@@ -320,15 +306,15 @@ namespace ShiftSchedularBLL.Service
             if(viewModelRequestDTO != null && !string.IsNullOrEmpty(viewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
             {
                 // Check if its the owner
-                viewModel.IsOwner = await _entityWorkerRepository.IsMemberOwner(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId);
+                viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(Guid.Parse(viewModelRequestDTO.EntityId), viewModelRequestDTO.WorkerId);
 
                 // Retrieve all the absence types
-                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _absenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(viewModelRequestDTO.LanguageCode);
+                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(viewModelRequestDTO.LanguageCode);
                 foreach(AbsenceTypeLocalization absenceType in absenceTypeLocalizeds)
                     viewModel.AbsenceTypeLocalizeds.Add(_mapper.Map<AbsenceTypeLocalizedDTO>(absenceType));
 
                 // Gets the entity worker absences of everyone if it is the owner, otherwise only of the user requesting it
-                IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _entityWorkerAbsenceRepository.GetEntityWorkerAbsences(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId, viewModel.IsOwner);
+                IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId, viewModel.IsOwner);
                 foreach(EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
                     viewModel.EntityWorkerAbsences.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds));
                 
@@ -360,7 +346,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                EntityWorkerAbsence entityWorkerAbsence = await _entityWorkerAbsenceRepository.GetById(entityWorkerAbsenceDTO.EntityWorkerAbsenceId);
+                EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(entityWorkerAbsenceDTO.EntityWorkerAbsenceId);
                 if (entityWorkerAbsence == null)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceNotFound;
@@ -373,7 +359,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (await _workerRepository.GetById(entityWorkerAbsenceDTO.WorkerId) == null)
+                else if (await _userManager.FindByIdAsync(entityWorkerAbsenceDTO.WorkerId) == null)
                 {
                     response.Message = AbsenceRelatedMessages.WorkerNotFound;
                     return response;
@@ -385,7 +371,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (await _entityRepository.GetById(entityWorkerAbsenceDTO.EntityId) == null)
+                else if (await _unitOfWork.GetGenericRepository<Entity>().GetById(entityWorkerAbsenceDTO.EntityId) == null)
                 {
                     response.Message = AbsenceRelatedMessages.EntityNotFound;
                     return response;
@@ -429,7 +415,7 @@ namespace ShiftSchedularBLL.Service
 
                 try
                 {
-                    await _entityWorkerAbsenceRepository.Update(entityWorkerAbsence);
+                    await _unitOfWork.EntityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
                     response.Result = _mapper.Map(entityWorkerAbsence, entityWorkerAbsenceDTO);
                     response.Success = true;

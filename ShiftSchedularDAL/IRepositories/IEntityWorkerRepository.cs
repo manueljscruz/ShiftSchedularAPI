@@ -7,14 +7,14 @@ namespace ShiftSchedularDAL.IRepositories
     public interface IEntityWorkerRepository : IGenericRepository<EntityWorker>
     {
         Task<IEnumerable<EntityWorkerDTO>> GetByWorkerId(string workerId);
-        Task<IEnumerable<EntityWorker>> GetByEntityId(string entityId);
-        Task<bool> IsWorkerInEntity(string entityId, string workerId);
-        Task<List<EntityWorker>> GetByWorkerAndEntity(string workerId, string entityId);
-        Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId);
-        Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId, List<string> workers);
-        Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId);
+        Task<IEnumerable<EntityWorker>> GetByEntityId(Guid entityId);
+        Task<bool> IsWorkerInEntity(Guid entityId, string workerId);
+        Task<List<EntityWorker>> GetByWorkerAndEntity(string workerId, Guid entityId);
+        Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(Guid entityId);
+        Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(Guid entityId, List<string> workers);
+        Task<IEnumerable<int>> GetDistinctSkillsByEntityId(Guid entityId);
         Task<int> GetTotalCountByEntity(Guid entityId);
-        Task<string> GetEntityOwnerId(string entityId);
-        Task<bool> IsMemberOwner(string entityId, string workerId);
+        Task<string> GetEntityOwnerId(Guid entityId);
+        Task<bool> IsMemberOwner(Guid entityId, string workerId);
     }
 }

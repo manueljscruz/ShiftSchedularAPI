@@ -1,9 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
-using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -13,11 +10,6 @@ using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.ScheduleManagement;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -28,10 +20,6 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly IGeneralService _generalService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IEntityScheduleRepository _entityScheduleRepository;
-        private readonly IEntityScheduleWorkersRepository _scheduleEntryWorkersRepository;
-        private readonly IGenericRepository<Entity> _entityRepository;
-        private readonly IEntityWorkerRepository _entityWorkerRepository;
         private readonly IShiftService _shiftService;
         private readonly IEntityRuleService _entityRuleService;
         private readonly IEntityService _entityService;
@@ -42,17 +30,17 @@ namespace ShiftSchedularBLL.Service
 
         #region Constructor
 
-        public EntityScheduleService(IMapper mapper, IGeneralService generalService, IUnitOfWork unitOfWork, IEntityScheduleRepository entityScheduleRepository,
-            IEntityScheduleWorkersRepository scheduleEntryWorkersRepository, IGenericRepository<Entity> entityRepository, IEntityWorkerRepository entityWorkerRepository, 
-            IShiftService shiftService, IEntityRuleService entityRuleService, IEntityService entityService, IScheduleGeneratorService scheduleGeneratorService)
+        public EntityScheduleService(IMapper mapper, 
+            IGeneralService generalService, 
+            IUnitOfWork unitOfWork, 
+            IShiftService shiftService, 
+            IEntityRuleService entityRuleService, 
+            IEntityService entityService, 
+            IScheduleGeneratorService scheduleGeneratorService)
         {
             _mapper = mapper;
             _generalService = generalService;
             _unitOfWork = unitOfWork;
-            _entityScheduleRepository = entityScheduleRepository;
-            _scheduleEntryWorkersRepository = scheduleEntryWorkersRepository;
-            _entityRepository = entityRepository;
-            _entityWorkerRepository = entityWorkerRepository;
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
             _entityService = entityService;
@@ -71,8 +59,8 @@ namespace ShiftSchedularBLL.Service
 
             if (viewModelRequest != null && !string.IsNullOrEmpty(viewModelRequest.EntityId) && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
             {
-                Entity entity = await _entityRepository.GetById(viewModelRequest.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(viewModelRequest.EntityId));
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, Guid.Parse(viewModelRequest.EntityId));
                 viewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 // If it can change data
@@ -134,7 +122,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     await _unitOfWork.BeginTransactionAsync();
 
-                    scheduleEntry = await _entityScheduleRepository.Add(scheduleEntry);
+                    scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
 
                     if (scheduleEntry != null)
                     {
@@ -149,7 +137,7 @@ namespace ShiftSchedularBLL.Service
                                     ScheduleEntryId = scheduleEntry.ScheduleEntryId,
                                     ApplicationUserId = workerId
                                 };
-                                await _scheduleEntryWorkersRepository.Add(scheduleEntryWorkers);
+                                await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorkers);
                             }
                         }
 
@@ -203,7 +191,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            ScheduleEntry scheduleEntry = await _entityScheduleRepository.GetById(scheduleParticipantOp.ScheduleEntryId);
+            ScheduleEntry scheduleEntry = await _unitOfWork.EntityScheduleRepository.GetById(scheduleParticipantOp.ScheduleEntryId);
             if (scheduleEntry == null)
             {
                 response.Message = ScheduleRelatedMessages.ScheduleEntryNotFound;
@@ -216,7 +204,7 @@ namespace ShiftSchedularBLL.Service
                 ApplicationUserId = scheduleParticipantOp.WorkerId
             };
 
-            scheduleEntryWorker = await _scheduleEntryWorkersRepository.Add(scheduleEntryWorker);
+            scheduleEntryWorker = await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorker);
 
             if (scheduleEntryWorker != null)
             {
@@ -243,7 +231,7 @@ namespace ShiftSchedularBLL.Service
             List<ScheduleEntryDTO> scheduleEntryDTOs = new List<ScheduleEntryDTO>();
 
             IEnumerable<ShiftDTO> shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
-            IEnumerable<ScheduleEntry> scheduleEntries = await _entityScheduleRepository.GetScheduleEntries(viewModelRequest.EntityId, viewModelRequest.WorkerId, viewModelRequest.StartDateSearch, viewModelRequest.EndDateSearch);
+            IEnumerable<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetScheduleEntries(viewModelRequest.EntityId, viewModelRequest.WorkerId, viewModelRequest.StartDateSearch, viewModelRequest.EndDateSearch);
 
             // For each schedule entry
             foreach (ScheduleEntry entry in scheduleEntries)
@@ -262,11 +250,11 @@ namespace ShiftSchedularBLL.Service
         {
             ScheduleEntryDTO scheduleEntryDTO = new ScheduleEntryDTO();
 
-            ScheduleEntry scheduleEntry = await _entityScheduleRepository.GetById(scheduleEntryId);
+            ScheduleEntry scheduleEntry = await  _unitOfWork.EntityScheduleRepository.GetById(scheduleEntryId);
             ShiftDTO shift = await _shiftService.GetShiftById(scheduleEntry.ShiftId.ToString(), languageCode);
 
             // Get respective participants of said schedule entry
-            IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _scheduleEntryWorkersRepository.GetScheduleEntryWorkers(scheduleEntry.ScheduleEntryId.ToString());
+            IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _unitOfWork.EntityScheduleWorkersRepository.GetScheduleEntryWorkers(scheduleEntry.ScheduleEntryId.ToString());
 
             // Extract participant ids
             List<string> participantsIds = scheduleEntryWorkers.Select(i => i.ApplicationUserId).ToList();
@@ -291,7 +279,7 @@ namespace ShiftSchedularBLL.Service
 
             if(createEntityScheduleDTO != null && !string.IsNullOrEmpty(createEntityScheduleDTO.EntityId) && !string.IsNullOrEmpty(createEntityScheduleDTO.WorkerId))
             {
-                bool isOwner = await _entityWorkerRepository.IsMemberOwner(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.WorkerId);
+                bool isOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(Guid.Parse(createEntityScheduleDTO.EntityId), createEntityScheduleDTO.WorkerId);
 
                 if (isOwner)
                 {
@@ -303,7 +291,7 @@ namespace ShiftSchedularBLL.Service
                         #region Delete Entries
 
                         // Get Entity Schedules within a specific time period
-                        List<ScheduleEntry> scheduleEntries = await _entityScheduleRepository.GetScheduleEntries(createEntityScheduleDTO.EntityId, string.Empty, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
+                        List<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetScheduleEntries(createEntityScheduleDTO.EntityId, string.Empty, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
 
                         // Delete all of them
                         foreach (ScheduleEntry scheduleEntry in scheduleEntries )
@@ -389,7 +377,7 @@ namespace ShiftSchedularBLL.Service
                                 scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftDuration).Add(totalBreakIncludedDuration);
 
                                 // Add entry to the database
-                                scheduleEntry = await _entityScheduleRepository.Add(scheduleEntry);
+                                scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
 
                                 // Map it, add shift info and include entry to the list
                                 ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
@@ -435,12 +423,12 @@ namespace ShiftSchedularBLL.Service
 
             if(scheduleEntryId != null)
             {
-                IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _scheduleEntryWorkersRepository.GetScheduleEntryWorkers(scheduleEntryId);
+                IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _unitOfWork.EntityScheduleWorkersRepository.GetScheduleEntryWorkers(scheduleEntryId);
 
                 if (scheduleEntryWorkers.Count() != 0)
-                    await _scheduleEntryWorkersRepository.DeleteRange(scheduleEntryWorkers);
+                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(scheduleEntryWorkers);
 
-                await _entityScheduleRepository.Delete(scheduleEntryId);
+                await _unitOfWork.EntityScheduleRepository.Delete(scheduleEntryId);
                 response.Success = true;
                 response.Message = ScheduleRelatedMessages.DeleteScheduleEntrySuccess;
             }

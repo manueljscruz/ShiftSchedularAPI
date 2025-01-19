@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
-using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -22,16 +21,8 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly ICryptographyService _cryptographyService;
         private readonly UserManager<ApplicationUser> _userManager;
-        // private readonly IWorkerRepository _workerRepository;
-        //private readonly IGenericRepository<EntityType> _entityTypeRepository;
-        //private readonly IGenericRepository<Entity> _unitOfWork.GetGenericRepository<Entity>();
-        //private readonly IGenericRepository<Gender> _genderRepository;
-        //private readonly ISkillRepository _skillRepository;
         private readonly ISkillService _skillService;
         private readonly IEntityTypeService _entityTypeService;
-        //private readonly IEntityWorkerRepository _unitOfWork.EntityWorkerRepository;
-        //private readonly IEntityTypeLocalizationRepository _entityTypeLocalizationRepository;
-        //private readonly IEntityWorkerInvitationRepository _entityWorkerInvitationRepository;
         private readonly IGeneralService _generalService;
 
         #region Constructor
@@ -40,32 +31,16 @@ namespace ShiftSchedularBLL.Service
             IMapper mapper,
             ICryptographyService cryptographyService,
             UserManager<ApplicationUser> userManager,
-            //IWorkerRepository workerRepository,
-            //IGenericRepository<EntityType> entityTypeRepository,
-            //IGenericRepository<Entity> entityRepository,
-            //IGenericRepository<Gender> genderRepository,
-            //ISkillRepository skillRepository,
             ISkillService skillService,
             IEntityTypeService entityTypeService,
-            //IEntityWorkerRepository entityWorkerRepository,
-            //IEntityTypeLocalizationRepository entityTypeLocalizationRepository,
-            //IEntityWorkerInvitationRepository entityWorkerInvitationRepository,
             IGeneralService generalService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cryptographyService = cryptographyService;
             _userManager = userManager;
-            // _workerRepository = workerRepository;
-            //_unitOfWork.GetGenericRepository<Entity>() = entityRepository;
             _skillService = skillService;
-            //_skillRepository = skillRepository;
-            //_genderRepository = genderRepository;
             _entityTypeService = entityTypeService;
-            //_entityTypeRepository = entityTypeRepository;
-            //_unitOfWork.EntityWorkerRepository = entityWorkerRepository;
-            //_entityTypeLocalizationRepository = entityTypeLocalizationRepository;
-            //_entityWorkerInvitationRepository = entityWorkerInvitationRepository;
             _generalService = generalService;
         }
 
@@ -183,7 +158,7 @@ namespace ShiftSchedularBLL.Service
             if (!string.IsNullOrEmpty(entityId))
             {
                 Entity entityInstance = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
-                IEnumerable<EntityWorker> entityWorkers = await _unitOfWork.EntityWorkerRepository.GetByEntityId(entityId);
+                IEnumerable<EntityWorker> entityWorkers = await _unitOfWork.EntityWorkerRepository.GetByEntityId(Guid.Parse(entityId));
 
                 if (entityInstance != null && entityInstance.EntityWorkers.Count != 0)
                 {
@@ -350,7 +325,7 @@ namespace ShiftSchedularBLL.Service
 
             viewModel.Skills = await _skillService.GetAllSkillsByLocalization(lcode);
 
-            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId);
+            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(Guid.Parse(entityId));
 
             if(entityWorkerMembers != null)
             {
@@ -375,7 +350,7 @@ namespace ShiftSchedularBLL.Service
                 }
             }
             
-            viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(entityId);
+            viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(Guid.Parse(entityId));
 
             return viewModel;
         }
@@ -397,7 +372,7 @@ namespace ShiftSchedularBLL.Service
             if (!string.IsNullOrEmpty(entityId) && workers.Count != 0 && !string.IsNullOrEmpty(lcode))
             {
                 List<SkillLocalizedDTO> skillLocalizeds = await _skillService.GetAllSkillsByLocalization(lcode);
-                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId, workers);
+                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(Guid.Parse(entityId), workers);
 
                 foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMemberModels)
                 {
@@ -443,7 +418,7 @@ namespace ShiftSchedularBLL.Service
                 List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(lcode);
 
                 // Gets all working members
-                IEnumerable<int> entitySkills = await _unitOfWork.EntityWorkerRepository.GetDistinctSkillsByEntityId(entityId);
+                IEnumerable<int> entitySkills = await _unitOfWork.EntityWorkerRepository.GetDistinctSkillsByEntityId(Guid.Parse(entityId));
 
                 // Add the localized skills into the list, based on what exists in the entity skillset
                 skillLocalizedDTOs = allSkills
@@ -470,7 +445,7 @@ namespace ShiftSchedularBLL.Service
             if (entityProfileViewModelRequest != null)
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityProfileViewModelRequest.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, Guid.Parse(entityProfileViewModelRequest.EntityId));
                 EntityType entityType = await _unitOfWork.GetGenericRepository<EntityType>().GetById(entity.EntityTypeId);
                 EntityTypeLocalization entityTypeLocalization = await _unitOfWork.EntityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
 
@@ -539,43 +514,18 @@ namespace ShiftSchedularBLL.Service
                     // Adding a bot member
                     if (newMemberDTO.IsBot)
                     {
-                        // Worker of non-binary gender
-                        IEnumerable<Gender> genders = await _unitOfWork.GetGenericRepository<Gender>().GetAll();
-                        Gender gender = genders.Where(i => i.GenderValue == GenderConstants.NONBINARY).FirstOrDefault();
-
-                        // If gender not found
-                        if(gender == null)
-                        {
-                            response.Message = EntityWorkerRelatedMessages.AddNewMemberUnexpectedError;
-                            return response;
-                        }
-
-                        // Generate ID, email and password for bot
-                        string workerGUID = _generalService.GenerateGuid();
-                        string generatedBotEmail = _generalService.GenerateBotEmail(workerGUID);
-                        string password = _cryptographyService.HashPassword(_generalService.GenerateBotPassword(workerGUID));
-
                         // Save record of time instance
                         DateTime nowUTCTime = DateTime.UtcNow;
+
+                        UserBot newUserBot = _mapper.Map<UserBot>(newMemberDTO);
+                        newUserBot.DateOfCreation = nowUTCTime;
 
                         try
                         {
                             await _unitOfWork.BeginTransactionAsync();
 
-                            // Create new worker instance
-                            Worker newBotWorker = new Worker
-                            {
-                                WorkerId = workerGUID,
-                                WorkerName = newMemberDTO.MemberName,
-                                GenderId = gender.GenderId,
-                                Email = generatedBotEmail,
-                                Password = password,
-                                IsActive = true,
-                                IsBot = true
-                            };
-
-                            // Add new worker instance
-                            newBotWorker = await _workerRepository.Add(newBotWorker);
+                            // Add new bot
+                            newUserBot = await _unitOfWork.UserBotRepository.Add(newUserBot);
 
                             // For each skill assigned, create a entity worker instance
                             foreach (SkillLocalizedDTO skill in newMemberDTO.AssignedSkills)
@@ -583,7 +533,7 @@ namespace ShiftSchedularBLL.Service
                                 EntityWorker entityWorkerInstance = new EntityWorker
                                 {
                                     EntityId = entity.EntityId,
-                                    ApplicationUserId = workerGUID,
+                                    ApplicationUserId = newUserBot.UserBotId.ToString(),
                                     ActiveWorkerStatus = true,
                                     CanCreateSchedules = false,
                                     IsOwner = false,
@@ -609,7 +559,7 @@ namespace ShiftSchedularBLL.Service
 
                         EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO
                         {
-                            WorkerId = workerGUID,
+                            WorkerId = newUserBot.UserBotId.ToString(),
                             WorkerName = newMemberDTO.MemberName,
                             CanCreateSchedules = false,
                             IsOwner = false,
@@ -624,7 +574,7 @@ namespace ShiftSchedularBLL.Service
                         // Check if there is a entity worker with that email already in the entity
                         ApplicationUser possibleWorker = await _userManager.FindByEmailAsync(newMemberDTO.MemberEmail);
 
-                        if(possibleWorker != null && await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(newMemberDTO.DestinationEntityId, possibleWorker.Id))
+                        if(possibleWorker != null && await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(Guid.Parse(newMemberDTO.DestinationEntityId), possibleWorker.Id))
                         {
                             response.Message = EntityWorkerRelatedMessages.AddNewMemberAlreadyInEntity;
                             return response;
@@ -662,7 +612,12 @@ namespace ShiftSchedularBLL.Service
 
         #region Update Entity Member
 
-
+        /// <summary>
+        /// Updates the Entity Member Skillset
+        /// Updates the name of bot if applicable
+        /// </summary>
+        /// <param name="updateEntityMemberDTO"></param>
+        /// <returns></returns>
         public async Task<BaseResponse<bool>> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
@@ -702,14 +657,19 @@ namespace ShiftSchedularBLL.Service
                     {
                         await _unitOfWork.BeginTransactionAsync();
 
-                        Worker worker = await _workerRepository.GetById(updateEntityMemberDTO.WorkerId);
-                        if (worker != null && worker.IsBot)
+                        // If its a bot, update the name
+                        if (updateEntityMemberDTO.IsBot)
                         {
-                            worker.WorkerName = updateEntityMemberDTO.WorkerName;
-                            await _workerRepository.Update(worker);
+                            UserBot userBot = await _unitOfWork.UserBotRepository.GetById(updateEntityMemberDTO.WorkerId);
+                            if (userBot != null)
+                            {
+                                userBot.UserDisplayName = updateEntityMemberDTO.WorkerName;
+                                await _unitOfWork.UserBotRepository.Update(userBot);
+                            }
                         }
 
-                        List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
+                        // Get Entity Worker Instances
+                        List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, Guid.Parse(updateEntityMemberDTO.EntityId));
                     
                         if(entityWorkerInstances.Count == 0)
                         {
@@ -719,16 +679,16 @@ namespace ShiftSchedularBLL.Service
 
                         DateTime dateOfJoin = entityWorkerInstances.First().DateOfJoin;
 
-                        // entityWorkerInstances.Where(i => i.SkillId)
-
+                        // Delete Previous instances
                         await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkerInstances);
 
+                        // Add new ones
                         foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
                         {
                             EntityWorker entityWorkerInstance = new EntityWorker
                             {
                                 EntityId = entity.EntityId,
-                                ApplicationUserId = worker.WorkerId,
+                                ApplicationUserId = updateEntityMemberDTO.WorkerId,
                                 ActiveWorkerStatus = true,
                                 CanCreateSchedules = false,
                                 IsOwner = false,
@@ -738,7 +698,8 @@ namespace ShiftSchedularBLL.Service
 
                             await _unitOfWork.EntityWorkerRepository.Add(entityWorkerInstance);
                         }
-                    
+
+                        await _unitOfWork.SaveChangesAsync();
                     }
                     catch (Exception ex)
                     {
@@ -751,9 +712,9 @@ namespace ShiftSchedularBLL.Service
                 }
                 else
                 {
-
+                    response.Message = "";
+                    return response;
                 }
-
             }
 
             return response;

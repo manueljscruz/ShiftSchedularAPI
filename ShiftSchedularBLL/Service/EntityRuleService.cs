@@ -19,16 +19,16 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly IGeneralService _generalService;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Entity> _entityRepository;
+        // private readonly IGenericRepository<Entity> _entityRepository;
         private readonly ISkillService _skillService;
-        private readonly IEntityRuleRepository _entityRuleRepository;
-        private readonly IEntityWorkerRepository _entityWorkerRepository;
-        private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
-        private readonly IGenericRepository<RuleType> _ruleTypeRepository;
-        private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
-        private readonly IGenericRepository<BusinessAspect> _bussinessAspectRepository;
-        private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
-        private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
+        //private readonly IEntityRuleRepository _entityRuleRepository;
+        //private readonly IEntityWorkerRepository _entityWorkerRepository;
+        //private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
+        //private readonly IGenericRepository<RuleType> _ruleTypeRepository;
+        //private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
+        //private readonly IGenericRepository<BusinessAspect> _bussinessAspectRepository;
+        //private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
+        //private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
         private readonly IShiftService _shiftService;
 
         #region Constructor
@@ -37,31 +37,31 @@ namespace ShiftSchedularBLL.Service
             IMapper mapper,
             IGeneralService generalService,
             IUnitOfWork unitOfWork,
-            IGenericRepository<Entity> entityRepository,
+            // IGenericRepository<Entity> entityRepository,
             ISkillService skillService,
-            IEntityRuleRepository entityRuleRepository,
-            IEntityWorkerRepository entityWorkerRepository,
-            IEntityRuleSpecificationRepository entityRuleSpecificationRepository,
-            IGenericRepository<RuleType> ruleTypeRepository,
-            IRuleTypeLocalizationRepository ruleTypeLocalizationRepository,
-            IGenericRepository<BusinessAspect> businessAspectRepository,
-            IBusinessAspectLocalizationRepository businessAspectLocalizationRepository,
-            IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository,
+            //IEntityRuleRepository entityRuleRepository,
+            //IEntityWorkerRepository entityWorkerRepository,
+            //IEntityRuleSpecificationRepository entityRuleSpecificationRepository,
+            //IGenericRepository<RuleType> ruleTypeRepository,
+            //IRuleTypeLocalizationRepository ruleTypeLocalizationRepository,
+            //IGenericRepository<BusinessAspect> businessAspectRepository,
+            //IBusinessAspectLocalizationRepository businessAspectLocalizationRepository,
+            //IRuleTypeBusinessAspectRepository ruleTypeBusinessAspectRepository,
             IShiftService shiftService)
         {
             _mapper = mapper;
             _generalService = generalService;
             _unitOfWork = unitOfWork;
-            _entityRepository = entityRepository;
+            // _entityRepository = entityRepository;
             _skillService = skillService;
-            _entityRuleRepository = entityRuleRepository;
-            _entityWorkerRepository = entityWorkerRepository;
-            _entityRuleSpecificationRepository = entityRuleSpecificationRepository;
-            _ruleTypeRepository = ruleTypeRepository;
-            _bussinessAspectRepository = businessAspectRepository;
-            _ruleTypeLocalizationRepository = ruleTypeLocalizationRepository;
-            _businessAspectLocalizationRepository = businessAspectLocalizationRepository;
-            _ruleTypeBusinessAspectRepository = ruleTypeBusinessAspectRepository;
+            //_entityRuleRepository = entityRuleRepository;
+            //_entityWorkerRepository = entityWorkerRepository;
+            //_entityRuleSpecificationRepository = entityRuleSpecificationRepository;
+            //_ruleTypeRepository = ruleTypeRepository;
+            //_bussinessAspectRepository = businessAspectRepository;
+            //_ruleTypeLocalizationRepository = ruleTypeLocalizationRepository;
+            //_businessAspectLocalizationRepository = businessAspectLocalizationRepository;
+            //_ruleTypeBusinessAspectRepository = ruleTypeBusinessAspectRepository;
             _shiftService = shiftService;
         }
 
@@ -98,7 +98,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get entity and check ifs null
-                Entity destinationEntity = await _entityRepository.GetById(addEntityRuleDTO.EntityId);
+                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(addEntityRuleDTO.EntityId));
                 if (destinationEntity == null)
                 {
                     response.Message = EntityRulesRelatedMessages.AddNewEntityRuleEntityNotFound;
@@ -118,7 +118,7 @@ namespace ShiftSchedularBLL.Service
                         if (newRule.EntityRuleSpecifications.Count != 0)
                             newRule.EntityRuleSpecifications = new List<EntityRuleSpecification>();
 
-                        await _entityRuleRepository.Add(newRule);
+                        await _unitOfWork.EntityRuleRepository.Add(newRule);
 
                         EntityRuleDTO entityRuleDTO = _mapper.Map<EntityRuleDTO>(newRule);
 
@@ -181,7 +181,7 @@ namespace ShiftSchedularBLL.Service
 
                 // Map rule specification and add it to the database
                 EntityRuleSpecification ruleSpecification = _mapper.Map<EntityRuleSpecification>(addEntityRuleSpecificationDTO);
-                ruleSpecification = await _entityRuleSpecificationRepository.AddEntityRuleSpecification(ruleSpecification);
+                ruleSpecification = await _unitOfWork.EntityRuleSpecificationRepository.AddEntityRuleSpecification(ruleSpecification);
 
                 EntityRuleSpecificationDTO entityRuleSpecification = _mapper.Map<EntityRuleSpecificationDTO>(ruleSpecification);
                 entityRuleSpecification = await HandleEntityRuleSpecReferences(entityRuleSpecification, addEntityRuleSpecificationDTO.LanguageCode);
@@ -203,7 +203,7 @@ namespace ShiftSchedularBLL.Service
         {
             if (!string.IsNullOrEmpty(entityRuleSpecificationDTO.AspectReferenceId) && entityRuleSpecificationDTO.BusinessAspectId != 0)
             {
-                BusinessAspect businessAspect = await _bussinessAspectRepository.GetById(entityRuleSpecificationDTO.BusinessAspectId);
+                BusinessAspect businessAspect = await _unitOfWork.GetGenericRepository<BusinessAspect>().GetById(entityRuleSpecificationDTO.BusinessAspectId);
                 if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
                 {
                     ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId, LocalizationConstants.ENGLISH);
@@ -218,7 +218,7 @@ namespace ShiftSchedularBLL.Service
 
             if (!string.IsNullOrEmpty(entityRuleSpecificationDTO.AspectReferenceId2) && entityRuleSpecificationDTO.BusinessAspectId2 != 0)
             {
-                BusinessAspect businessAspect = await _bussinessAspectRepository.GetById(entityRuleSpecificationDTO.BusinessAspectId2);
+                BusinessAspect businessAspect = await _unitOfWork.GetGenericRepository<BusinessAspect>().GetById(entityRuleSpecificationDTO.BusinessAspectId2);
                 if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
                 {
                     ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId2, LocalizationConstants.ENGLISH);
@@ -265,7 +265,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             // Get entity rule instance from the database
-            EntityRule entityRule = await _entityRuleRepository.GetById(entityRuleId);
+            EntityRule entityRule = await _unitOfWork.EntityRuleRepository.GetById(Guid.Parse(entityRuleId));
             if (entityRule == null)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleNotFound;
@@ -278,7 +278,7 @@ namespace ShiftSchedularBLL.Service
             try
             {
                 // Delete all entity rule specifications associated to this entity rule
-                bool specsDeleteResult = await _entityRuleSpecificationRepository.DeleteEntityRuleSpecificationsByRuleId(entityRuleId);
+                bool specsDeleteResult = await _unitOfWork.EntityRuleSpecificationRepository.DeleteEntityRuleSpecificationsByRuleId(entityRuleId);
                 // if not successful
                 if (!specsDeleteResult)
                 {
@@ -287,7 +287,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
                 // Delete entity rule and commit
-                await _entityRuleRepository.Delete(entityRuleId);
+                await _unitOfWork.EntityRuleRepository.Delete(entityRuleId);
                 await _unitOfWork.CommitAsync();
 
                 // Return success
@@ -334,14 +334,14 @@ namespace ShiftSchedularBLL.Service
             }
 
             // Get entity rule specification instance and check if its null
-            EntityRuleSpecification entityRuleSpecification = await _entityRuleSpecificationRepository.GetEntityRuleSpecification(entityRuleId, specificationId);
+            EntityRuleSpecification entityRuleSpecification = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecification(entityRuleId, specificationId);
             if (entityRuleSpecification == null)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleSpecificationNotFound;
                 return response;
             }
 
-            bool deleteResult = await _entityRuleSpecificationRepository.DeleteEntityRuleSpecification(entityRuleId, specificationId);
+            bool deleteResult = await _unitOfWork.EntityRuleSpecificationRepository.DeleteEntityRuleSpecification(entityRuleId, specificationId);
             if (!deleteResult)
             {
                 response.Message = EntityRulesRelatedMessages.DeleteEntityRuleSpecUnexpectedError;
@@ -375,11 +375,11 @@ namespace ShiftSchedularBLL.Service
                 if (lcode.Contains("-"))
                     lcode = lcode.Split('-')[0];
 
-                EntityRule entityRule = await _entityRuleRepository.GetById(entityRuleId);
+                EntityRule entityRule = await _unitOfWork.EntityRuleRepository.GetById(entityRuleId);
                 if (entityRule != null)
                 {
-                    IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
-                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
+                    IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _unitOfWork.RuleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
+                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
                     entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, lcode);
                 }
             }
@@ -403,10 +403,10 @@ namespace ShiftSchedularBLL.Service
 
             if (!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(lcode))
             {
-                IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
-                IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
+                IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _unitOfWork.RuleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
+                IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
 
-                IEnumerable<EntityRule> entityRules = await _entityRuleRepository.GetEntityRules(entityId);
+                IEnumerable<EntityRule> entityRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(entityId);
                 foreach (EntityRule entityRule in entityRules)
                 {
                     EntityRuleDTO entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, lcode);
@@ -440,7 +440,7 @@ namespace ShiftSchedularBLL.Service
                 entityRuleDTO.RuleTypeDisplayValue = ruleTypeLocalizations.Where(i => i.RuleTypeId.Equals(entityRuleDTO.RuleTypeId)).FirstOrDefault().RuleTypeDisplayValue;
 
             // Get entity rule specifications
-            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _entityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId.ToString());
+            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId.ToString());
 
             if (entityRule.EntityRuleSpecifications != null)
             {
@@ -477,33 +477,33 @@ namespace ShiftSchedularBLL.Service
 
             if (entityRuleViewModelRequestDTO != null && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.LanguageCode))
             {
-                Entity entity = await _entityRepository.GetById(entityRuleViewModelRequestDTO.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _entityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(entityRuleViewModelRequestDTO.EntityId));
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, Guid.Parse(entityRuleViewModelRequestDTO.EntityId));
                 entityRuleViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner); 
 
                 // If it can change data
                 if (entityWorkerInstances.Any(i => i.IsOwner))
                 {
                     // Get All business aspect localized
-                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _businessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
+                    IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
 
                     // Map it to a transferable object
                     foreach (BusinessAspectLocalization businessAspectLocalization in businessAspectLocalizations)
                         entityRuleViewModel.BusinessAspectsLocalizeds.Add(_mapper.Map<BusinessAspectLocalizedDTO>(businessAspectLocalization));
 
                     // Get All rule type localized
-                    IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _ruleTypeLocalizationRepository.GetRuleTypesByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
+                    IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _unitOfWork.RuleTypeLocalizationRepository.GetRuleTypesByLocalization(entityRuleViewModelRequestDTO.LanguageCode);
                     foreach (RuleTypeLocalization ruleTypeLocalization in ruleTypeLocalizations)
                     {
                         // Map it to transferable object
                         RuleTypeLocalizedDTO ruleTypeLocalizedDTO = new RuleTypeLocalizedDTO();
                         ruleTypeLocalizedDTO = _mapper.Map<RuleTypeLocalizedDTO>(ruleTypeLocalization);
-                        RuleType ruleType = await _ruleTypeRepository.GetById(ruleTypeLocalizedDTO.RuleTypeId);
+                        RuleType ruleType = await _unitOfWork.GetGenericRepository<RuleType>().GetById(ruleTypeLocalizedDTO.RuleTypeId);
                         ruleTypeLocalizedDTO.MultipleSpecification = ruleType.MultipleSpecification;
                         ruleTypeLocalizedDTO.IsSpecValuesBoolean = ruleType.IsSpecValuesBoolean;
 
                         // Get relations between this rule type and its business aspect
-                        List<RuleTypeBusinessAspect> ruleTypeBusinessAspects = await _ruleTypeBusinessAspectRepository.GetRuleTypeBusinessAspectsByRuleTypeId(ruleTypeLocalization.RuleTypeId);
+                        List<RuleTypeBusinessAspect> ruleTypeBusinessAspects = await _unitOfWork.RuleTypeBusinessAspectRepository.GetRuleTypeBusinessAspectsByRuleTypeId(ruleTypeLocalization.RuleTypeId);
 
                         // For each relation
                         foreach (RuleTypeBusinessAspect ruleTypeBusinessAspect in ruleTypeBusinessAspects)
@@ -519,7 +519,7 @@ namespace ShiftSchedularBLL.Service
                         entityRuleViewModel.RuleTypeLocalizeds.Add(ruleTypeLocalizedDTO);
                     }
 
-                    IEnumerable<EntityRule> entityRules = await _entityRuleRepository.GetEntityRules(entityRuleViewModelRequestDTO.EntityId);
+                    IEnumerable<EntityRule> entityRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(entityRuleViewModelRequestDTO.EntityId);
                     foreach (EntityRule entityRule in entityRules)
                     {
                         EntityRuleDTO entityRuleDTO = await HandleEntityRuleData(entityRule, ruleTypeLocalizations, businessAspectLocalizations, entityRuleViewModelRequestDTO.LanguageCode);
@@ -543,7 +543,7 @@ namespace ShiftSchedularBLL.Service
 
             if (entityRule != null)
             {
-                EntityRule instance = await _entityRuleRepository.GetById(entityRule.EntityRuleId);
+                EntityRule instance = await _unitOfWork.EntityRuleRepository.GetById(entityRule.EntityRuleId);
                 if (instance == null)
                 {
                     response.Message = EntityRulesRelatedMessages.EntityRuleNotFound;
@@ -569,7 +569,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get entity and check ifs null
-                Entity destinationEntity = await _entityRepository.GetById(entityRule.EntityId);
+                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityRule.EntityId);
                 if (destinationEntity == null)
                 {
                     response.Message = EntityRulesRelatedMessages.AddNewEntityRuleEntityNotFound;
@@ -578,7 +578,7 @@ namespace ShiftSchedularBLL.Service
                 else
                 {
                     _mapper.Map(entityRule, instance);
-                    await _entityRuleRepository.Update(instance);
+                    await _unitOfWork.EntityRuleRepository.Update(instance);
                     response.Success = true;
                     response.Message = EntityRulesRelatedMessages.UpdateEntityRuleSuccessful;
                 }
@@ -599,7 +599,7 @@ namespace ShiftSchedularBLL.Service
 
             if (entityRuleSpecification != null)
             {
-                EntityRuleSpecification instance = await _entityRuleSpecificationRepository.GetEntityRuleSpecification(entityRuleSpecification.EntityRuleId, entityRuleSpecification.SpecificationId);
+                EntityRuleSpecification instance = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecification(entityRuleSpecification.EntityRuleId, entityRuleSpecification.SpecificationId);
                 if (instance == null)
                 {
                     response.Message = EntityRulesRelatedMessages.EntityRuleSpecificationNotFound;
@@ -614,7 +614,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 _mapper.Map(entityRuleSpecification, instance);
-                await _entityRuleSpecificationRepository.UpdateEntityRuleSpecification(instance);
+                await _unitOfWork.EntityRuleSpecificationRepository.UpdateEntityRuleSpecification(instance);
                 response.Success = true;
                 response.Message = EntityRulesRelatedMessages.UpdateEntityRuleSpecSuccessful;
             }
@@ -639,7 +639,7 @@ namespace ShiftSchedularBLL.Service
 
             else
             {
-                await _entityRuleSpecificationRepository.DeleteEntityRuleSpecificationsByRuleId(entityRuleId);
+                await _unitOfWork.EntityRuleSpecificationRepository.DeleteEntityRuleSpecificationsByRuleId(entityRuleId);
                 response.Success = true;
                 response.Message = EntityRulesRelatedMessages.DeleteEntityRuleSpecSuccessful;
             }

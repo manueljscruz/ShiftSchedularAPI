@@ -24,6 +24,10 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
+            CreateMap<AddNewMemberDTO, UserBot>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => Guid.Parse(src.DestinationEntityId)))
+                .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.MemberName));
+
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.GenderLocalizedName, opt => opt.MapFrom(src => src.GenderDisplayValue));

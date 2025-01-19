@@ -52,9 +52,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get By Entity Id
 
-        public async Task<IEnumerable<EntityWorker>> GetByEntityId(string entityId)
+        public async Task<IEnumerable<EntityWorker>> GetByEntityId(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
                 return await _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
             }
@@ -66,9 +66,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get By Worker and Entity
 
-        public async Task<List<EntityWorker>> GetByWorkerAndEntity(string workerId, string entityId)
+        public async Task<List<EntityWorker>> GetByWorkerAndEntity(string workerId, Guid entityId)
         {
-            if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId.ToString()))
             {
                 return (List<EntityWorker>)_entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
             }
@@ -84,12 +84,14 @@ namespace ShiftSchedularDAL.Repositories
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId)
+        public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
+                byte[] entityIdBytes = entityId.ToByteArray();
+
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);
 
@@ -103,16 +105,18 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Distinct Members By Entity Id
 
-        public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(string entityId, List<string> workers)
+        public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctMembersByEntityId(Guid entityId, List<string> workers)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
+                byte[] entityIdBytes = entityId.ToByteArray();
+
                 string listInString = string.Join(",", workers.Select(v => $"'{v}'"));
                 string filterFormat = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersListFilter, listInString);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, filterFormat);
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
 
@@ -126,14 +130,16 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Distinct Skills By Entity Id
 
-        public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(string entityId)
+        public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(Guid entityId)
         {
             List<int> skillIds = new List<int>();
 
-            if (!string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
+                byte[] entityIdBytes = entityId.ToByteArray();
+
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 return await _sqlRawRepository.ExecuteQuery<int>(EntityWorkerSQL.GetDistinctEntitySkillsByEntityId, parameters);
             }
@@ -145,11 +151,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Entity Owner Id
 
-        public async Task<string> GetEntityOwnerId(string entityId)
+        public async Task<string> GetEntityOwnerId(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
-                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId.ToString() == entityId);
+                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId.Equals(entityId));
 
                 if (entityWorker != null)
                     return entityWorker.ApplicationUserId;
@@ -163,11 +169,13 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<int> GetTotalCountByEntity(Guid entityId)
         {
-            if (entityId != Guid.Empty)
+            if (!string.IsNullOrEmpty(entityId.ToString()))
             {
+                byte[] entityIdBytes = entityId.ToByteArray();
+
                 // GetEntityWorkersCount
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 var result = await _sqlRawRepository.ExecuteScalar<object>(EntityWorkerSQL.GetEntityWorkersCount, parameters);
                 if (result != null)
@@ -180,9 +188,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Is Worker In Entity
 
-        public async Task<bool> IsWorkerInEntity(string entityId, string workerId)
+        public async Task<bool> IsWorkerInEntity(Guid entityId, string workerId)
         {
-            if (string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(workerId))
+            if (string.IsNullOrEmpty(entityId.ToString()) || string.IsNullOrEmpty(workerId))
             {
                 return false;
             }
@@ -195,7 +203,7 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Is Member Owner
 
-        public async Task<bool> IsMemberOwner(string entityId, string workerId)
+        public async Task<bool> IsMemberOwner(Guid entityId, string workerId)
         {
             bool result = false;
 

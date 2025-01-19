@@ -9,7 +9,7 @@ namespace ShiftSchedularEntity.Entities
 
         [Required]
         [Column(TypeName = "BINARY(16)")]
-        public int UserBotId { get; set; }
+        public Guid UserBotId { get; set; }
         
         [Required]
         [MaxLength(200)]
