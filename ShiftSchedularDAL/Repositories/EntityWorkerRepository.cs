@@ -91,7 +91,9 @@ namespace ShiftSchedularDAL.Repositories
                 byte[] entityIdBytes = entityId.ToByteArray();
 
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityIdBytes);
+                // parameters.Add("@EntityId", entityIdBytes);
+                // entityId
+                parameters.Add("@EntityId", entityId);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);
 

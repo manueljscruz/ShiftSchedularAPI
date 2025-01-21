@@ -1,10 +1,17 @@
-﻿namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
+﻿using ShiftSchedularEntity.Models.DataAnnotationModels;
+using ShiftSchedularRL.Resources.Dashboard;
+using ShiftSchedularRL.Resources.Home;
+
+namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 {
     public class EntityProfileViewModelRequestDTO
     {
         #region Properties
 
+        [RequiredWithResourceMessageAttribute(typeof(EntitiesRelatedMessages), "DeleteEntityNoIdentifierError")]
         public string EntityId { get; set; }
+
+        [RequiredWithResourceMessageAttribute(typeof(WorkerRelatedMessages), "WorkerIdentifierIsEmpty")]
         public string WorkerId { get; set; }
         public string LanguageCode { get; set; }
 

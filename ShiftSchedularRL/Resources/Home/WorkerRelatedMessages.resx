@@ -132,6 +132,9 @@
   <data name="WorkerGenderUnexpectedValueError" xml:space="preserve">
     <value>Selected gender value is invalid</value>
   </data>
+  <data name="WorkerIdentifierIsEmpty" xml:space="preserve">
+    <value>Worker identifier is required.</value>
+  </data>
   <data name="WorkerLoginEmailNotFoundError" xml:space="preserve">
     <value>Email not found or invalid.</value>
   </data>

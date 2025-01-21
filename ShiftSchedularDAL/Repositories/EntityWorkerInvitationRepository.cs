@@ -58,7 +58,7 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Delete All By Entity
 
-        public async Task DeleteAllByEntity(string entityId)
+        public async Task DeleteAllByEntity(Guid entityId)
         {
             IEnumerable<EntityWorkerInvitation> entityWorkerInvitations = _dbSet.Where(i => i.EntityId.Equals(entityId));
             if (entityWorkerInvitations.Count() != 0)
@@ -85,7 +85,7 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get By Composite Key
 
-        public async Task<EntityWorkerInvitation> GetByCompositeKey(string entityId, string email, string workerId = null)
+        public async Task<EntityWorkerInvitation> GetByCompositeKey(Guid entityId, string email, string workerId = null)
         {
             if (string.IsNullOrEmpty(workerId))
             {

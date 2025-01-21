@@ -11,7 +11,7 @@ namespace ShiftSchedularDAL.IRepositories
         /// <param name="email"></param>
         /// <param name="workerId"></param>
         /// <returns></returns>
-        Task<EntityWorkerInvitation> GetByCompositeKey(string entityId, string email, string workerId = null);
+        Task<EntityWorkerInvitation> GetByCompositeKey(Guid entityId, string email, string workerId = null);
         
         /// <summary>
         /// Adds a new Entity Worker Invitation
@@ -42,6 +42,6 @@ namespace ShiftSchedularDAL.IRepositories
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        Task DeleteAllByEntity(string entityId);
+        Task DeleteAllByEntity(Guid entityId);
     }
 }

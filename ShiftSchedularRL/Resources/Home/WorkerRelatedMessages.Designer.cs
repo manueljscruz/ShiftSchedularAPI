@@ -106,6 +106,15 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Worker identifier is required..
+        /// </summary>
+        public static string WorkerIdentifierIsEmpty {
+            get {
+                return ResourceManager.GetString("WorkerIdentifierIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Email not found or invalid..
         /// </summary>
         public static string WorkerLoginEmailNotFoundError {

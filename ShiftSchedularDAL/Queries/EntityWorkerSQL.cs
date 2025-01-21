@@ -23,8 +23,7 @@
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
             SELECT
 	            W.Id as WorkerId,
-	            W.DisplayName,
-                W.IsBot,
+	            W.DisplayName as WorkerName,
 	            EW.CanCreateSchedules,
 	            EW.IsOwner,
                 EW.DateOfJoin,
@@ -34,7 +33,7 @@
             WHERE
 	            EW.EntityId = @EntityId
                 {0}
-            GROUP BY W.WorkerId, W.WorkerName, W.isBot, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
+            GROUP BY W.Id, W.DisplayName, EW.CanCreateSchedules, EW.IsOwner, EW.DateofJoin
         ";
 
         public static readonly string GetDistinctEntityWorkersListFilter = @"
@@ -43,7 +42,7 @@
 
         public static readonly string GetEntityWorkersCount = @"
             SELECT 
-                COUNT(DISTINCT WorkerId) AS WorkerCount
+                COUNT(DISTINCT ApplicationUserId) AS WorkerCount
             FROM 
                 [ShiftSchedular].[dbo].[EntityWorkers]
             WHERE EntityId = @EntityId

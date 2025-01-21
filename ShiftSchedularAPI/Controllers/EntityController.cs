@@ -5,6 +5,9 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularRL.Resources.Dashboard;
+using ShiftSchedularRL.Resources.Home;
+using System.Web;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -27,24 +30,43 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity By Id
 
+        /// <summary>
+        /// Get entity by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("get-by-id/{id}")]
-        [ProducesResponseType(200, Type = typeof(Entity))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntityById(string id)
         {
-            var entity = await _entityService.GetEntityById(id);
-            if (entity == null)
+            if (!string.IsNullOrEmpty(id))
             {
-                return NotFound();
+                string decodedEntityId = HttpUtility.UrlDecode(id);
+                var entity = await _entityService.GetEntityById(id);
+                if (entity == null)
+                {
+                    return NotFound(EntitiesRelatedMessages.UpdateEntityNotFound);
+                }
+                return Ok(entity);
             }
-            return Ok(entity);
+            else
+            {
+                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+            }
         }
 
         #endregion
 
         #region Get All Entities
 
+        /// <summary>
+        /// Gets all the work entities
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("get-all")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllEntities()
         {
             var entities = await _entityService.GetAllEntities();
@@ -56,10 +78,20 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entities by Worker ID
 
+        /// <summary>
+        /// Gets Work Entities that the worker is associated with
+        /// </summary>
+        /// <param name="workerId">Identifier of the worker</param>
+        /// <returns></returns>
         [HttpGet("get-entities-by-worker-id/{workerId}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntitiesByWorkerId(string workerId)
         {
+            if(string.IsNullOrEmpty(workerId))
+            {
+                return BadRequest(WorkerRelatedMessages.WorkerIdentifierIsEmpty);
+            }
             var entities = await _entityService.GetEntitiesByWorkerId(workerId);
             return Ok(entities);
         }
@@ -68,24 +100,54 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entities Members View Model 
 
+        /// <summary>
+        /// Gets the members of the entity in a view model
+        /// </summary>
+        /// <param name="entityId">Identifier of the entity</param>
+        /// <param name="lcode">Language Code</param>
+        /// <returns></returns>
         [HttpGet("get-entities-members-view-model/{entityId}/{lcode}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntitiesMembersViewModel(string entityId, string lcode)
         {
-            var entities = await _entityService.GetEntitiesMembersViewModel(entityId, lcode);
-            return Ok(entities);
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                string decodedEntityId = HttpUtility.UrlDecode(entityId);
+                var entities = await _entityService.GetEntitiesMembersViewModel(decodedEntityId, lcode);
+                return Ok(entities);
+            }
+            else
+            {
+                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+            }
         }
 
         #endregion
 
         #region Get Entities Skills
 
+        /// <summary>
+        /// Gets the skills of the entity
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="lcode"></param>
+        /// <returns></returns>
         [HttpGet("get-entity-skills/{entityId}/{lcode}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntitiesSkills(string entityId, string lcode)
         {
-            var skills = await _entityService.GetEntitySkills(entityId, lcode);
-            return Ok(skills);
+            if (!string.IsNullOrEmpty(entityId))
+            {
+                string decodedEntityId = HttpUtility.UrlDecode(entityId);
+                var skills = await _entityService.GetEntitySkills(entityId, lcode);
+                return Ok(skills);
+            }
+            else
+            {
+                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+            }
         }
 
         #endregion
@@ -93,10 +155,18 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Entity Profile View Model
 
         [HttpPost("get-entity-profile-view-model")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO profileViewModelRequest)
         {
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            profileViewModelRequest.EntityId = HttpUtility.UrlDecode(profileViewModelRequest.EntityId);
             var entityVM = await _entityService.GetEntityProfileViewModel(profileViewModelRequest);
+
             return Ok(entityVM);
         }
 
