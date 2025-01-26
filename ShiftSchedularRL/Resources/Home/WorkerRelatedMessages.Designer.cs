@@ -61,6 +61,24 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid access token/refresh token.
+        /// </summary>
+        public static string InvalidTokens {
+            get {
+                return ResourceManager.GetString("InvalidTokens", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tokens are required..
+        /// </summary>
+        public static string TokensAreEmpty {
+            get {
+                return ResourceManager.GetString("TokensAreEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Email cannot be empty..
         /// </summary>
         public static string WorkerEmailEmptyError {

@@ -25,7 +25,9 @@ namespace ShiftSchedularAPI.Controllers
         #region Add Base Entity Rule
 
         [HttpPost("add")]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddBaseEntityRule(BaseEntityRuleSubmissionModel baseEntityRuleSubmissionModel)
         {
             if (baseEntityRuleSubmissionModel == null)

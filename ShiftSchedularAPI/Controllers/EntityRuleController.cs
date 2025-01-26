@@ -3,6 +3,7 @@ using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using System.Web;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -26,10 +27,18 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Entity Rule By Id
 
         [HttpGet("get-by-id/{id}/{lcode}")]
-        [ProducesResponseType(200, Type = typeof(Shift))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntityRuleById(string id, string lcode)
         {
-            var entityRule = await _entityRuleService.GetEntityRuleById(id, lcode);
+            if(string.IsNullOrEmpty(id) || string.IsNullOrEmpty(lcode))
+            {
+                return BadRequest();
+            }
+
+            string entityRuleId = HttpUtility.UrlDecode(id);
+
+            var entityRule = await _entityRuleService.GetEntityRuleById(entityRuleId, lcode);
             return Ok(entityRule);
         }
 
@@ -38,9 +47,17 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Entity Rules View Model
 
         [HttpPost("get-entity-rules-view-model")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntityRulesViewModel(BaseViewModelRequest viewModelRequest)
         {
+            if(viewModelRequest == null)
+            {
+                return BadRequest();
+            }
+
+            viewModelRequest.EntityId = HttpUtility.UrlDecode(viewModelRequest.EntityId);
+
             var viewModel = await _entityRuleService.GetEntityRuleViewModel(viewModelRequest);
             return Ok(viewModel);
         }
@@ -50,9 +67,17 @@ namespace ShiftSchedularAPI.Controllers
         #region Add Entity Rule
 
         [HttpPost("add-entity-rule")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddEntityRule([FromBody] AddEntityRuleDTO entityRuleDTO)
         {
+            if (entityRuleDTO == null)
+            {
+                return BadRequest();
+            }
+
+            entityRuleDTO.EntityId = HttpUtility.UrlDecode(entityRuleDTO.EntityId);
+
             var entityRule = await _entityRuleService.AddEntityRule(entityRuleDTO);
             return Ok(entityRule);
         }
@@ -62,9 +87,15 @@ namespace ShiftSchedularAPI.Controllers
         #region Add Entity Rule Specification
 
         [HttpPost("add-entity-rule-spec")]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AddEntityRuleSpec(AddEntityRuleSpecificationDTO addEntityRuleSpec)
         {
+            if(addEntityRuleSpec == null)
+            {
+                return BadRequest();
+            }
+
             var entityRuleSpec = await _entityRuleService.AddEntityRuleSpecification(addEntityRuleSpec);
             return Ok(entityRuleSpec);
         }
@@ -77,6 +108,11 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> UpdateEntityShift([FromBody] EntityRuleDTO entityRule)
         {
+            if(entityRule == null)
+            {
+                return BadRequest();
+            }
+            // entityRule.EntityRuleId = HttpUtility.UrlDecode(entityRule.EntityRuleId);
             var updatedEntityRule = await _entityRuleService.UpdateEntityRule(entityRule);
             return Ok(updatedEntityRule);
         }
@@ -86,33 +122,53 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Entity Rule Spec
 
         [HttpPut("update-entity-rule-spec")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateEntityShiftBreak([FromBody] EntityRuleSpecificationDTO entityRuleSpec)
         {
+            if(entityRuleSpec == null)
+            {
+                return BadRequest();
+            }
+
             var updatedEntityRuleSpec = await _entityRuleService.UpdateEntityRuleSpecification(entityRuleSpec);
             return Ok(updatedEntityRuleSpec);
         }
 
         #endregion
 
-        #region Delete Shift
+        #region Delete Entity Rule
 
         [HttpDelete("delete-entity-rule/{entityId}/{entityRuleId}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteEntityRule(string entityId, string entityRuleId)
         {
+            if(string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(entityRuleId))
+            {
+                return BadRequest();
+            }
+
+            entityId = HttpUtility.UrlDecode(entityId);
+
             var response = await _entityRuleService.DeleteEntityRule(entityId, entityRuleId);
             return Ok(response);
         }
 
         #endregion
 
-        #region Delete Shift Break
+        #region Delete Entity Rule Specification
 
         [HttpDelete("delete-entity-rule-spec/{entityRuleId}/{specId}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteEntityRuleSpec(string entityRuleId, int specId)
         {
+            if(string.IsNullOrEmpty(entityRuleId) || specId == 0)
+            {
+                return BadRequest();
+            }
+
             var response = await _entityRuleService.DeleteEntityRuleSpecification(entityRuleId, specId);
             return Ok(response);
         }
@@ -122,9 +178,17 @@ namespace ShiftSchedularAPI.Controllers
         #region Delete Rule Specifications
 
         [HttpDelete("delete-entity-rule-specs/{entityRuleId}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteEntityRuleSpecs(string entityRuleId)
         {
+            if(string.IsNullOrEmpty(entityRuleId))
+            {
+                return BadRequest();
+            }
+
+            entityRuleId = HttpUtility.UrlDecode(entityRuleId);
+
             var response = await _entityRuleService.DeleteEntityRuleSpecifications(entityRuleId);
             return Ok(response);
         }

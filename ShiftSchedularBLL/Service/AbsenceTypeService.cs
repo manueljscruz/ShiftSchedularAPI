@@ -61,10 +61,17 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task DeleteAbsenceType(int id)
+        public async Task<bool> DeleteAbsenceType(int id)
         {
-            if(id > 0)
+            bool result = false;
+
+            if (id > 0)
+            {
                 await _absenceTypeRepository.Delete(id);
+                result = true;
+            }
+
+            return result;
         }
 
         #endregion
@@ -131,10 +138,14 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="absenceType"></param>
         /// <returns></returns>
-        public async Task UpdateAbsenceType(AbsenceType absenceType)
+        public async Task<bool> UpdateAbsenceType(AbsenceType absenceType)
         {
             if (absenceType != null && !string.IsNullOrEmpty(absenceType.AbsenceTypeName))
+            {
                 await _absenceTypeRepository.Update(absenceType);
+                return true;
+            }
+            return false;
         }
 
         #endregion

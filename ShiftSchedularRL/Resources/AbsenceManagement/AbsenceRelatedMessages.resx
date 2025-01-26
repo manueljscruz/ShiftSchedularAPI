@@ -144,8 +144,14 @@
   <data name="AbsenceStartDateEmpty" xml:space="preserve">
     <value>The absence must have an start date.</value>
   </data>
+  <data name="AbsenceTypeIdRequired" xml:space="preserve">
+    <value>The absence type identifier is required for this operation.</value>
+  </data>
   <data name="AbsenceTypeIsInvalid" xml:space="preserve">
     <value>The absence type is required.</value>
+  </data>
+  <data name="AbsenceTypesNotFoundByLocal" xml:space="preserve">
+    <value>No absence types found for the localization code</value>
   </data>
   <data name="AddEntityWorkerAbsenceSuccessMessage" xml:space="preserve">
     <value>Absence was added successfuly.</value>
@@ -164,6 +170,12 @@
   </data>
   <data name="EntityNotFound" xml:space="preserve">
     <value>No entity was found to be associated with the absence. If this error persists, please contact support.</value>
+  </data>
+  <data name="NewAbsenceTypeEmpty" xml:space="preserve">
+    <value>Absence Type value is required.</value>
+  </data>
+  <data name="NewAbsenceTypeError" xml:space="preserve">
+    <value>An error occured while creating a new absence type.</value>
   </data>
   <data name="UpdateEntityWorkerAbsenceSuccessMessage" xml:space="preserve">
     <value>Absence was updated successfuly.</value>

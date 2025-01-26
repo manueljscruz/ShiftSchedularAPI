@@ -142,11 +142,29 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The absence type identifier is required for this operation..
+        /// </summary>
+        public static string AbsenceTypeIdRequired {
+            get {
+                return ResourceManager.GetString("AbsenceTypeIdRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The absence type is required..
         /// </summary>
         public static string AbsenceTypeIsInvalid {
             get {
                 return ResourceManager.GetString("AbsenceTypeIsInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No absence types found for the localization code.
+        /// </summary>
+        public static string AbsenceTypesNotFoundByLocal {
+            get {
+                return ResourceManager.GetString("AbsenceTypesNotFoundByLocal", resourceCulture);
             }
         }
         
@@ -201,6 +219,24 @@ namespace ShiftSchedularRL.Resources.AbsenceManagement {
         public static string EntityNotFound {
             get {
                 return ResourceManager.GetString("EntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Absence Type value is required..
+        /// </summary>
+        public static string NewAbsenceTypeEmpty {
+            get {
+                return ResourceManager.GetString("NewAbsenceTypeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occured while creating a new absence type..
+        /// </summary>
+        public static string NewAbsenceTypeError {
+            get {
+                return ResourceManager.GetString("NewAbsenceTypeError", resourceCulture);
             }
         }
         

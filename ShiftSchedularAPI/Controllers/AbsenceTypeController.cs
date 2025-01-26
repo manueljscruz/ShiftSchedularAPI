@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularRL.Resources.AbsenceManagement;
+using ShiftSchedularRL.Resources.Shared;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -29,14 +31,15 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("get-by-id/{id}")]
-        [ProducesResponseType(200, Type = typeof(AbsenceType))]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAbsenceTypeById(int id)
         {
             var absenceType = await _absenceTypeService.GetAbsenceTypeById(id);
 
             if (absenceType == null)
             {
-                return NotFound();
+                return NotFound(AbsenceRelatedMessages.AbsenceNotFound);
             }
 
             return Ok(absenceType);
@@ -51,11 +54,10 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("get-all")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllAbsenceTypes()
         {
             var absenceTypes = await _absenceTypeService.GetAllAbsenceTypes();
-
             return Ok(absenceTypes);
         }
 
@@ -69,10 +71,21 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="lcode"></param>
         /// <returns></returns>
         [HttpGet("get-all-absence-types-by-localization/{lcode}")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetAllAbsenceTypesByLocalization(string lcode)
         {
+            if(string.IsNullOrEmpty(lcode))
+            {
+                return BadRequest(SharedMessages.LocalizationEmpty);
+            }
+
             var absenceTypesLocalization = await _absenceTypeService.GetAllAbsenceTypesByLocalization(lcode);
+
+            if(absenceTypesLocalization == null || !absenceTypesLocalization.Any())
+            {
+                return NotFound(AbsenceRelatedMessages.AbsenceTypesNotFoundByLocal);
+            }
 
             return Ok(absenceTypesLocalization);
         }
@@ -84,13 +97,24 @@ namespace ShiftSchedularAPI.Controllers
         /// <summary>
         /// Add Absence Type to the database
         /// </summary>
-        /// <param name="absenceType"></param>
+        /// <param name="strNewAbsenceType"></param>
         /// <returns></returns>
         [HttpPost("add")]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddAbsenceType(string strNewAbsenceType)
         {
+            if(string.IsNullOrEmpty(strNewAbsenceType))
+            {
+                return BadRequest(AbsenceRelatedMessages.NewAbsenceTypeEmpty);
+            }
+
             int newAbsenceTypeId = await _absenceTypeService.AddAbsenceType(strNewAbsenceType);
+            if(newAbsenceTypeId == 0)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, AbsenceRelatedMessages.NewAbsenceTypeError);
+            }
 
             return Created($"/api/absenceType/{newAbsenceTypeId}", "Absence Type Added");
         }
@@ -105,12 +129,20 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="absenceType"></param>
         /// <returns></returns>
         [HttpPut("update")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateAbsenceType(AbsenceType absenceType)
         {
-            await _absenceTypeService.UpdateAbsenceType(absenceType);
+            if(absenceType == null)
+            {
+                return BadRequest(AbsenceRelatedMessages.AbsenceTypeIsInvalid);
+            }
 
-            return NoContent();
+            if(await _absenceTypeService.UpdateAbsenceType(absenceType))
+                return NoContent();
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, SharedMessages.UnexpectedError);
         }
 
         #endregion
@@ -123,12 +155,21 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("delete-by-id/{id}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteAbsenceTypeById(int id)
         {
-            await _absenceTypeService.DeleteAbsenceType(id);
+            if(id <= 0)
+            {
+                return BadRequest(AbsenceRelatedMessages.AbsenceTypeIdRequired);
+            }
 
-            return NoContent();
+            if(await _absenceTypeService.DeleteAbsenceType(id))
+                return NoContent();
+
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, SharedMessages.UnexpectedError);
         }
 
         #endregion

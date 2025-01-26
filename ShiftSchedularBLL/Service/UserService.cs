@@ -111,7 +111,6 @@ namespace ShiftSchedularBLL.Service
 
                 await _userManager.UpdateAsync(user);
 
-                // TO DO! Implement JWT Token
                 loginResponseDTO.Result = new LoginResponseDTO
                 {
                     User = _mapper.Map<WorkerDTO>(user),
@@ -142,5 +141,51 @@ namespace ShiftSchedularBLL.Service
         {
             throw new NotImplementedException();
         }
+
+        public async Task<BaseResponse<TokenModelDTO>> RefreshToken(TokenModelDTO tokenModelDTO)
+        {
+            BaseResponse<TokenModelDTO> response = new BaseResponse<TokenModelDTO>();
+
+            if (string.IsNullOrEmpty(tokenModelDTO.AccessToken) || string.IsNullOrEmpty(tokenModelDTO.RefreshToken))
+            {
+                response.Message = WorkerRelatedMessages.TokensAreEmpty;
+                return response;
+            }
+
+            var principal = _tokenService.GetPrincipalFromExpiredToken(tokenModelDTO.AccessToken, _configuration);
+
+            if(principal == null)
+            {
+                response.Message = WorkerRelatedMessages.InvalidTokens;
+                return response;
+            }
+
+            string userName = principal.Identity.Name;
+
+            var user = await _userManager.FindByNameAsync(userName!);
+
+            if (user == null || user.RefreshToken != tokenModelDTO.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            {
+                response.Message = WorkerRelatedMessages.InvalidTokens;
+                return response;
+            }
+
+            var newAccessToken = _tokenService.GenerateAccessToken(principal.Claims.ToList(), _configuration);
+
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            user.RefreshToken = newRefreshToken;
+            await _userManager.UpdateAsync(user);
+
+            response.Result = new TokenModelDTO
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                RefreshToken = newRefreshToken
+            };
+
+            response.Success = true;
+            return response;
+        }
+
     }
 }

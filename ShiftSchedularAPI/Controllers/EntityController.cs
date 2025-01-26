@@ -43,7 +43,7 @@ namespace ShiftSchedularAPI.Controllers
         {
             if (!string.IsNullOrEmpty(id))
             {
-                string decodedEntityId = HttpUtility.UrlDecode(id);
+                id = HttpUtility.UrlDecode(id);
                 var entity = await _entityService.GetEntityById(id);
                 if (entity == null)
                 {
@@ -154,6 +154,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Profile View Model
 
+        /// <summary>
+        /// Gets the entity profile view model
+        /// </summary>
+        /// <param name="profileViewModelRequest"></param>
+        /// <returns></returns>
         [HttpPost("get-entity-profile-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -174,11 +179,28 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Add Entity
 
+        /// <summary>
+        /// Adds a new entity
+        /// </summary>
+        /// <param name="newEntity"></param>
+        /// <returns></returns>
         [HttpPost("add")]
-        [ProducesResponseType(201)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddEntity(FormEntityDTO newEntity)
         {
+            if(newEntity == null)
+            {
+                return BadRequest();
+            }
+
             BaseResponse<Entity> response = await _entityService.AddEntity(newEntity);
+
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
 
             return Ok(response);
         }
@@ -188,10 +210,24 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Entity
 
         [HttpPut("update")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateEntity(FormEntityDTO entity)
         {
+            if(entity == null)
+            {
+                return BadRequest();
+            }
+
+            entity.EntityId = HttpUtility.UrlDecode(entity.EntityId);
             BaseResponse<bool> response = await _entityService.UpdateEntity(entity);
+
+            if(!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
             return Ok(response);
         }
 
@@ -200,10 +236,23 @@ namespace ShiftSchedularAPI.Controllers
         #region Delete Entity by Id
 
         [HttpDelete("delete-by-id/{id}")]
-        [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteEntityById([FromRoute]string id)
         {
-            BaseResponse<bool> response = await _entityService.DeleteEntityById(id);
+            if(string.IsNullOrEmpty(id))
+            {
+                return BadRequest();
+            }
+
+            string entityId = HttpUtility.UrlDecode(id);
+            BaseResponse<bool> response = await _entityService.DeleteEntityById(entityId);
+
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
 
             return Ok(response);
 
@@ -214,23 +263,56 @@ namespace ShiftSchedularAPI.Controllers
         #region Add New Entity Member
 
         [HttpPost("add-new-entity-member")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddNewEntityMember(AddNewMemberDTO newMemberDTO)
         {
+            if(newMemberDTO == null)
+            {
+                return BadRequest();
+            }
+
+            newMemberDTO.DestinationEntityId = HttpUtility.UrlDecode(newMemberDTO.DestinationEntityId);
+
             BaseResponse<object> response = await _entityService.AddNewEntityMember(newMemberDTO);
+
+            if(!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
 
             return Ok(response);
         }
 
         #endregion
 
+        #region Update Entity Member
+
         [HttpPut("update-entity-member")]
-        [ProducesResponseType(200)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO)
         {
+            if(updateEntityMemberDTO == null)
+            {
+                return BadRequest();
+            }
+
+            updateEntityMemberDTO.EntityId = HttpUtility.UrlDecode(updateEntityMemberDTO.EntityId);
+
             BaseResponse<bool> response = await _entityService.UpdateEntityMember(updateEntityMemberDTO);
+
+            if(!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
             return Ok(response);
         }
+
+        #endregion
 
         #endregion
     }

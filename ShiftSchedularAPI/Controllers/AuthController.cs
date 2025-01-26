@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularRL.Resources.Home;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -20,6 +22,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Register
 
+        /// <summary>
+        /// Registers a new user in the database
+        /// </summary>
+        /// <param name="newUserDTO"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -44,6 +51,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Login
 
+        /// <summary>
+        /// Logs in a user
+        /// </summary>
+        /// <param name="loginDTO"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,13 +81,27 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Refresh Token
 
+        /// <summary>
+        /// Refresh a user's token
+        /// </summary>
+        /// <returns></returns>
         [HttpPost("refresh-token")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> RefreshToken()
+        public async Task<IActionResult> RefreshToken([FromBody] TokenModelDTO tokenModelDTO)
         {
+            if(tokenModelDTO == null)
+            {
+                return BadRequest(WorkerRelatedMessages.TokensAreEmpty);
+            }
 
-            return Ok();
+            BaseResponse<TokenModelDTO> response = await _userService.RefreshToken(tokenModelDTO);
+            if (!response.Success)
+            {
+                return BadRequest(response.Message);
+            }
+
+            return Ok(response);
         }
 
         #endregion
