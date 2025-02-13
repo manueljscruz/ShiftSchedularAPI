@@ -70,7 +70,17 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(workerId) && !string.IsNullOrEmpty(entityId.ToString()))
             {
-                return (List<EntityWorker>)_entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
+                try
+                {
+                    IEnumerable<EntityWorker> entityWorkers = _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
+                    return entityWorkers.ToList();
+                }
+                catch (Exception ex)
+                {
+                    string strError = ex.Message;
+                    return null;
+                }
+                
             }
             else return null;
         }
@@ -91,8 +101,7 @@ namespace ShiftSchedularDAL.Repositories
                 byte[] entityIdBytes = entityId.ToByteArray();
 
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
-                // parameters.Add("@EntityId", entityIdBytes);
-                // entityId
+
                 parameters.Add("@EntityId", entityId);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);

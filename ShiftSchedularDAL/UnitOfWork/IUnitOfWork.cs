@@ -29,6 +29,7 @@ namespace ShiftSchedularDAL.UnitOfWork
         IWorkerRepository WorkerRepository { get; }
         IGenderLocalizationRepository GenderLocalizationRepository { get; }
         IUserBotRepository UserBotRepository { get; }
+        IEntityUserBotRepository EntityUserBotRepository { get; }
         ISQLRawRepository<object> SQLRawRepository { get; }
         IGenericRepository<T> GetGenericRepository<T>() where T : class;
 

@@ -144,4 +144,7 @@
   <data name="AddNewMemberUnexpectedError" xml:space="preserve">
     <value>An error occured while trying to add the new member. Please try again later.</value>
   </data>
+  <data name="UpdateMemberSuccess" xml:space="preserve">
+    <value>Member information was updated successfuly.</value>
+  </data>
 </root>

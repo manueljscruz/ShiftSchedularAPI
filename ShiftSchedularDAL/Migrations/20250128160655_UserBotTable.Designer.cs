@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250128160655_UserBotTable")]
+    partial class UserBotTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -464,35 +467,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.HasIndex("LocalizationId");
 
                     b.ToTable("EntityTypeLocalizations");
-                });
-
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityUserBot", b =>
-                {
-                    b.Property<byte[]>("EntityId")
-                        .HasColumnType("BINARY(16)");
-
-                    b.Property<byte[]>("UserBotId")
-                        .HasColumnType("BINARY(16)");
-
-                    b.Property<int>("SkillId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("ActiveWorkerStatus")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("DateOfExit")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DateOfJoin")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("EntityId", "UserBotId", "SkillId");
-
-                    b.HasIndex("SkillId");
-
-                    b.HasIndex("UserBotId");
-
-                    b.ToTable("EntityUserBots");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorker", b =>
@@ -1010,12 +984,18 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<DateTime>("DateOfCreation")
                         .HasColumnType("datetime2");
 
+                    b.Property<byte[]>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("BINARY(16)");
+
                     b.Property<string>("UserDisplayName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.HasKey("UserBotId");
+
+                    b.HasIndex("EntityId");
 
                     b.ToTable("UserBots");
                 });
@@ -1200,33 +1180,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("EntityType");
 
                     b.Navigation("Localization");
-                });
-
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityUserBot", b =>
-                {
-                    b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
-                        .WithMany("EntityUserBots")
-                        .HasForeignKey("EntityId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShiftSchedularEntity.Entities.Skill", "Skill")
-                        .WithMany("EntityUserBots")
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ShiftSchedularEntity.Entities.UserBot", "UserBot")
-                        .WithMany("EntityUserBots")
-                        .HasForeignKey("UserBotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Entity");
-
-                    b.Navigation("Skill");
-
-                    b.Navigation("UserBot");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityWorker", b =>
@@ -1483,6 +1436,17 @@ namespace ShiftSchedularDAL.Migrations
                     b.Navigation("Skill");
                 });
 
+            modelBuilder.Entity("ShiftSchedularEntity.Entities.UserBot", b =>
+                {
+                    b.HasOne("ShiftSchedularEntity.Entities.Entity", "Entity")
+                        .WithMany("UserBots")
+                        .HasForeignKey("EntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Entity");
+                });
+
             modelBuilder.Entity("ShiftSchedularEntity.Entities.AbsenceType", b =>
                 {
                     b.Navigation("AbsenceTypeLocalizations");
@@ -1519,13 +1483,13 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Navigation("EntityShifts");
 
-                    b.Navigation("EntityUserBots");
-
                     b.Navigation("EntityWorkerAbsences");
 
                     b.Navigation("EntityWorkerInvitations");
 
                     b.Navigation("EntityWorkers");
+
+                    b.Navigation("UserBots");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityRule", b =>
@@ -1608,16 +1572,9 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Skill", b =>
                 {
-                    b.Navigation("EntityUserBots");
-
                     b.Navigation("EntityWorkers");
 
                     b.Navigation("SkillLocalizations");
-                });
-
-            modelBuilder.Entity("ShiftSchedularEntity.Entities.UserBot", b =>
-                {
-                    b.Navigation("EntityUserBots");
                 });
 #pragma warning restore 612, 618
         }

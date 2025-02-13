@@ -30,6 +30,7 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<IGenericRepository<EntityTypeLocalization>, GenericRepository<EntityTypeLocalization>>();
             services.AddScoped<IGenericRepository<Entity>, GenericRepository<Entity>>();
             services.AddScoped<IEntityWorkerRepository, EntityWorkerRepository>();
+            services.AddScoped<IEntityUserBotRepository, EntityUserBotRepository>();
             services.AddScoped<ISkillRepository, SkillRepository>();
             services.AddScoped<ISkillLocalizationRepository, SkillLocalizationRepository>();
             services.AddScoped<IEntityTypeLocalizationRepository, EntityTypeLocalizationRepository>();
@@ -68,11 +69,11 @@ namespace ShiftSchedularAPI.Configurations
 
             services.AddLogging();
             services.AddScoped<IHomeService, HomeService>();
-            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IGenderService, GenderService>();
             services.AddScoped<ILocalizationService, LocalizationService>();
-            services.AddScoped<IWorkerService, WorkerService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEntityTypeService, EntityTypeService>();
             services.AddScoped<IEntityService, EntityService>();
             services.AddScoped<ISkillService, SkillService>();

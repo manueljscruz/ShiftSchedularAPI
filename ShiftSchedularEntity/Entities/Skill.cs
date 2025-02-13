@@ -20,9 +20,8 @@ namespace ShiftSchedularEntity.Entities
         #region Navigation Properties
 
         public virtual ICollection<SkillLocalization> SkillLocalizations { get; set; }
-
         public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
-
+        public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
         #endregion
     }
 }

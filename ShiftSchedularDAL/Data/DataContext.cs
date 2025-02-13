@@ -45,6 +45,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<BaseEntityRule> BaseEntityRules { get; set; }
         public DbSet<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
         public DbSet<UserBot> UserBots { get; set; }
+        public DbSet<EntityUserBot> EntityUserBots { get; set; }
 
         #endregion
 
@@ -171,6 +172,28 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(s => s.EntityWorkers)
                 .HasForeignKey(ew => ew.SkillId)
                 .IsRequired(false);
+
+            #endregion
+
+            #region Entity User Bots
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasKey(eub => new { eub.EntityId, eub.UserBotId, eub.SkillId });
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasOne(eub => eub.Entity)
+                .WithMany(e => e.EntityUserBots)
+                .HasForeignKey(eub => eub.EntityId);
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasOne(eub => eub.UserBot)
+                .WithMany(ub => ub.EntityUserBots)
+                .HasForeignKey(eub => eub.UserBotId);
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasOne(eub => eub.Skill)
+                .WithMany(s => s.EntityUserBots)
+                .HasForeignKey(eub => eub.SkillId);
 
             #endregion
 
@@ -474,11 +497,6 @@ namespace ShiftSchedularDAL.Data
 
             modelBuilder.Entity<UserBot>()
                 .HasKey(ub => ub.UserBotId);
-
-            modelBuilder.Entity<UserBot>()
-                .HasOne(ub => ub.Entity)
-                .WithMany(e => e.UserBots)
-                .HasForeignKey(ub => ub.EntityId);
 
             #endregion
         }

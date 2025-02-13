@@ -17,15 +17,11 @@ namespace ShiftSchedularEntity.Entities
 
         public DateTime DateOfCreation { get; set; }
 
-        [Required]
-        [Column(TypeName = "BINARY(16)")]
-        public Guid EntityId { get; set; }
-
         #endregion
 
         #region Navigation Properties
 
-        public virtual Entity Entity { get; set; }
+        public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
 
         #endregion
     }

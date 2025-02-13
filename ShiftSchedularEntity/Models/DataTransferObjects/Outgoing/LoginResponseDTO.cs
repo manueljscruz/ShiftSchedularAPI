@@ -2,7 +2,7 @@
 {
     public class LoginResponseDTO
     {
-        public WorkerDTO User { get; set; }
+        public UserDTO User { get; set; }
         public TokenResponseDTO TokenResponseDTO { get; set; }
     }
 }

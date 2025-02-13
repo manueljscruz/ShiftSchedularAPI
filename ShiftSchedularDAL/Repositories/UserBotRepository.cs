@@ -21,12 +21,7 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<IEnumerable<UserBot>> GetUserBotsByEntityId(Guid entityId)
         {
-            if(string.IsNullOrEmpty(entityId.ToString()))
-            {
-                return null;
-            }
-            else
-                return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
+            return null;
         }
     }
 }

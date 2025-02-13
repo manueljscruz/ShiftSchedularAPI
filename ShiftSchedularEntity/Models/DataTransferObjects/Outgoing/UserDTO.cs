@@ -1,9 +1,9 @@
 ﻿namespace ShiftSchedularEntity.Models.DataTransferObjects
 {
-    public class WorkerDTO
+    public class UserDTO
     {
-        public string WorkerId { get; set; }
-        public string WorkerName { get; set; }
+        public string UserId { get; set; }
+        public string UserDisplayName { get; set; }
         public int GenderId { get; set; }
         public string Email { get; set; }
     }

@@ -24,7 +24,7 @@ namespace ShiftSchedularEntity.Entities
 
         /// <summary>
         /// Composite Key - 3
-        /// 
+        /// Skill Identifier
         /// </summary>
         [Required]
         public int SkillId { get; set; }

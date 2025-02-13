@@ -164,7 +164,7 @@ namespace ShiftSchedularDAL.Repositories
                                 entities.Add(obj);
                             }
                         }
-
+                        connection.Close();
                         return entities;
                     }
                 }

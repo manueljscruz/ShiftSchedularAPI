@@ -140,5 +140,14 @@ namespace ShiftSchedularRL.Resources.MemberManagement {
                 return ResourceManager.GetString("AddNewMemberUnexpectedError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Member information was updated successfuly..
+        /// </summary>
+        public static string UpdateMemberSuccess {
+            get {
+                return ResourceManager.GetString("UpdateMemberSuccess", resourceCulture);
+            }
+        }
     }
 }

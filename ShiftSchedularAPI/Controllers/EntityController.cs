@@ -47,7 +47,7 @@ namespace ShiftSchedularAPI.Controllers
                 var entity = await _entityService.GetEntityById(id);
                 if (entity == null)
                 {
-                    return NotFound(EntitiesRelatedMessages.UpdateEntityNotFound);
+                    return NotFound(EntitiesRelatedMessages.EntityNotFound);
                 }
                 return Ok(entity);
             }
@@ -273,7 +273,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            newMemberDTO.DestinationEntityId = HttpUtility.UrlDecode(newMemberDTO.DestinationEntityId);
+            // newMemberDTO.DestinationEntityId = HttpUtility.UrlDecode(newMemberDTO.DestinationEntityId);
 
             BaseResponse<object> response = await _entityService.AddNewEntityMember(newMemberDTO);
 
@@ -313,6 +313,26 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        [HttpDelete("delete-entity-member")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteEntityMember(DeleteMemberDTO workerMemberDTO)
+        {
+            if (workerMemberDTO == null)
+            {
+                return BadRequest();
+            }
+
+            BaseResponse<bool> response = await _entityService.DeleteEntityMember(workerMemberDTO);
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
+            return NoContent();
+        }
 
         #endregion
     }

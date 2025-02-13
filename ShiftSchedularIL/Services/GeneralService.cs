@@ -49,6 +49,12 @@ namespace ShiftSchedularIL.Services
             return workerGUID.Substring(workerGUID.Length - BOT_GUID_SUBTRACTION_LENGTH);
         }
 
+        public Guid ParseStringToGuid(string input)
+        {
+            byte[] bytes = Convert.FromBase64String(input);
+            return new Guid(bytes);
+        }
+
         #endregion
     }
 }

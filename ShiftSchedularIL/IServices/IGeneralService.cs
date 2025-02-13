@@ -6,5 +6,6 @@
         bool ValidateRegexEmail(string email);
         string GenerateBotEmail(string workerGUID);
         string GenerateBotPassword(string workerGUID);
+        Guid ParseStringToGuid(string input);
     }
 }

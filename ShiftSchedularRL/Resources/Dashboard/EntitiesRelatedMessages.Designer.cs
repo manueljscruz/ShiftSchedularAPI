@@ -124,20 +124,20 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Work entity was not found..
+        /// </summary>
+        public static string EntityNotFound {
+            get {
+                return ResourceManager.GetString("EntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Entity type for this entity has an invalid value.  If this error persists, contact support to resolve this issue..
         /// </summary>
         public static string EntityTypeInvalidValueError {
             get {
                 return ResourceManager.GetString("EntityTypeInvalidValueError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Work entity was not found..
-        /// </summary>
-        public static string UpdateEntityNotFound {
-            get {
-                return ResourceManager.GetString("UpdateEntityNotFound", resourceCulture);
             }
         }
         

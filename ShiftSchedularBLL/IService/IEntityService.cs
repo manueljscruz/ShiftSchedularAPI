@@ -20,5 +20,6 @@ namespace ShiftSchedularBLL.IService
         Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest);
         Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO);
         Task<BaseResponse<bool>> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO);
+        Task<BaseResponse<bool>> DeleteEntityMember(DeleteMemberDTO workerMemberDTO);
     }
 }

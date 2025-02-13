@@ -1,46 +1,52 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using ShiftSchedularBLL.IService;
+using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
-using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.Home;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace ShiftSchedularBLL.Service
 {
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ICryptographyService _cryptographyService;
+        private readonly IGeneralService _generalService;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
-        private readonly ITokenService _tokenService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, ITokenService tokenService)
+        #region Constructor
+
+        public UserService(UserManager<ApplicationUser> userManager, ICryptographyService cryptographyService, IGeneralService generalService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
+            _cryptographyService = cryptographyService;
+            _generalService = generalService;
             _mapper = mapper;
-            _configuration = configuration;
-            _tokenService = tokenService;
+            _unitOfWork = unitOfWork;
         }
 
-        #region Register
+        #endregion
+
+        #region Methods
+
+        #region Create User
 
         /// <summary>
-        /// Registration of a new user
+        /// Creates a new user entry in the database
         /// </summary>
         /// <param name="newUserDTO"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> Register(NewUserDTO newUserDTO)
+        public async Task<BaseResponse<bool>> CreateUser(NewUserDTO newUserDTO)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
 
             var existingUser = await _userManager.FindByEmailAsync(newUserDTO.Email);
-            if(existingUser != null)
+            if (existingUser != null)
             {
                 response.Message = WorkerRelatedMessages.WorkerEmailInUseError;
                 return response;
@@ -50,7 +56,7 @@ namespace ShiftSchedularBLL.Service
             newUser.UserName = newUserDTO.Email.Split("@")[0];
 
             IdentityResult result = await _userManager.CreateAsync(newUser, newUserDTO.Password);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
                 response.Result = true;
                 response.Message = WorkerRelatedMessages.WorkerRegistrationSuccess;
@@ -67,67 +73,6 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Login
-
-        /// <summary>
-        /// Login of a user
-        /// </summary>
-        /// <param name="loginDTO"></param>
-        /// <returns></returns>
-        public async Task<BaseResponse<LoginResponseDTO>> Login(LoginDTO loginDTO)
-        {
-            BaseResponse<LoginResponseDTO> loginResponseDTO = new BaseResponse<LoginResponseDTO>();
-
-            ApplicationUser user = await _userManager.FindByEmailAsync(loginDTO.Email);
-            if(user == null)
-            {
-                loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
-            }
-
-            bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
-            if (validLogin)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-
-                var authClaims = new List<Claim>
-                {
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                };
-
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
-
-                var token = _tokenService.GenerateAccessToken(authClaims, _configuration);
-
-                var refreshToken = _tokenService.GenerateRefreshToken();
-
-                _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInMinutes"], out int refreshTokenValidityInMinutes);
-
-                user.RefreshToken = refreshToken;
-
-                user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(refreshTokenValidityInMinutes);
-
-                await _userManager.UpdateAsync(user);
-
-                loginResponseDTO.Result = new LoginResponseDTO
-                {
-                    User = _mapper.Map<WorkerDTO>(user),
-                    TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo)
-                };
-                loginResponseDTO.Success = true;
-            }
-            else
-            {
-                loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginPasswordIncorrect;
-            }
-
-            return loginResponseDTO;
-        }
-
-        #endregion
-
         #region Confirm Email
 
         public Task<BaseResponse<bool>> ConfirmEmail(string email, string token)
@@ -137,55 +82,49 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        public Task<BaseResponse<bool>> UpdateUser()
+        #region Update Worker
+
+        public async Task<BaseResponse<bool>> UpdateUser(UserDTO userDTO)
         {
-            throw new NotImplementedException();
-        }
+            BaseResponse<bool> response = new BaseResponse<bool>();
 
-        public async Task<BaseResponse<TokenModelDTO>> RefreshToken(TokenModelDTO tokenModelDTO)
-        {
-            BaseResponse<TokenModelDTO> response = new BaseResponse<TokenModelDTO>();
-
-            if (string.IsNullOrEmpty(tokenModelDTO.AccessToken) || string.IsNullOrEmpty(tokenModelDTO.RefreshToken))
+            ApplicationUser applicationUser = await _userManager.FindByIdAsync(userDTO.UserId);
+            if (applicationUser == null)
             {
-                response.Message = WorkerRelatedMessages.TokensAreEmpty;
+                response.Message = WorkerRelatedMessages.WorkerExceptionError;
                 return response;
             }
 
-            var principal = _tokenService.GetPrincipalFromExpiredToken(tokenModelDTO.AccessToken, _configuration);
+            // Set display name and gender values
+            applicationUser.DisplayName = userDTO.UserDisplayName;
+            applicationUser.GenderId = userDTO.GenderId;
 
-            if(principal == null)
+            // if email value is different, update email and username
+            if (applicationUser.Email != userDTO.Email)
             {
-                response.Message = WorkerRelatedMessages.InvalidTokens;
-                return response;
+                applicationUser.Email = userDTO.Email;
+                applicationUser.UserName = userDTO.Email.Split("@")[0];
+                applicationUser.EmailConfirmed = false;
+            }           
+
+            // Update user
+            IdentityResult result = await _userManager.UpdateAsync(applicationUser);
+            if(result.Succeeded)
+            {
+                response.Success = true;
+                response.Result = true;
+                response.Message = WorkerRelatedMessages.WorkerUpdateSuccess;
+            }
+            else
+            {
+                response.Message = WorkerRelatedMessages.WorkerExceptionError;
             }
 
-            string userName = principal.Identity.Name;
-
-            var user = await _userManager.FindByNameAsync(userName!);
-
-            if (user == null || user.RefreshToken != tokenModelDTO.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-            {
-                response.Message = WorkerRelatedMessages.InvalidTokens;
-                return response;
-            }
-
-            var newAccessToken = _tokenService.GenerateAccessToken(principal.Claims.ToList(), _configuration);
-
-            var newRefreshToken = _tokenService.GenerateRefreshToken();
-
-            user.RefreshToken = newRefreshToken;
-            await _userManager.UpdateAsync(user);
-
-            response.Result = new TokenModelDTO
-            {
-                AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                RefreshToken = newRefreshToken
-            };
-
-            response.Success = true;
             return response;
         }
 
+        #endregion
+
+        #endregion
     }
 }

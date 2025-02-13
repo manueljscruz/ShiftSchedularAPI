@@ -18,14 +18,13 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId));
 
-            CreateMap<ApplicationUser, WorkerDTO>()
-                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.DisplayName))
+            CreateMap<ApplicationUser, UserDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.DisplayName))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<AddNewMemberDTO, UserBot>()
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => Guid.Parse(src.DestinationEntityId)))
                 .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.MemberName));
 
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
@@ -41,9 +40,9 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
-            CreateMap<Worker, WorkerDTO>()
-                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
-                .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
+            CreateMap<Worker, UserDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.WorkerId))
+                .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.WorkerName))
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
