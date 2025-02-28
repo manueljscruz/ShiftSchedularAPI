@@ -48,6 +48,7 @@
 	            W.DisplayName as WorkerName,
 	            EW.CanCreateSchedules,
 	            EW.IsOwner,
+                CAST(0 AS BIT) as IsBot,
                 EW.DateOfJoin,
 	            STRING_AGG(CAST(EW.SkillId AS VARCHAR), ',') AS SkillIds
             FROM AspNetUsers W
@@ -69,6 +70,7 @@
 	            UB.UserDisplayName as WorkerName,
 	            CAST(0 AS BIT) as CanCreateSchedules,
 	            CAST(0 AS BIT) as IsOwner,
+                CAST(1 AS BIT) as IsBot,
                 EUB.DateOfJoin,
 	            STRING_AGG(CAST(EUB.SkillId AS VARCHAR), ',') AS SkillIds
             FROM UserBots UB
@@ -96,11 +98,29 @@
                 EntityId
         ";
 
+        public static readonly string GetEntityUserBotsCount = @"
+            SELECT
+                COUNT(DISTINCT UserBotId) As BotsCount
+            FROM
+                [ShiftSchedular].[dbo].[EntityUserBots]
+            WHERE EntityId = @EntityId
+            GROUP BY
+                EntityId
+        ";
+
         public static readonly string GetDistinctEntitySkillsByEntityId = @"
             SELECT 
                 DISTINCT SkillId
             FROM 
                 EntityWorkers
+            WHERE 
+                EntityId = @EntityId";
+
+        public static readonly string GetDistinctUserBotsSkillsByEntityId = @"
+            SELECT 
+                DISTINCT SkillId
+            FROM 
+                EntityUserBots
             WHERE 
                 EntityId = @EntityId";
     }

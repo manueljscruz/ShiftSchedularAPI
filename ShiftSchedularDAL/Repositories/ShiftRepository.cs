@@ -32,9 +32,9 @@ namespace ShiftSchedularDAL.Repositories
         #region Methods
 
 
-        public async Task<IEnumerable<Shift>> GetEntityShifts(string entityId)
+        public async Task<IEnumerable<Shift>> GetEntityShifts(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (entityId != Guid.Empty)
             {
                 return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
             }

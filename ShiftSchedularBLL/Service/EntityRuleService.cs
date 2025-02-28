@@ -85,8 +85,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (string.IsNullOrEmpty(addEntityRuleDTO.EntityId))
-                {
+                else if (addEntityRuleDTO.EntityId == Guid.Empty) { 
                     response.Message = EntityRulesRelatedMessages.AddNewEntityEntityIdEmpty;
                     return response;
                 }
@@ -98,7 +97,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get entity and check ifs null
-                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(addEntityRuleDTO.EntityId));
+                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(addEntityRuleDTO.EntityId);
                 if (destinationEntity == null)
                 {
                     response.Message = EntityRulesRelatedMessages.AddNewEntityRuleEntityNotFound;
@@ -244,28 +243,28 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId"></param>
         /// <param name="entityRuleId"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> DeleteEntityRule(string entityId, string entityRuleId)
+        public async Task<BaseResponse<bool>> DeleteEntityRule(Guid entityId, Guid entityRuleId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
             response.Message = "";
 
             // If entity owner is empty
-            if (string.IsNullOrEmpty(entityId))
+            if (entityId == Guid.Empty)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleEntityIdentifierIsEmpty;
                 return response;
             }
 
             // entity rule identifier is empty
-            else if (string.IsNullOrEmpty(entityRuleId))
+            else if (entityRuleId == Guid.Empty)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleIdentifierIsEmpty;
                 return response;
             }
 
             // Get entity rule instance from the database
-            EntityRule entityRule = await _unitOfWork.EntityRuleRepository.GetById(Guid.Parse(entityRuleId));
+            EntityRule entityRule = await _unitOfWork.EntityRuleRepository.GetById(entityRuleId);
             if (entityRule == null)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleNotFound;
@@ -313,14 +312,14 @@ namespace ShiftSchedularBLL.Service
 
         #region Delete Entity Rule Specification
 
-        public async Task<BaseResponse<bool>> DeleteEntityRuleSpecification(string entityRuleId, int specificationId)
+        public async Task<BaseResponse<bool>> DeleteEntityRuleSpecification(Guid entityRuleId, int specificationId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
             response.Message = "";
 
             // entity rule identifier is empty
-            if (string.IsNullOrEmpty(entityRuleId))
+            if (entityRuleId == Guid.Empty)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleIdentifierIsEmpty;
                 return response;
@@ -366,11 +365,11 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityRuleId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<EntityRuleDTO> GetEntityRuleById(string entityRuleId, string lcode)
+        public async Task<EntityRuleDTO> GetEntityRuleById(Guid entityRuleId, string lcode)
         {
             EntityRuleDTO entityRuleDTO = new EntityRuleDTO();
 
-            if (!string.IsNullOrEmpty(entityRuleId) && !string.IsNullOrEmpty(lcode))
+            if (entityRuleId != Guid.Empty && !string.IsNullOrEmpty(lcode))
             {
                 if (lcode.Contains("-"))
                     lcode = lcode.Split('-')[0];
@@ -397,11 +396,11 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<List<EntityRuleDTO>> GetEntityRules(string entityId, string lcode)
+        public async Task<List<EntityRuleDTO>> GetEntityRules(Guid entityId, string lcode)
         {
             List<EntityRuleDTO> entityRuleDTOs = new List<EntityRuleDTO>();
 
-            if (!string.IsNullOrEmpty(entityId) && !string.IsNullOrEmpty(lcode))
+            if (entityId != Guid.Empty && !string.IsNullOrEmpty(lcode))
             {
                 IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _unitOfWork.RuleTypeLocalizationRepository.GetRuleTypesByLocalization(lcode);
                 IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(lcode);
@@ -440,7 +439,7 @@ namespace ShiftSchedularBLL.Service
                 entityRuleDTO.RuleTypeDisplayValue = ruleTypeLocalizations.Where(i => i.RuleTypeId.Equals(entityRuleDTO.RuleTypeId)).FirstOrDefault().RuleTypeDisplayValue;
 
             // Get entity rule specifications
-            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId.ToString());
+            IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecifications(entityRule.EntityRuleId);
 
             if (entityRule.EntityRuleSpecifications != null)
             {
@@ -475,10 +474,10 @@ namespace ShiftSchedularBLL.Service
         {
             EntityRuleViewModel entityRuleViewModel = new EntityRuleViewModel();
 
-            if (entityRuleViewModelRequestDTO != null && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.LanguageCode))
+            if (entityRuleViewModelRequestDTO != null && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.WorkerId) && entityRuleViewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.LanguageCode))
             {
-                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(entityRuleViewModelRequestDTO.EntityId));
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, Guid.Parse(entityRuleViewModelRequestDTO.EntityId));
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityRuleViewModelRequestDTO.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
                 entityRuleViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner); 
 
                 // If it can change data
@@ -607,7 +606,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // If the entity rule identifier is empty, send error
-                else if (string.IsNullOrEmpty(entityRuleSpecification.EntityRuleId))
+                else if (entityRuleSpecification.EntityRuleId == Guid.Empty)
                 {
                     response.Message = EntityRulesRelatedMessages.AddEntityRuleSpecEntityRuleIsEmpty;
                     return response;
@@ -626,12 +625,12 @@ namespace ShiftSchedularBLL.Service
 
         #region Delete Entity Rule Specifications
 
-        public async Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(string entityRuleId)
+        public async Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(Guid entityRuleId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Message = EntityRulesRelatedMessages.DeleteEntityRuleSpecUnexpectedError;
 
-            if (string.IsNullOrEmpty(entityRuleId))
+            if (entityRuleId == Guid.Empty)
             {
                 response.Message = EntityRulesRelatedMessages.EntityRuleIdentifierIsEmpty;
                 return response;

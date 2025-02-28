@@ -80,7 +80,7 @@ namespace ShiftSchedularDAL.Repositories
                     string strError = ex.Message;
                     return null;
                 }
-                
+
             }
             else return null;
         }
@@ -106,7 +106,9 @@ namespace ShiftSchedularDAL.Repositories
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);
 
-                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+                var result = await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+
+                return result;
             }
             else
                 return null;
@@ -129,9 +131,9 @@ namespace ShiftSchedularDAL.Repositories
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add("@EntityId", entityIdBytes);
 
-                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+                var result = await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
 
-
+                return result;
             }
             else
                 return null;
@@ -152,7 +154,9 @@ namespace ShiftSchedularDAL.Repositories
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add("@EntityId", entityIdBytes);
 
-                return await _sqlRawRepository.ExecuteQuery<int>(EntityWorkerSQL.GetDistinctEntitySkillsByEntityId, parameters);
+                var result = await _sqlRawRepository.ExecuteQuery<int>(EntityWorkerSQL.GetDistinctEntitySkillsByEntityId, parameters);
+
+                return result;
             }
 
             return skillIds;
@@ -180,6 +184,7 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<int> GetTotalCountByEntity(Guid entityId)
         {
+            int count = 0;
             if (!string.IsNullOrEmpty(entityId.ToString()))
             {
                 byte[] entityIdBytes = entityId.ToByteArray();
@@ -190,9 +195,10 @@ namespace ShiftSchedularDAL.Repositories
 
                 var result = await _sqlRawRepository.ExecuteScalar<object>(EntityWorkerSQL.GetEntityWorkersCount, parameters);
                 if (result != null)
-                    return Convert.ToInt32(result);
+                    count = Convert.ToInt32(result);
             }
-            return 0;
+
+            return count;
         }
 
         #endregion
@@ -230,6 +236,6 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
-        
+
     }
 }

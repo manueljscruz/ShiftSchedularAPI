@@ -40,10 +40,10 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Delete Entity Rule Specification
 
-        public async Task<bool> DeleteEntityRuleSpecification(string entityRuleId, int specId)
+        public async Task<bool> DeleteEntityRuleSpecification(Guid entityRuleId, int specId)
         {
             bool result = false;
-            if(!string.IsNullOrEmpty(entityRuleId) && specId != 0)
+            if(entityRuleId != Guid.Empty && specId != 0)
             {
                 EntityRuleSpecification entityRuleSpecification = await _entityRuleSpecificationsDbSet.Where(i=>i.EntityRuleId.Equals(entityRuleId) && i.SpecificationId.Equals(specId)).FirstOrDefaultAsync();
                 if(entityRuleSpecification != null)
@@ -61,11 +61,11 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Delete Entity Rule Specifications By Rule Id
 
-        public async Task<bool> DeleteEntityRuleSpecificationsByRuleId(string entityRuleId)
+        public async Task<bool> DeleteEntityRuleSpecificationsByRuleId(Guid entityRuleId)
         {
             bool result = false;
 
-            if (!string.IsNullOrEmpty(entityRuleId))
+            if (entityRuleId != Guid.Empty)
             {
                 IEnumerable<EntityRuleSpecification> entityRuleSpecifications = await _entityRuleSpecificationsDbSet.Where(i => i.EntityRuleId.Equals(entityRuleId)).ToListAsync();
                 if (entityRuleSpecifications != null)
@@ -83,9 +83,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Entity Rule Specification
 
-        public async Task<EntityRuleSpecification> GetEntityRuleSpecification(string entityRuleId, int specificationId)
+        public async Task<EntityRuleSpecification> GetEntityRuleSpecification(Guid entityRuleId, int specificationId)
         {
-            if (!string.IsNullOrEmpty(entityRuleId) && specificationId != 0)
+            if (entityRuleId != Guid.Empty && specificationId != 0)
             {
                 return await _entityRuleSpecificationsDbSet.Where(i => i.EntityRuleId.Equals(entityRuleId) && i.SpecificationId.Equals(specificationId)).FirstOrDefaultAsync();
             }
@@ -96,9 +96,9 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Get Entity Rule Specifications
 
-        public async Task<IEnumerable<EntityRuleSpecification>> GetEntityRuleSpecifications(string entityRuleId)
+        public async Task<IEnumerable<EntityRuleSpecification>> GetEntityRuleSpecifications(Guid entityRuleId)
         {
-            if (!string.IsNullOrEmpty(entityRuleId))
+            if (entityRuleId != Guid.Empty)
             {
                 return await _entityRuleSpecificationsDbSet.Where(i => i.EntityRuleId.Equals(entityRuleId)).ToListAsync();
             }

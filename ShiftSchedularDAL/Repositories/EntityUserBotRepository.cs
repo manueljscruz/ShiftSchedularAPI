@@ -21,6 +21,25 @@ namespace ShiftSchedularDAL.Repositories
             _sqlRawRepository = sqlRawRepository;
         }
 
+        public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(Guid entityId)
+        {
+            List<int> skillIds = new List<int>();
+
+            if (!string.IsNullOrEmpty(entityId.ToString()))
+            {
+                byte[] entityIdBytes = entityId.ToByteArray();
+
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add("@EntityId", entityIdBytes);
+
+                var result = await _sqlRawRepository.ExecuteQuery<int>(EntityWorkerSQL.GetDistinctUserBotsSkillsByEntityId, parameters);
+
+                return result;
+            }
+
+            return skillIds;
+        }
+
         public async Task<IEnumerable<EntityWorkerMemberModel>> GetDistinctUserBotsByEntityId(Guid entityId)
         {
             if (!string.IsNullOrEmpty(entityId.ToString()))
@@ -33,10 +52,12 @@ namespace ShiftSchedularDAL.Repositories
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctUserBotsByEntityId, string.Empty);
 
-                return await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+                var result = await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
+
+                return result;
             }
-            else
-                return null;
+
+            return null;
         }
 
         public async Task<IEnumerable<EntityUserBot>> GetEntityUserBotsByEntityAndId(Guid entityId, Guid userId)
@@ -46,6 +67,25 @@ namespace ShiftSchedularDAL.Repositories
                 return _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userId));
             }
             else return null;
+        }
+
+        public async Task<int> GetUserBotsByEntityCount(Guid entityId)
+        {
+            int count = 0;
+            if(entityId != Guid.Empty)
+            {
+
+                byte[] entityIdBytes = entityId.ToByteArray();
+
+                Dictionary<string, object> parameters = new Dictionary<string, object>();
+                parameters.Add("@EntityId", entityIdBytes);
+
+                var result = await _sqlRawRepository.ExecuteScalar<object>(EntityWorkerSQL.GetEntityUserBotsCount, parameters);
+
+                if (result != null)
+                    count = Convert.ToInt32(result);
+            }
+            return count;
         }
     }
 }

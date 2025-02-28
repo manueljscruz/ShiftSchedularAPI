@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
-using ShiftSchedularDAL.IRepositories;
-using ShiftSchedularDAL.Repositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -55,7 +52,7 @@ namespace ShiftSchedularBLL.Service
             if (addShiftDTO != null)
             {
                 // No destination entity
-                if (string.IsNullOrEmpty(addShiftDTO.EntityId))
+                if (addShiftDTO.EntityId == Guid.Empty)
                 {
                     response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
                     return response;
@@ -76,7 +73,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Get entity and check ifs null
-                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(addShiftDTO.EntityId));
+                Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(addShiftDTO.EntityId);
                 if (destinationEntity == null)
                 {
                     response.Message = ShiftRelatedMessages.AddNewShiftEntityNotFound;
@@ -315,15 +312,15 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<ShiftViewModel> GetEntityShiftsViewModel(EntityShiftViewModelRequestDTO shiftViewModelRequestDTO)
+        public async Task<ShiftViewModel> GetEntityShiftsViewModel(BaseViewModelRequest shiftViewModelRequestDTO)
         {
             ShiftViewModel shiftViewModel = new ShiftViewModel();
 
             // If necessary data is different than empty
-            if (shiftViewModelRequestDTO != null && !string.IsNullOrEmpty(shiftViewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.LanguageCode))
+            if (shiftViewModelRequestDTO != null && shiftViewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(shiftViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.LanguageCode))
             {
-                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(shiftViewModelRequestDTO.EntityId));
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, Guid.Parse(shiftViewModelRequestDTO.EntityId));
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(shiftViewModelRequestDTO.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
                 shiftViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 // If it can change data
@@ -391,13 +388,13 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<ShiftDTO>> GetEntityShifts(string entityId)
+        public async Task<IEnumerable<ShiftDTO>> GetEntityShifts(Guid entityId)
         {
             List<ShiftDTO> shiftsDTO = new List<ShiftDTO>();
 
-            if (!string.IsNullOrEmpty(entityId))
+            if (entityId != Guid.Empty)
             {
-                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(entityId));
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
                 if(entity != null)
                 {
                     IEnumerable<Shift> shifts = await _unitOfWork.ShiftRepository.GetEntityShifts(entityId);

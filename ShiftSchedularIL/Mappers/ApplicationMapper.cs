@@ -51,9 +51,7 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityTypeLocalizedName, opt => opt.MapFrom(src => src.EntityTypeDisplayValue));
 
             CreateMap<FormEntityDTO, Entity>()
-                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src =>
-                    string.IsNullOrWhiteSpace(src.EntityId) ? Guid.NewGuid() : Guid.Parse(src.EntityId)
-                ))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.EntityTypeId, opt => opt.MapFrom(src => src.EntityTypeId))
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
                 .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription));
@@ -61,6 +59,7 @@ namespace ShiftSchedularIL.Mappers
             CreateMap<EntityWorkerMemberModel, EntityWorkerMemberDTO>()
                 .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
+                .ForMember(dest => dest.IsBot, opt => opt.MapFrom(src => src.IsBot))
                 .ForMember(dest => dest.CanCreateSchedules, opt => opt.MapFrom(src => src.CanCreateSchedules))
                 .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.IsOwner))
                 .ForMember(dest => dest.DateOfJoin, opt => opt.MapFrom(src => src.DateOfJoin));

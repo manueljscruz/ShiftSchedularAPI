@@ -303,10 +303,10 @@ namespace ShiftSchedularBLL.Service
         {
             EntityWorkerAbsenceViewModel viewModel = new EntityWorkerAbsenceViewModel();
 
-            if(viewModelRequestDTO != null && !string.IsNullOrEmpty(viewModelRequestDTO.EntityId) && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
+            if(viewModelRequestDTO != null && viewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
             {
                 // Check if its the owner
-                viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(Guid.Parse(viewModelRequestDTO.EntityId), viewModelRequestDTO.WorkerId);
+                viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId);
 
                 // Retrieve all the absence types
                 IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(viewModelRequestDTO.LanguageCode);

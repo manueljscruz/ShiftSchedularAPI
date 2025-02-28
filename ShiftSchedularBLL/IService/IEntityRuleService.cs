@@ -9,14 +9,14 @@ namespace ShiftSchedularBLL.IService
     {
         Task<BaseResponse<EntityRuleDTO>> AddEntityRule(AddEntityRuleDTO addEntityRuleDTO);
         Task<BaseResponse<EntityRuleSpecificationDTO>> AddEntityRuleSpecification(AddEntityRuleSpecificationDTO addEntityRuleSpecificationDTO);
-        Task<BaseResponse<bool>> DeleteEntityRule(string entityId, string entityRuleId);
-        Task<BaseResponse<bool>> DeleteEntityRuleSpecification(string entityRuleId, int specificationId);
+        Task<BaseResponse<bool>> DeleteEntityRule(Guid entityId, Guid entityRuleId);
+        Task<BaseResponse<bool>> DeleteEntityRuleSpecification(Guid entityRuleId, int specificationId);
         Task<EntityRuleViewModel> GetEntityRuleViewModel(BaseViewModelRequest entityRuleViewModelRequestDTO);
-        Task<List<EntityRuleDTO>> GetEntityRules(string entityId, string lcode);
-        Task<EntityRuleDTO> GetEntityRuleById(string entityRuleId, string lcode);
+        Task<List<EntityRuleDTO>> GetEntityRules(Guid entityId, string lcode);
+        Task<EntityRuleDTO> GetEntityRuleById(Guid entityRuleId, string lcode);
         Task<BaseResponse<bool>> UpdateEntityRule(EntityRuleDTO entityRule);
         Task<BaseResponse<bool>> UpdateEntityRuleSpecification(EntityRuleSpecificationDTO entityRuleSpecification);
-        Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(string entityRuleId);
+        Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(Guid entityRuleId);
         Task<List<EntityRuleDTO>> GetSpecificRules(List<string> filteredRules, string languageCode);
     }
 }

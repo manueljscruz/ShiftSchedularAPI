@@ -8,7 +8,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
     {
         #region Properties
 
-        [RequiredWithResourceMessageAttribute(typeof(EntitiesRelatedMessages), "DeleteEntityNoIdentifierError")]
+        [RequiredWithResourceMessageAttribute(typeof(EntitiesRelatedMessages), "EntityNoIdentifierError")]
         public string EntityId { get; set; }
 
         [RequiredWithResourceMessageAttribute(typeof(WorkerRelatedMessages), "WorkerIdentifierIsEmpty")]

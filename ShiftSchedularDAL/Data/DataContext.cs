@@ -10,6 +10,18 @@ namespace ShiftSchedularDAL.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         { }
 
+        public override void Dispose()
+        {
+            Console.WriteLine("🚨 DataContext is being disposed!");
+            base.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            Console.WriteLine("🚨 DataContext is being disposed asynchronously!");
+            return base.DisposeAsync();
+        }
+
         #region Db Sets
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }

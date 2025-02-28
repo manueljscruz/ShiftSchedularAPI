@@ -23,9 +23,9 @@ namespace ShiftSchedularDAL.Repositories
             _sqlRawRepository = sqlRawRepository;
         }
 
-        public async Task<List<ScheduleEntry>> GetScheduleEntries(string entityId, string workerId, DateTime startDateSearch, DateTime endDateSearch)
+        public async Task<List<ScheduleEntry>> GetScheduleEntries(Guid entityId, string workerId, DateTime startDateSearch, DateTime endDateSearch)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (entityId != Guid.Empty)
             {
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
                 parameters.Add("@EntityId", entityId);

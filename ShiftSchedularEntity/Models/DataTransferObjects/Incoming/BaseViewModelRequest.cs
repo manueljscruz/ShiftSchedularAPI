@@ -2,13 +2,13 @@
 {
     public class BaseViewModelRequest
     {
-        public string EntityId { get; set; }
+        public Guid EntityId { get; set; }
         public string WorkerId { get; set; }
         public string LanguageCode { get; set; }
 
         public BaseViewModelRequest()
         {
-            EntityId = string.Empty;
+            EntityId = Guid.Empty;
             WorkerId = string.Empty;
             LanguageCode = string.Empty;
         }

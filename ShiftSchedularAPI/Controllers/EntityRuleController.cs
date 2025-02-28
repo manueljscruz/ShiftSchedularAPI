@@ -29,16 +29,16 @@ namespace ShiftSchedularAPI.Controllers
         [HttpGet("get-by-id/{id}/{lcode}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityRuleById(string id, string lcode)
+        public async Task<IActionResult> GetEntityRuleById(Guid id, string lcode)
         {
-            if(string.IsNullOrEmpty(id) || string.IsNullOrEmpty(lcode))
+            if(id == Guid.Empty || string.IsNullOrEmpty(lcode))
             {
                 return BadRequest();
             }
 
-            string entityRuleId = HttpUtility.UrlDecode(id);
+            // string entityRuleId = HttpUtility.UrlDecode(id);
 
-            var entityRule = await _entityRuleService.GetEntityRuleById(entityRuleId, lcode);
+            var entityRule = await _entityRuleService.GetEntityRuleById(id, lcode);
             return Ok(entityRule);
         }
 
@@ -56,7 +56,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            viewModelRequest.EntityId = HttpUtility.UrlDecode(viewModelRequest.EntityId);
+            // viewModelRequest.EntityId = HttpUtility.UrlDecode(viewModelRequest.EntityId);
 
             var viewModel = await _entityRuleService.GetEntityRuleViewModel(viewModelRequest);
             return Ok(viewModel);
@@ -76,7 +76,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            entityRuleDTO.EntityId = HttpUtility.UrlDecode(entityRuleDTO.EntityId);
+            // entityRuleDTO.EntityId = HttpUtility.UrlDecode(entityRuleDTO.EntityId);
 
             var entityRule = await _entityRuleService.AddEntityRule(entityRuleDTO);
             return Ok(entityRule);
@@ -142,14 +142,14 @@ namespace ShiftSchedularAPI.Controllers
         [HttpDelete("delete-entity-rule/{entityId}/{entityRuleId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteEntityRule(string entityId, string entityRuleId)
+        public async Task<IActionResult> DeleteEntityRule(Guid entityId, Guid entityRuleId)
         {
-            if(string.IsNullOrEmpty(entityId) || string.IsNullOrEmpty(entityRuleId))
+            if(entityId == Guid.Empty || entityRuleId == Guid.Empty)
             {
                 return BadRequest();
             }
 
-            entityId = HttpUtility.UrlDecode(entityId);
+            // entityId = HttpUtility.UrlDecode(entityId);
 
             var response = await _entityRuleService.DeleteEntityRule(entityId, entityRuleId);
             return Ok(response);
@@ -162,9 +162,9 @@ namespace ShiftSchedularAPI.Controllers
         [HttpDelete("delete-entity-rule-spec/{entityRuleId}/{specId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteEntityRuleSpec(string entityRuleId, int specId)
+        public async Task<IActionResult> DeleteEntityRuleSpec(Guid entityRuleId, int specId)
         {
-            if(string.IsNullOrEmpty(entityRuleId) || specId == 0)
+            if(entityRuleId == Guid.Empty || specId == 0)
             {
                 return BadRequest();
             }
@@ -180,14 +180,14 @@ namespace ShiftSchedularAPI.Controllers
         [HttpDelete("delete-entity-rule-specs/{entityRuleId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteEntityRuleSpecs(string entityRuleId)
+        public async Task<IActionResult> DeleteEntityRuleSpecs(Guid entityRuleId)
         {
-            if(string.IsNullOrEmpty(entityRuleId))
+            if(entityRuleId == Guid.Empty)
             {
                 return BadRequest();
             }
 
-            entityRuleId = HttpUtility.UrlDecode(entityRuleId);
+            // entityRuleId = HttpUtility.UrlDecode(entityRuleId);
 
             var response = await _entityRuleService.DeleteEntityRuleSpecifications(entityRuleId);
             return Ok(response);

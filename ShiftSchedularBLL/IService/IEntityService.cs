@@ -8,16 +8,16 @@ namespace ShiftSchedularBLL.IService
 {
     public interface IEntityService
     {
-        Task<Entity> GetEntityById(string entityId);
+        Task<Entity> GetEntityById(Guid entityId);
         Task<IEnumerable<Entity>> GetAllEntities();
         Task<BaseResponse<Entity>> AddEntity(FormEntityDTO newEntity);
         Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity);
-        Task<BaseResponse<bool>> DeleteEntityById(string entityId);
+        Task<BaseResponse<bool>> DeleteEntityById(Guid entityId);
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
-        Task<EntityMembersViewModel> GetEntitiesMembersViewModel(string entityId, string lcode);
-        Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(string entityId, List<string> workers, string lcode);
-        Task<List<SkillLocalizedDTO>> GetEntitySkills(string entityId, string lcode);
-        Task<EntityProfileViewModel> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO entityProfileViewModelRequest);
+        Task<EntityMembersViewModel> GetEntitiesMembersViewModel(BaseViewModelRequest baseViewModelRequest);
+        Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(Guid entityId, List<string> workers, string lcode);
+        Task<List<SkillLocalizedDTO>> GetEntitySkills(BaseViewModelRequest baseViewModelRequest);
+        Task<EntityProfileViewModel> GetEntityProfileViewModel(BaseViewModelRequest entityProfileViewModelRequest);
         Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO);
         Task<BaseResponse<bool>> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO);
         Task<BaseResponse<bool>> DeleteEntityMember(DeleteMemberDTO workerMemberDTO);

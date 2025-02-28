@@ -2,7 +2,7 @@
 {
     public class AddShiftDTO
     {
-        public string EntityId { get; set; }
+        public Guid EntityId { get; set; }
         public string ShiftName { get; set; }
         public string ShiftAlias { get; set; }
         public string ShiftDescription { get; set; }

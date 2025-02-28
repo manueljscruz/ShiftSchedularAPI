@@ -126,7 +126,7 @@
   <data name="CreateEntityWorkerOwnerEmptyError" xml:space="preserve">
     <value>Identifier of the worker creating this entity cannot be null or empty.</value>
   </data>
-  <data name="DeleteEntityNoIdentifierError" xml:space="preserve">
+  <data name="EntityNoIdentifierError" xml:space="preserve">
     <value>Entity identifier cannot be null or empty.</value>
   </data>
   <data name="DeleteEntityUnexpectedError" xml:space="preserve">

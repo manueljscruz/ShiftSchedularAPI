@@ -57,10 +57,10 @@ namespace ShiftSchedularBLL.Service
         {
             EntityScheduleViewModel viewModel = new EntityScheduleViewModel();
 
-            if (viewModelRequest != null && !string.IsNullOrEmpty(viewModelRequest.EntityId) && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
+            if (viewModelRequest != null && viewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
             {
-                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(Guid.Parse(viewModelRequest.EntityId));
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, Guid.Parse(viewModelRequest.EntityId));
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(viewModelRequest.EntityId);
+                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
                 viewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
 
                 // If it can change data
@@ -68,7 +68,12 @@ namespace ShiftSchedularBLL.Service
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
-                    EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
+                    BaseViewModelRequest baseRequest = new BaseViewModelRequest
+                    {
+                        EntityId = viewModelRequest.EntityId,
+                        LanguageCode = viewModelRequest.LanguageCode
+                    };
+                    EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
                     viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers;
                 }
             }
@@ -262,7 +267,7 @@ namespace ShiftSchedularBLL.Service
             scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
 
             scheduleEntryDTO.ShiftDTO = shift;
-            scheduleEntryDTO.ScheduleParticipants = await _entityService.GetEntityMembersByList(shift.EntityId.ToString(), participantsIds, languageCode);
+            scheduleEntryDTO.ScheduleParticipants = await _entityService.GetEntityMembersByList(shift.EntityId, participantsIds, languageCode);
 
             return scheduleEntryDTO;
         }
@@ -277,9 +282,9 @@ namespace ShiftSchedularBLL.Service
             response.Message = "";
             response.Success = false;
 
-            if(createEntityScheduleDTO != null && !string.IsNullOrEmpty(createEntityScheduleDTO.EntityId) && !string.IsNullOrEmpty(createEntityScheduleDTO.WorkerId))
+            if(createEntityScheduleDTO != null && createEntityScheduleDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(createEntityScheduleDTO.WorkerId))
             {
-                bool isOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(Guid.Parse(createEntityScheduleDTO.EntityId), createEntityScheduleDTO.WorkerId);
+                bool isOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.WorkerId);
 
                 if (isOwner)
                 {

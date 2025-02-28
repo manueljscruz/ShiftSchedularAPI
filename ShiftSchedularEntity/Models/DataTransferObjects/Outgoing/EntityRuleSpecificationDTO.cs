@@ -5,7 +5,7 @@
         /// <summary>
         /// Identifier of the entity rule
         /// </summary>
-        public string EntityRuleId { get; set; }
+        public Guid EntityRuleId { get; set; }
 
         /// <summary>
         /// Number of the specification

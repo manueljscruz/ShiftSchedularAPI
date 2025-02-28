@@ -30,7 +30,7 @@ namespace ShiftSchedularDAL.Repositories
         /// <param name="workerId"></param>
         /// <param name="isOwner"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<EntityWorkerAbsence>> GetEntityWorkerAbsences(string entityId, string workerId, bool isOwner)
+        public async Task<IEnumerable<EntityWorkerAbsence>> GetEntityWorkerAbsences(Guid entityId, string workerId, bool isOwner)
         {
             if (isOwner)
                 return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();

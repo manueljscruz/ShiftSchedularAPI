@@ -1,21 +1,23 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
+using System.Data.Common;
 
 namespace ShiftSchedularDAL.Repositories
 {
     public class SqlRawRepository<T> : ISQLRawRepository<T> where T : class
     {
         private readonly DataContext _context;
+        private readonly DbConnection _connection;
 
         #region Constructor
 
         public SqlRawRepository(DataContext context)
         {
             _context = context;
+            _connection = _context.Database.GetDbConnection();
         }
 
         #endregion
@@ -24,25 +26,24 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<T> ExecuteScalar<T>(string query, Dictionary<string, object> parameters)
         {
-            var connection = _context.Database.GetDbConnection();
+            var connection = _connection; // Use persistent connection
+            if (connection.State == ConnectionState.Closed)
+                await connection.OpenAsync();
 
-            connection.Open();
+            await using var command = connection.CreateCommand();
+            command.CommandText = query;
+            command.CommandType = CommandType.Text;
 
-            using (var command = connection.CreateCommand())
+            foreach (var param in parameters)
             {
-                command.CommandText = query;
-                command.CommandType = System.Data.CommandType.Text;
-
-                foreach (var param in parameters)
-                {
-                    var parameter = command.CreateParameter();
-                    parameter.ParameterName = param.Key;
-                    parameter.Value = param.Value;
-                    command.Parameters.Add(parameter);
-                }
-
-                return (T)await command.ExecuteScalarAsync();
+                var parameter = command.CreateParameter();
+                parameter.ParameterName = param.Key;
+                parameter.Value = param.Value ?? DBNull.Value;
+                command.Parameters.Add(parameter);
             }
+
+            var result = await command.ExecuteScalarAsync();
+            return result != DBNull.Value ? (T)result : default;
         }
 
         #endregion
@@ -53,45 +54,36 @@ namespace ShiftSchedularDAL.Repositories
         {
             DataTable dataTable = new DataTable();
 
-            var connection = _context.Database.GetDbConnection();
-
-            connection.Open();
+            await using var connection = _connection; // Use persistent connection
+            if (connection.State == ConnectionState.Closed)
+                await connection.OpenAsync();
 
             try
             {
-                using (var command = _context.Database.GetDbConnection().CreateCommand())
+                await using var command = connection.CreateCommand();
+                command.CommandText = query;
+                command.CommandType = System.Data.CommandType.Text;
+
+                foreach (var param in parameters)
                 {
-                    command.CommandText = query;
-                    command.CommandType = System.Data.CommandType.Text;
-
-                    foreach (var param in parameters)
-                    {
-                        var parameter = command.CreateParameter();
-                        parameter.ParameterName = param.Key;
-                        parameter.Value = param.Value ?? DBNull.Value;
-                        command.Parameters.Add(parameter);
-                    }
-
-                    using (var dataReader = command.ExecuteReader())
-                    {
-                        dataTable.Load(dataReader);
-                    }
-
+                    var parameter = command.CreateParameter();
+                    parameter.ParameterName = param.Key;
+                    parameter.Value = param.Value ?? DBNull.Value;
+                    command.Parameters.Add(parameter);
                 }
+
+                await using var dataReader = await command.ExecuteReaderAsync();
+                dataTable.Load(dataReader);
+
             }
             catch (TaskCanceledException ex)
             {
                 string error = ex.Message;
-                // Check ex.CancellationToken.IsCancellationRequested here.
-                // If false, it's pretty safe to assume it was a timeout.
             }
             catch (Exception ex)
             {
-                // Handle the exception appropriately
                 string error = ex.Message;
             }
-
-            connection.Close();
 
             return dataTable;
         }
@@ -100,72 +92,64 @@ namespace ShiftSchedularDAL.Repositories
 
         #region Execute Query
 
-        public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string,object> parameters)
+        public async Task<IEnumerable<T>> ExecuteQuery<T>(string query, Dictionary<string, object> parameters)
         {
-            var connection = _context.Database.GetDbConnection();
+            var entities = new List<T>();
 
-            connection.Open();
+            var connection = _connection; // Use persistent connection
+            if (connection.State == ConnectionState.Closed)
+                await connection.OpenAsync();
 
             try
             {
-                using (var command = connection.CreateCommand())
+                await using var command = connection.CreateCommand();
+                command.CommandText = query;
+                command.CommandType = CommandType.Text;
+
+                foreach (var param in parameters)
                 {
-                    command.CommandText = query;
-                    command.CommandType = System.Data.CommandType.Text;
+                    var parameter = command.CreateParameter();
+                    parameter.ParameterName = param.Key;
+                    parameter.Value = param.Value ?? DBNull.Value;
+                    command.Parameters.Add(parameter);
+                }
 
-                    foreach (var param in parameters)
+                await using var result = await command.ExecuteReaderAsync();
+                while (await result.ReadAsync())
+                {
+                    if (typeof(T) == typeof(int))
                     {
-                        var parameter = command.CreateParameter();
-                        parameter.ParameterName = param.Key;
-                        parameter.Value = param.Value;
-                        command.Parameters.Add(parameter);
+                        entities.Add((T)(object)result.GetInt32(0));
                     }
-
-                    using (var result = await command.ExecuteReaderAsync())
+                    else
                     {
-                        var entities = new List<T>();
+                        var obj = Activator.CreateInstance<T>();
 
-                        while (await result.ReadAsync())
+                        foreach (var prop in obj.GetType().GetProperties())
                         {
-                            if (typeof(T) == typeof(int))
-                            {
-                                entities.Add((T)(object)result.GetInt32(0));
-                            }
-                            else
-                            {
-                                var obj = Activator.CreateInstance<T>();
+                            if (prop.GetCustomAttributes(typeof(NotMappedAttribute), false).Any())
+                                continue;
 
-                                foreach (var prop in obj.GetType().GetProperties())
+                            if (!result.IsDBNull(result.GetOrdinal(prop.Name)))
+                            {
+                                var value = result[prop.Name];
+
+                                // Handle byte[] to string conversion
+                                if (value is byte[] byteArray && prop.PropertyType == typeof(string))
                                 {
-                                    if (prop.GetCustomAttributes(typeof(NotMappedAttribute), false).Any())
-                                        continue;
-
-                                    if (!Equals(result[prop.Name], DBNull.Value))
-                                    {
-                                        var value = result[prop.Name];
-
-                                        // Handle byte[] to string conversion, if necessary
-                                        if (value is byte[] byteArray && prop.PropertyType == typeof(string))
-                                        {
-                                            // Convert byte[] to Base64 string
-                                            prop.SetValue(obj, Convert.ToBase64String(byteArray));
-                                        }
-                                        else if (value.GetType() == prop.PropertyType || prop.PropertyType.IsAssignableFrom(value.GetType()))
-                                        {
-                                            prop.SetValue(obj, value);
-                                        }
-                                        else
-                                        {
-                                            throw new InvalidCastException($"Cannot map column '{prop.Name}' of type '{value.GetType()}' to property '{prop.PropertyType}'.");
-                                        }
-                                    }
-
+                                    prop.SetValue(obj, Convert.ToBase64String(byteArray));
                                 }
-                                entities.Add(obj);
+                                else if (value.GetType() == prop.PropertyType || prop.PropertyType.IsAssignableFrom(value.GetType()))
+                                {
+                                    prop.SetValue(obj, value);
+                                }
+                                else
+                                {
+                                    throw new InvalidCastException($"Cannot map column '{prop.Name}' of type '{value.GetType()}' to property '{prop.PropertyType}'");
+                                }
                             }
                         }
-                        connection.Close();
-                        return entities;
+                        entities.Add(obj);
                     }
                 }
             }
@@ -174,10 +158,9 @@ namespace ShiftSchedularDAL.Repositories
                 string error = ex.Message;
             }
 
-            connection.Close();
 
-            return null;
-            
+            return entities;
+
         }
 
         #endregion

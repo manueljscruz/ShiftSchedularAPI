@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
-using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularRL.Resources.Dashboard;
 using ShiftSchedularRL.Resources.Home;
@@ -39,11 +37,11 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityById(string id)
+        public async Task<IActionResult> GetEntityById(Guid id)
         {
-            if (!string.IsNullOrEmpty(id))
+            if (id != Guid.Empty)
             {
-                id = HttpUtility.UrlDecode(id);
+                // id = HttpUtility.UrlDecode(id);
                 var entity = await _entityService.GetEntityById(id);
                 if (entity == null)
                 {
@@ -53,7 +51,7 @@ namespace ShiftSchedularAPI.Controllers
             }
             else
             {
-                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+                return BadRequest(EntitiesRelatedMessages.EntityNoIdentifierError);
             }
         }
 
@@ -106,20 +104,20 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityId">Identifier of the entity</param>
         /// <param name="lcode">Language Code</param>
         /// <returns></returns>
-        [HttpGet("get-entities-members-view-model/{entityId}/{lcode}")]
+        [HttpPost("get-entities-members-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntitiesMembersViewModel(string entityId, string lcode)
+        public async Task<IActionResult> GetEntitiesMembersViewModel(BaseViewModelRequest baseViewModelRequest)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (baseViewModelRequest.EntityId != Guid.Empty)
             {
-                string decodedEntityId = HttpUtility.UrlDecode(entityId);
-                var entities = await _entityService.GetEntitiesMembersViewModel(decodedEntityId, lcode);
+                // string decodedEntityId = HttpUtility.UrlDecode(entityId);
+                var entities = await _entityService.GetEntitiesMembersViewModel(baseViewModelRequest);
                 return Ok(entities);
             }
             else
             {
-                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+                return BadRequest(EntitiesRelatedMessages.EntityNoIdentifierError);
             }
         }
 
@@ -133,20 +131,20 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        [HttpGet("get-entity-skills/{entityId}/{lcode}")]
+        [HttpPost("get-entity-skills")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntitiesSkills(string entityId, string lcode)
+        public async Task<IActionResult> GetEntitiesSkills(BaseViewModelRequest baseViewModelRequest)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (baseViewModelRequest != null)
             {
-                string decodedEntityId = HttpUtility.UrlDecode(entityId);
-                var skills = await _entityService.GetEntitySkills(entityId, lcode);
+                // string decodedEntityId = HttpUtility.UrlDecode(entityId);
+                var skills = await _entityService.GetEntitySkills(baseViewModelRequest);
                 return Ok(skills);
             }
             else
             {
-                return BadRequest(EntitiesRelatedMessages.DeleteEntityNoIdentifierError);
+                return BadRequest(EntitiesRelatedMessages.EntityNoIdentifierError);
             }
         }
 
@@ -163,14 +161,14 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityProfileViewModel(EntityProfileViewModelRequestDTO profileViewModelRequest)
+        public async Task<IActionResult> GetEntityProfileViewModel(BaseViewModelRequest baseViewModelRequest)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            profileViewModelRequest.EntityId = HttpUtility.UrlDecode(profileViewModelRequest.EntityId);
-            var entityVM = await _entityService.GetEntityProfileViewModel(profileViewModelRequest);
+            // profileViewModelRequest.EntityId = HttpUtility.UrlDecode(profileViewModelRequest.EntityId);
+            var entityVM = await _entityService.GetEntityProfileViewModel(baseViewModelRequest);
 
             return Ok(entityVM);
         }
@@ -220,7 +218,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            entity.EntityId = HttpUtility.UrlDecode(entity.EntityId);
+            // entity.EntityId = HttpUtility.UrlDecode(entity.EntityId);
             BaseResponse<bool> response = await _entityService.UpdateEntity(entity);
 
             if(!response.Success)
@@ -239,15 +237,15 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteEntityById([FromRoute]string id)
+        public async Task<IActionResult> DeleteEntityById([FromRoute]Guid id)
         {
-            if(string.IsNullOrEmpty(id))
+            if(id == Guid.Empty)
             {
                 return BadRequest();
             }
 
-            string entityId = HttpUtility.UrlDecode(id);
-            BaseResponse<bool> response = await _entityService.DeleteEntityById(entityId);
+            // string entityId = HttpUtility.UrlDecode(id);
+            BaseResponse<bool> response = await _entityService.DeleteEntityById(id);
 
             if (!response.Success)
             {
@@ -300,7 +298,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            updateEntityMemberDTO.EntityId = HttpUtility.UrlDecode(updateEntityMemberDTO.EntityId);
+            // updateEntityMemberDTO.EntityId = HttpUtility.UrlDecode(updateEntityMemberDTO.EntityId);
 
             BaseResponse<bool> response = await _entityService.UpdateEntityMember(updateEntityMemberDTO);
 
@@ -314,18 +312,20 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Delete Entity Member
+
         [HttpDelete("delete-entity-member")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteEntityMember(DeleteMemberDTO workerMemberDTO)
+        public async Task<IActionResult> DeleteEntityMember(DeleteMemberDTO workerData)
         {
-            if (workerMemberDTO == null)
+            if (workerData == null)
             {
                 return BadRequest();
             }
 
-            BaseResponse<bool> response = await _entityService.DeleteEntityMember(workerMemberDTO);
+            BaseResponse<bool> response = await _entityService.DeleteEntityMember(workerData);
             if (!response.Success)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
@@ -333,6 +333,8 @@ namespace ShiftSchedularAPI.Controllers
 
             return NoContent();
         }
+
+        #endregion
 
         #endregion
     }

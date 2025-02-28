@@ -6,7 +6,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
     {
         public bool IsBot { get; set; }
 
-        public string DestinationEntityId { get; set; }
+        public Guid DestinationEntityId { get; set; }
 
         public string MemberName { get; set; }
 
@@ -16,14 +16,14 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 
         public string LanguageCode { get; set; }
 
-        public Guid EntityIdGuid
-        {
-            get
-            {
-                string safeGuid = HttpUtility.UrlDecode(DestinationEntityId);
-                byte[] entityIdBytes = Convert.FromBase64String(safeGuid);
-                return new Guid(entityIdBytes);
-            }
-        }
+        //public Guid EntityIdGuid
+        //{
+        //    get
+        //    {
+        //        string safeGuid = HttpUtility.UrlDecode(DestinationEntityId);
+        //        byte[] entityIdBytes = Convert.FromBase64String(safeGuid);
+        //        return new Guid(entityIdBytes);
+        //    }
+        //}
     }
 }

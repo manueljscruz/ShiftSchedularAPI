@@ -32,22 +32,34 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Entity Shifts View Model
 
         [HttpPost("get-entity-shift-view-model")]
-        [ProducesResponseType(200)]
-        public async Task<IActionResult> GetEntityShiftsViewModel(EntityShiftViewModelRequestDTO viewModelRequestDTO)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetEntityShiftsViewModel(BaseViewModelRequest viewModelRequestDTO)
         {
+            if(viewModelRequestDTO == null)
+            {
+                return BadRequest();
+            }
+
             var shifts = await _shiftService.GetEntityShiftsViewModel(viewModelRequestDTO);
-            return Ok(shifts);
+
+            if(shifts == null)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "");
+            }
+            else
+                return Ok(shifts);
         }
 
         #endregion
 
         #region Get Entity Shifts
 
-        [HttpGet("get-entity-shifts/{entityId}")]
+        [HttpPost("get-entity-shifts")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> GetEntityShfits(string entityId)
+        public async Task<IActionResult> GetEntityShfits(SingleIdentifierDTO identifier)
         {
-            var shifts = await _shiftService.GetEntityShifts(entityId);
+            var shifts = await _shiftService.GetEntityShifts(identifier.Identifier);
             return Ok(shifts);
         }
 

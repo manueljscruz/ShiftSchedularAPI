@@ -19,9 +19,9 @@ namespace ShiftSchedularDAL.Repositories
             _dbSet = _context.Set<EntityRule>();
         }
 
-        public async Task<IEnumerable<EntityRule>> GetEntityRules(string entityId)
+        public async Task<IEnumerable<EntityRule>> GetEntityRules(Guid entityId)
         {
-            if (!string.IsNullOrEmpty(entityId))
+            if (entityId != Guid.Empty)
             {
                 return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
             }

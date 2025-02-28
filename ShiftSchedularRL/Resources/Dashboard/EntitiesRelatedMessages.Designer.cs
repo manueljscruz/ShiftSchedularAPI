@@ -88,15 +88,6 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Entity identifier cannot be null or empty..
-        /// </summary>
-        public static string DeleteEntityNoIdentifierError {
-            get {
-                return ResourceManager.GetString("DeleteEntityNoIdentifierError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to An unexpected error occurred when deleting an worker entity. Please try again later..
         /// </summary>
         public static string DeleteEntityUnexpectedError {
@@ -120,6 +111,15 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         public static string EntityNameEmptyError {
             get {
                 return ResourceManager.GetString("EntityNameEmptyError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Entity identifier cannot be null or empty..
+        /// </summary>
+        public static string EntityNoIdentifierError {
+            get {
+                return ResourceManager.GetString("EntityNoIdentifierError", resourceCulture);
             }
         }
         

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularEntity.Converters;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using System.Text;
@@ -40,6 +41,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
     // Ignore null values in JSON output
     options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+    options.JsonSerializerOptions.Converters.Add(new GuidConverter());
 });
 
 // 3. Enable Swagger/OpenAPI with XML comments for better documentation
@@ -65,7 +70,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 {
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("ShiftSchedularDAL"));
-});
+    
+}, ServiceLifetime.Scoped);
 
 // 5. Add custom services (assumed implemented elsewhere)
 string logDirectory = builder.Configuration.GetValue<string>("LogDirectory");
