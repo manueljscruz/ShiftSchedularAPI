@@ -15,15 +15,5 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public List<SkillLocalizedDTO> AssignedSkills { get; set; }
 
         public string LanguageCode { get; set; }
-
-        //public Guid EntityIdGuid
-        //{
-        //    get
-        //    {
-        //        string safeGuid = HttpUtility.UrlDecode(DestinationEntityId);
-        //        byte[] entityIdBytes = Convert.FromBase64String(safeGuid);
-        //        return new Guid(entityIdBytes);
-        //    }
-        //}
     }
 }

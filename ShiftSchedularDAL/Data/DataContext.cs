@@ -58,6 +58,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
         public DbSet<UserBot> UserBots { get; set; }
         public DbSet<EntityUserBot> EntityUserBots { get; set; }
+        public DbSet<EntityShiftRotation> EntityShiftRotations { get; set; }
 
         #endregion
 
@@ -509,6 +510,24 @@ namespace ShiftSchedularDAL.Data
 
             modelBuilder.Entity<UserBot>()
                 .HasKey(ub => ub.UserBotId);
+
+            #endregion
+
+            #region Entity Shift Rotation Configuration
+
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasKey(esr => new { esr.EntityId, esr.OrderNo, esr.IsLeave });
+
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasOne(esr => esr.Entity)
+                .WithMany(e => e.EntityShiftRotations)
+                .HasForeignKey(esr => esr.EntityId);
+
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasOne(esr => esr.Shift)
+                .WithMany(s => s.EntityShiftRotations)
+                .HasForeignKey(esr => esr.ShiftId)
+                .IsRequired(false);
 
             #endregion
         }

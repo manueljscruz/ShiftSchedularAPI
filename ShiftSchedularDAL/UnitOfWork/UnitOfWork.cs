@@ -275,6 +275,18 @@ namespace ShiftSchedularDAL.UnitOfWork
             }
         }
 
+        private IEntityShiftRotationRepository _entityShiftRotationRepository;
+
+        public IEntityShiftRotationRepository EntityShiftRotationRepository 
+        {
+            get
+            {
+                return _entityShiftRotationRepository = _entityShiftRotationRepository ??
+                    new EntityShiftRotationRepository(_context, this);
+            } 
+             
+        }
+
         #endregion
 
         #region Constructor

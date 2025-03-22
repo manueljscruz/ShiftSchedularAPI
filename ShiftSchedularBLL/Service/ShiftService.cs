@@ -7,6 +7,7 @@ using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
+using ShiftSchedularRL.Resources.Shared;
 using ShiftSchedularRL.Resources.ShiftManagement;
 
 namespace ShiftSchedularBLL.Service
@@ -76,7 +77,7 @@ namespace ShiftSchedularBLL.Service
                 Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(addShiftDTO.EntityId);
                 if (destinationEntity == null)
                 {
-                    response.Message = ShiftRelatedMessages.AddNewShiftEntityNotFound;
+                    response.Message = ShiftRelatedMessages.EntityNotFound;
                     return response;
                 }
                 else
@@ -342,8 +343,9 @@ namespace ShiftSchedularBLL.Service
                     {
                         ShiftDTO shiftDTO = await HandleShiftData(shift, shiftBreakTypeLocalizations);
                         shiftViewModel.Shifts.Add(shiftDTO);
-
                     }
+
+                    shiftViewModel.ShiftRotations = await this.GetEntityShiftRotations(shiftViewModelRequestDTO.EntityId);
                 }
             }
 
@@ -494,7 +496,7 @@ namespace ShiftSchedularBLL.Service
                 Entity destinationEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(shift.EntityId);
                 if (destinationEntity == null)
                 {
-                    response.Message = ShiftRelatedMessages.AddNewShiftEntityNotFound;
+                    response.Message = ShiftRelatedMessages.EntityNotFound;
                     return response;
                 }
 
@@ -594,6 +596,224 @@ namespace ShiftSchedularBLL.Service
             return shiftDTOs;
         }
 
+        #endregion
+
+        #region Get Entity Shift Rotations
+
+        /// <summary>
+        /// Gets all Shift Rotation instances from a specific entity
+        /// </summary>
+        /// <param name="entityId">Entity identifier</param>
+        /// <returns>List of Shift Rotation</returns>
+        public async Task<List<EntityShiftRotationDTO>> GetEntityShiftRotations(Guid entityId)
+        {
+            List<EntityShiftRotationDTO> entityShiftRotationDTOs = new List<EntityShiftRotationDTO>();
+            if (entityId != Guid.Empty)
+            {
+                List<EntityShiftRotation> entityShiftRotations = (List<EntityShiftRotation>)await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftsRotation(entityId);
+                foreach (EntityShiftRotation entityShiftRotation in entityShiftRotations)
+                {
+                    EntityShiftRotationDTO entityShiftRotationDTO = _mapper.Map<EntityShiftRotationDTO>(entityShiftRotation);
+                    entityShiftRotationDTOs.Add(entityShiftRotationDTO);
+                }
+            }
+            return entityShiftRotationDTOs;
+        }
+
+        #endregion
+
+        #region Add Shift Rotation
+
+        /// <summary>
+        /// Adds a new Shift Rotation entry
+        /// </summary>
+        /// <param name="rotationDTO"></param>
+        /// <returns></returns>
+        public async Task<BaseResponse<EntityShiftRotationDTO>> AddShiftRotation(AddShiftRotationDTO rotationDTO)
+        {
+            BaseResponse<EntityShiftRotationDTO> response = new BaseResponse<EntityShiftRotationDTO>();
+            response.Success = false;
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (rotationDTO != null)
+            {
+                // Entity required
+                if (rotationDTO.EntityId == Guid.Empty)
+                {
+                    response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
+                    return response;
+                }
+
+                // Shift identifier required when not leave rotation 
+                else if(!rotationDTO.IsLeave && rotationDTO.ShiftId == Guid.Empty)
+                {
+                    response.Message = ShiftRelatedMessages.ShiftIdIsNull;
+                    return response;
+                }
+
+                else if(rotationDTO.IsLeave && rotationDTO.LeaveDuration == TimeSpan.Zero)
+                {
+                    response.Message = ShiftRelatedMessages.LeaveDurationIsZero;
+                    return response;
+                }
+
+                // Check if entity exists
+                Entity assignedEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(rotationDTO.EntityId);
+                if(assignedEntity == null)
+                {
+                    response.Message = ShiftRelatedMessages.EntityNotFound;
+                    return response;
+                }
+
+                Shift assignedShift = null;
+                // If its not leave, check if shift exists
+                if (!rotationDTO.IsLeave)
+                {
+                    assignedShift = await _unitOfWork.ShiftRepository.GetById(rotationDTO.ShiftId);
+                    if (assignedShift == null)
+                    {
+                        response.Message = ShiftRelatedMessages.ShiftNotFound;
+                        return response;
+                    }
+                }
+
+                // Get order numbers
+                List<int> assignedOrders = await _unitOfWork.EntityShiftRotationRepository.GetAssignedOrderNumbersByEntityId(rotationDTO.EntityId);
+
+                // Set new order number
+                EntityShiftRotation entityShiftRotation = _mapper.Map<EntityShiftRotation>(rotationDTO);
+                if (assignedOrders.Count == 0)
+                    entityShiftRotation.OrderNo = 1;
+                else
+                    entityShiftRotation.OrderNo = assignedOrders.Max() + 1;
+
+                // Add rotation
+                entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.Add(entityShiftRotation);
+
+                // Map relevant information
+                EntityShiftRotationDTO entityShiftRotationDTO = _mapper.Map<EntityShiftRotationDTO>(entityShiftRotation);
+                if (entityShiftRotationDTO.IsLeave)
+                {
+                    entityShiftRotationDTO.DisplayName = ShiftRelatedMessages.LeaveNAPlaceholder;
+                    entityShiftRotationDTO.Alias = ShiftRelatedMessages.LeaveNAAlias;
+                }
+                else
+                {
+                    entityShiftRotationDTO.DisplayName = assignedShift.ShiftName;
+                    entityShiftRotationDTO.Alias = assignedShift.ShiftAlias;
+                }
+
+                response.Success = true;
+                response.Message = ShiftRelatedMessages.AddedToRotationSuccess;
+                response.Result = entityShiftRotationDTO;
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Delete Shift Rotation
+
+        public async Task<BaseResponse<bool>> DeleteShiftRotation(EntityShiftRotationDTO shiftRotationDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (shiftRotationDTO == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationDataNull;
+                return response;
+            }
+
+            else if(shiftRotationDTO.EntityId == Guid.Empty)
+            {
+                response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
+                return response;
+            }
+
+            else if(shiftRotationDTO.OrderNo == 0)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
+                return response;
+            }
+
+            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo, shiftRotationDTO.IsLeave);
+            if(entityShiftRotation == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
+                return response;
+            }
+            else
+            {
+                await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(entityShiftRotation);
+                response.Success = true;
+                response.Message = ShiftRelatedMessages.ShiftRotationDeletedSuccess;
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Update Entity Shift Rotation
+
+        public async Task<BaseResponse<bool>> UpdateEntityShiftRotation(UpdateShiftRotationDTO shiftRotationDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Success = false;
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (shiftRotationDTO == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationIsNull;
+                return response;
+            }
+
+            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo, shiftRotationDTO.IsLeave);
+            if(entityShiftRotation == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
+                return response;
+            }
+
+            // Change in Order number
+            if(shiftRotationDTO.OrderNo != shiftRotationDTO.NewOrderNo)
+            {
+                try
+                {
+                    await _unitOfWork.BeginTransactionAsync();
+
+                    List<EntityShiftRotation> entityShiftRotations = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftsRotation(shiftRotationDTO.EntityId);
+
+                    EntityShiftRotation destinationShiftRotation = entityShiftRotations.Where(i => i.OrderNo.Equals(shiftRotationDTO.NewOrderNo)).FirstOrDefault();
+                    EntityShiftRotation sourceShiftRotation = entityShiftRotations.Where(i => i.OrderNo.Equals(shiftRotationDTO.OrderNo)).FirstOrDefault();
+
+                    if(sourceShiftRotation == null || destinationShiftRotation == null)
+                    {
+                        response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
+                        return response;
+                    }
+
+                    destinationShiftRotation.OrderNo = shiftRotationDTO.OrderNo;
+                    sourceShiftRotation.OrderNo = shiftRotationDTO.NewOrderNo;
+
+                    _unitOfWork.EntityShiftRotationRepository.Update(destinationShiftRotation);
+                    _unitOfWork.EntityShiftRotationRepository.Update(sourceShiftRotation);
+
+                    await _unitOfWork.CommitAsync();
+                    response.Success = true;
+                    response.Message = ShiftRelatedMessages.UpdateShiftRotationSucess;
+                }
+                catch (Exception ex)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return response;
+                }
+            }
+
+            return response;
+        }
 
         #endregion
 

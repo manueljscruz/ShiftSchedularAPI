@@ -61,6 +61,15 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Rotation added successfuly..
+        /// </summary>
+        public static string AddedToRotationSuccess {
+            get {
+                return ResourceManager.GetString("AddedToRotationSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shift break type not found. If this persists, contact support to resolve this issue..
         /// </summary>
         public static string AddNewShiftBreakBreakTypeNotFound {
@@ -111,15 +120,6 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         public static string AddNewShiftDurationIsNull {
             get {
                 return ResourceManager.GetString("AddNewShiftDurationIsNull", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An expected error occured while associating the destination entity to the shift. If this persists, contact support to resolve this issue..
-        /// </summary>
-        public static string AddNewShiftEntityNotFound {
-            get {
-                return ResourceManager.GetString("AddNewShiftEntityNotFound", resourceCulture);
             }
         }
         
@@ -196,6 +196,42 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An expected error occured while associating the destination entity to this shift operation. If this persists, contact support to resolve this issue..
+        /// </summary>
+        public static string EntityNotFound {
+            get {
+                return ResourceManager.GetString("EntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Leave duration cannot be zero..
+        /// </summary>
+        public static string LeaveDurationIsZero {
+            get {
+                return ResourceManager.GetString("LeaveDurationIsZero", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to L/NA.
+        /// </summary>
+        public static string LeaveNAAlias {
+            get {
+                return ResourceManager.GetString("LeaveNAAlias", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Leave / NA.
+        /// </summary>
+        public static string LeaveNAPlaceholder {
+            get {
+                return ResourceManager.GetString("LeaveNAPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Entity identifier is required to perform this operation..
         /// </summary>
         public static string ShiftEntityIdIsNull {
@@ -232,6 +268,51 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid order number..
+        /// </summary>
+        public static string ShiftRotationBadOrderNumber {
+            get {
+                return ResourceManager.GetString("ShiftRotationBadOrderNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift rotation data is required..
+        /// </summary>
+        public static string ShiftRotationDataNull {
+            get {
+                return ResourceManager.GetString("ShiftRotationDataNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift rotation was deleted successfuly..
+        /// </summary>
+        public static string ShiftRotationDeletedSuccess {
+            get {
+                return ResourceManager.GetString("ShiftRotationDeletedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift rotation data is required to perform this operation..
+        /// </summary>
+        public static string ShiftRotationIsNull {
+            get {
+                return ResourceManager.GetString("ShiftRotationIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occured while finding the related shift rotation. If this error persists, please contact support..
+        /// </summary>
+        public static string ShiftRotationNotFound {
+            get {
+                return ResourceManager.GetString("ShiftRotationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shift was updated successfuly..
         /// </summary>
         public static string ShiftUpdatedSuccessfuly {
@@ -264,6 +345,15 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         public static string UpdateShiftNotFound {
             get {
                 return ResourceManager.GetString("UpdateShiftNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift rotation updated successfuly.
+        /// </summary>
+        public static string UpdateShiftRotationSucess {
+            get {
+                return ResourceManager.GetString("UpdateShiftRotationSucess", resourceCulture);
             }
         }
         

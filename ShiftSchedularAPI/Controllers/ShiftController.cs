@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 
@@ -136,5 +138,86 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        [HttpPost("get-shift-rotations")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetEntityShiftRotations(SingleIdentifierDTO identifier)
+        {
+            if (identifier.Identifier == Guid.Empty)
+            {
+                return BadRequest();
+            }
+
+            List<EntityShiftRotationDTO> rotations = await _shiftService.GetEntityShiftRotations(identifier.Identifier);
+
+            return Ok(rotations);
+        }
+
+        [HttpPost("add-shift-rotation")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AddShiftRotation(AddShiftRotationDTO rotationDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            BaseResponse<EntityShiftRotationDTO> response = await _shiftService.AddShiftRotation(rotationDTO);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+        }
+
+        [HttpPut("update-shift-rotation")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateShiftRotation(UpdateShiftRotationDTO shiftRotationDTO)
+        {
+            if (shiftRotationDTO == null)
+            {
+                return BadRequest("");
+            }
+
+            BaseResponse<bool> response = await _shiftService.UpdateEntityShiftRotation(shiftRotationDTO);
+            if (response.Success)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+        }
+
+        [HttpDelete("delete-shift-rotation")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteShiftRotation(EntityShiftRotationDTO shiftRotationDTO)
+        {
+            if (shiftRotationDTO == null)
+            {
+                return BadRequest("");
+            }
+
+            BaseResponse<bool> response = await _shiftService.DeleteShiftRotation(shiftRotationDTO);
+            if (response.Success)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+        }
     }
 }

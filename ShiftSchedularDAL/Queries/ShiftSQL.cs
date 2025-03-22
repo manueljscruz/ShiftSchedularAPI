@@ -8,7 +8,7 @@ namespace ShiftSchedularDAL.Queries
 {
     public class ShiftSQL
     {
-        public static readonly string GetSpecificShifts = @"
+        public static readonly string GetAssignedOrderNumbersByEntityId = @"
             
         ";
     }

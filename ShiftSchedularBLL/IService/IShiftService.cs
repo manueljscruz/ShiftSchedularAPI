@@ -18,5 +18,9 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> UpdateEntityShift(ShiftDTO shift);
         Task<BaseResponse<bool>> UpdateEntityShiftBreak(ShiftBreakDTO shiftBreak);
         Task<List<ShiftDTO>> GetSpecificShifts(List<string> shiftIdentifiers);
+        Task<List<EntityShiftRotationDTO>> GetEntityShiftRotations(Guid entityId);
+        Task<BaseResponse<EntityShiftRotationDTO>> AddShiftRotation(AddShiftRotationDTO rotationDTO);
+        Task<BaseResponse<bool>> DeleteShiftRotation(EntityShiftRotationDTO shiftRotationDTO);
+        Task<BaseResponse<bool>> UpdateEntityShiftRotation(UpdateShiftRotationDTO shiftRotationDTO);
     }
 }
