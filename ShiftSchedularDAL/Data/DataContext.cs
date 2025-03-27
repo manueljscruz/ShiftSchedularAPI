@@ -523,12 +523,6 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(e => e.EntityShiftRotations)
                 .HasForeignKey(esr => esr.EntityId);
 
-            modelBuilder.Entity<EntityShiftRotation>()
-                .HasOne(esr => esr.Shift)
-                .WithMany(s => s.EntityShiftRotations)
-                .HasForeignKey(esr => esr.ShiftId)
-                .IsRequired(false);
-
             #endregion
         }
 

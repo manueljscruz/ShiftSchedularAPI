@@ -32,7 +32,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if(entityId != Guid.Empty)
             {
-                return await _dbSet.Include(x => x.Shift).FirstOrDefaultAsync(i => i.EntityId.Equals(entityId) && i.OrderNo.Equals(orderNo) && i.IsLeave.Equals(isLeave));
+                return await _dbSet.FirstOrDefaultAsync(i => i.EntityId.Equals(entityId) && i.OrderNo.Equals(orderNo) && i.IsLeave.Equals(isLeave));
             }
             else return null;
         }
@@ -41,7 +41,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if(entityId != Guid.Empty)
             {
-                return _dbSet.Where(i => i.EntityId.Equals(entityId)).Include(x => x.Shift).ToListAsync();
+                return _dbSet.Where(i => i.EntityId.Equals(entityId)).OrderBy(i => i.OrderNo).ToListAsync();
             }
             else return null;
         }

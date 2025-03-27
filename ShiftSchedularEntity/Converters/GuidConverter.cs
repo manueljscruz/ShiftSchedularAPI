@@ -11,6 +11,9 @@ namespace ShiftSchedularEntity.Converters
             string guidString = HttpUtility.UrlDecode(reader.GetString());
             Guid guid = Guid.Empty;
 
+            if (guidString == string.Empty)
+                return guid;
+
             bool isValidGuid = Guid.TryParse(guidString, out guid);
             if (isValidGuid)
                 return guid;

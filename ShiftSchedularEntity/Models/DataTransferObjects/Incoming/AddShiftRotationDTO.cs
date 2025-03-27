@@ -10,6 +10,6 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public Guid EntityId { get; set; }
         public Guid ShiftId { get; set; }
         public bool IsLeave { get; set; }
-        public TimeSpan LeaveDuration { get; set; }
+        public string LeaveDuration { get; set; }
     }
 }

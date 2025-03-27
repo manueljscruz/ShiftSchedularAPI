@@ -50,6 +50,15 @@ namespace ShiftSchedularDAL.Repositories
             else return null;
         }
 
+        public Task<Shift> GetShiftById(Guid shiftId)
+        {
+            if(shiftId != Guid.Empty)
+            {
+                return _dbSet.FirstOrDefaultAsync(i => i.ShiftId.Equals(shiftId));
+            }
+            else return null;
+        }
+
         #endregion
     }
 }

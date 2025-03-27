@@ -614,6 +614,21 @@ namespace ShiftSchedularBLL.Service
                 foreach (EntityShiftRotation entityShiftRotation in entityShiftRotations)
                 {
                     EntityShiftRotationDTO entityShiftRotationDTO = _mapper.Map<EntityShiftRotationDTO>(entityShiftRotation);
+
+                    if (entityShiftRotation.IsLeave)
+                    {
+                        entityShiftRotationDTO.DisplayName = ShiftRelatedMessages.LeaveNAPlaceholder;
+                        entityShiftRotationDTO.Alias = ShiftRelatedMessages.LeaveNAAlias;
+                    }
+                    else
+                    {
+                        Shift shift = await _unitOfWork.ShiftRepository.GetShiftById((Guid)entityShiftRotation.ShiftId);
+                        if(shift != null)
+                        {
+                            entityShiftRotationDTO.DisplayName = shift.ShiftName;
+                            entityShiftRotationDTO.Alias = shift.ShiftAlias;
+                        }
+                    }
                     entityShiftRotationDTOs.Add(entityShiftRotationDTO);
                 }
             }
@@ -651,7 +666,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if(rotationDTO.IsLeave && rotationDTO.LeaveDuration == TimeSpan.Zero)
+                else if(rotationDTO.IsLeave && string.IsNullOrEmpty(rotationDTO.LeaveDuration))
                 {
                     response.Message = ShiftRelatedMessages.LeaveDurationIsZero;
                     return response;
@@ -687,6 +702,8 @@ namespace ShiftSchedularBLL.Service
                 else
                     entityShiftRotation.OrderNo = assignedOrders.Max() + 1;
 
+                entityShiftRotation.LeaveDuration = ReturnDuration(rotationDTO.LeaveDuration).Ticks;
+                
                 // Add rotation
                 entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.Add(entityShiftRotation);
 
@@ -738,14 +755,48 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo, shiftRotationDTO.IsLeave);
-            if(entityShiftRotation == null)
+            List<EntityShiftRotation> entityShiftRotations = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftsRotation(shiftRotationDTO.EntityId);
+            EntityShiftRotation entityShiftRotation = entityShiftRotations.Where(i => i.ShiftId.Equals(shiftRotationDTO.ShiftId) && i.OrderNo.Equals(shiftRotationDTO.OrderNo)).FirstOrDefault();            
+            if (entityShiftRotation == null)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
                 return response;
             }
             else
             {
+                try
+                {
+                    await _unitOfWork.BeginTransactionAsync();
+
+                    await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(entityShiftRotation);
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    entityShiftRotations.Remove(entityShiftRotation);
+
+                    int order = 1;
+
+                    foreach(EntityShiftRotation shiftRotation in entityShiftRotations)
+                    {
+                        if (shiftRotation.OrderNo != order)
+                        {
+                            await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(shiftRotation);
+                            await _unitOfWork.SaveChangesAsync();
+
+                            shiftRotation.OrderNo = order;
+                            await _unitOfWork.EntityShiftRotationRepository.Add(shiftRotation);
+                        }
+                        order++;
+                    }
+
+                    await _unitOfWork.CommitAsync();
+                    response.Success = true;
+                }
+                catch (Exception ex)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    return response;
+                }
                 await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(entityShiftRotation);
                 response.Success = true;
                 response.Message = ShiftRelatedMessages.ShiftRotationDeletedSuccess;
@@ -777,6 +828,12 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
+            if(shiftRotationDTO.OrderNo == 0 || shiftRotationDTO.NewOrderNo == 0)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
+                return response;
+            }
+
             // Change in Order number
             if(shiftRotationDTO.OrderNo != shiftRotationDTO.NewOrderNo)
             {
@@ -795,11 +852,16 @@ namespace ShiftSchedularBLL.Service
                         return response;
                     }
 
+                    await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(destinationShiftRotation);
+                    await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(sourceShiftRotation);
+
+                    await _unitOfWork.SaveChangesAsync();
+
                     destinationShiftRotation.OrderNo = shiftRotationDTO.OrderNo;
                     sourceShiftRotation.OrderNo = shiftRotationDTO.NewOrderNo;
 
-                    _unitOfWork.EntityShiftRotationRepository.Update(destinationShiftRotation);
-                    _unitOfWork.EntityShiftRotationRepository.Update(sourceShiftRotation);
+                    await _unitOfWork.EntityShiftRotationRepository.Add(destinationShiftRotation);
+                    await _unitOfWork.EntityShiftRotationRepository.Add(sourceShiftRotation);
 
                     await _unitOfWork.CommitAsync();
                     response.Success = true;
@@ -813,6 +875,32 @@ namespace ShiftSchedularBLL.Service
             }
 
             return response;
+        }
+
+        #endregion
+
+        #region Return Duration
+
+        private TimeSpan ReturnDuration(string dateString)
+        {
+            TimeSpan duration = TimeSpan.Zero;
+            if (!string.IsNullOrEmpty(dateString))
+            {
+                string[] daySplit = dateString.Split(' ');
+                
+
+                if (daySplit.Length == 2)
+                {
+                    string[] hourMinuteSplit = daySplit[1].Split(':');
+                    duration = new TimeSpan(int.Parse(daySplit[0]), int.Parse(hourMinuteSplit[0]), int.Parse(hourMinuteSplit[1]), 0);
+                }
+                else
+                {
+                    string[] hourMinuteSplit = dateString.Split(':');
+                    duration = new TimeSpan(int.Parse(hourMinuteSplit[0]), int.Parse(hourMinuteSplit[1]), 0);
+                }
+            }
+            return duration;
         }
 
         #endregion

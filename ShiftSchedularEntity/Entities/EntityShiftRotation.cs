@@ -36,17 +36,14 @@ namespace ShiftSchedularEntity.Entities
         /// <summary>
         /// When flag is leave, indicates the duration of the leave
         /// </summary>
-        [Column(TypeName = "TIME")]
-        [Range(typeof(TimeSpan), "00:00:00", "24:00:00")]
-        public TimeSpan LeaveDuration { get; set; }
+        [Column(TypeName = "BIGINT")]
+        public long LeaveDuration { get; set; }
 
         #endregion
 
         #region Navigation Properties
 
         public virtual Entity Entity { get; set; }
-
-        public virtual Shift Shift { get; set; }
 
         #endregion
     }

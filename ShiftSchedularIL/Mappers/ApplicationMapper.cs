@@ -233,16 +233,14 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.IsLeave, opt => opt.MapFrom(src => src.IsLeave))
                 .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.IsLeave ? Guid.Empty : src.ShiftId))
-                .ForMember(dest => dest.LeaveDuration, opt => opt.MapFrom(src => src.IsLeave ? src.LeaveDuration : TimeSpan.Zero));
+                .ForMember(dest => dest.LeaveDuration, opt => opt.MapFrom(src => 0));
 
             CreateMap<EntityShiftRotation, EntityShiftRotationDTO>()
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.OrderNo, opt => opt.MapFrom(src => src.OrderNo))
                 .ForMember(dest => dest.IsLeave, opt => opt.MapFrom(src => src.IsLeave))
                 .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
-                .ForMember(dest => dest.LeaveDuration, opt => opt.MapFrom(src => src.LeaveDuration))
-                .ForMember(dest => dest.Alias, opt => opt.MapFrom(src => src.Shift.ShiftAlias))
-                .ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.Shift.ShiftName));
+                .ForMember(dest => dest.LeaveDuration, opt => opt.MapFrom(src => TimeSpan.FromTicks(src.LeaveDuration)));
         }
     }
 }

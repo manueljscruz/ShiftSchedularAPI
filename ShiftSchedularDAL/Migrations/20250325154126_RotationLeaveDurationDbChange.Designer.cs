@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250325154126_RotationLeaveDurationDbChange")]
+    partial class RotationLeaveDurationDbChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -448,6 +451,8 @@ namespace ShiftSchedularDAL.Migrations
                         .HasColumnType("BINARY(16)");
 
                     b.HasKey("EntityId", "OrderNo", "IsLeave");
+
+                    b.HasIndex("ShiftId");
 
                     b.ToTable("EntityShiftRotations");
                 });
@@ -1213,7 +1218,13 @@ namespace ShiftSchedularDAL.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ShiftSchedularEntity.Entities.Shift", "Shift")
+                        .WithMany("EntityShiftRotations")
+                        .HasForeignKey("ShiftId");
+
                     b.Navigation("Entity");
+
+                    b.Navigation("Shift");
                 });
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.EntityTypeLocalization", b =>
@@ -1617,6 +1628,8 @@ namespace ShiftSchedularDAL.Migrations
 
             modelBuilder.Entity("ShiftSchedularEntity.Entities.Shift", b =>
                 {
+                    b.Navigation("EntityShiftRotations");
+
                     b.Navigation("ScheduleEntries");
 
                     b.Navigation("ShiftBreaks");
