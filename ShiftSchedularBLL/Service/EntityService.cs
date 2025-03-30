@@ -25,6 +25,7 @@ namespace ShiftSchedularBLL.Service
         private readonly ICryptographyService _cryptographyService;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ISkillService _skillService;
+        private readonly IShiftService _shiftService;
         private readonly IEntityTypeService _entityTypeService;
         private readonly IGeneralService _generalService;
 
@@ -35,6 +36,7 @@ namespace ShiftSchedularBLL.Service
             ICryptographyService cryptographyService,
             UserManager<ApplicationUser> userManager,
             ISkillService skillService,
+            IShiftService shiftService,
             IEntityTypeService entityTypeService,
             IGeneralService generalService)
         {
@@ -43,6 +45,7 @@ namespace ShiftSchedularBLL.Service
             _cryptographyService = cryptographyService;
             _userManager = userManager;
             _skillService = skillService;
+            _shiftService = shiftService;
             _entityTypeService = entityTypeService;
             _generalService = generalService;
         }
@@ -329,6 +332,8 @@ namespace ShiftSchedularBLL.Service
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
             viewModel.Skills = await _skillService.GetAllSkillsByLocalization(baseViewModelRequest.LanguageCode);
+
+            viewModel.Shifts = await _shiftService.GetEntityShifts(baseViewModelRequest.EntityId);
 
             // Get regular members
             IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(baseViewModelRequest.EntityId);
