@@ -120,13 +120,13 @@
   <data name="AddNewMemberAlreadyInEntity" xml:space="preserve">
     <value>This member is already part of this work entity.</value>
   </data>
-  <data name="AddNewMemberBotNameEmpty" xml:space="preserve">
-    <value>New member name cannot be empty.</value>
+  <data name="MemberNameEmpty" xml:space="preserve">
+    <value>Member name cannot be empty.</value>
   </data>
   <data name="AddNewMemberBotSuccessful" xml:space="preserve">
     <value>New member was added successfuly.</value>
   </data>
-  <data name="AddNewMemberDestinationEntityEmpty" xml:space="preserve">
+  <data name="MemberDestinationEntityEmpty" xml:space="preserve">
     <value>Unable to associate member to the entity. </value>
   </data>
   <data name="AddNewMemberEmailEmpty" xml:space="preserve">
@@ -146,5 +146,14 @@
   </data>
   <data name="UpdateMemberSuccess" xml:space="preserve">
     <value>Member information was updated successfuly.</value>
+  </data>
+  <data name="MemberIdentifierEmpty" xml:space="preserve">
+    <value>Member identifier is required to perform this operation. If this error persists, please contact support.</value>
+  </data>
+  <data name="SkillSetRequired" xml:space="preserve">
+    <value>Requires at least one skillset</value>
+  </data>
+  <data name="MemberNotFound" xml:space="preserve">
+    <value>Member was not found.</value>
   </data>
 </root>

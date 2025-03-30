@@ -62,6 +62,8 @@ namespace ShiftSchedularEntity.Entities
         public virtual Entity Entity { get; set; }
         public virtual IEnumerable<ShiftBreak> ShiftBreaks { get; set; }
         public virtual IEnumerable<ScheduleEntry> ScheduleEntries { get; set; }
+        public virtual IEnumerable<EntityUserBotShiftAssigned> EntityUserBotShiftAssigned { get; set; }
+        public virtual IEnumerable<EntityWorkerShiftAssigned> EntityWorkerShiftAssigned { get; set; }
 
         #endregion
     }

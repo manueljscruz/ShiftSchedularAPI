@@ -24,6 +24,8 @@ namespace ShiftSchedularEntity.Entities
 
         public DateTime DateOfExit { get; set; }
 
+        public bool PartOfRotation { get; set; }
+
         #endregion
 
         #region Navigation Properties

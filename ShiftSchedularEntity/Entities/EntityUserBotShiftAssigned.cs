@@ -3,27 +3,29 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class UserBot
+    public class EntityUserBotShiftAssigned
     {
         #region Properties
 
         [Required]
         [Column(TypeName = "BINARY(16)")]
         public Guid UserBotId { get; set; }
-        
-        [Required]
-        [MaxLength(200)]
-        public string UserDisplayName { get; set; }
 
-        public DateTime DateOfCreation { get; set; }
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid EntityId { get; set; }
+
+        [Required]
+        [Column(TypeName = "BINARY(16)")]
+        public Guid ShiftId { get; set; }
 
         #endregion
 
         #region Navigation Properties
 
-        public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
-
-        public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
+        public virtual UserBot UserBot { get; set; }
+        public virtual Entity Entity { get; set; }
+        public virtual Shift Shift { get; set; }
 
         #endregion
     }

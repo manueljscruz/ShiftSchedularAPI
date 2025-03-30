@@ -70,29 +70,11 @@ namespace ShiftSchedularRL.Resources.MemberManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to New member name cannot be empty..
-        /// </summary>
-        public static string AddNewMemberBotNameEmpty {
-            get {
-                return ResourceManager.GetString("AddNewMemberBotNameEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to New member was added successfuly..
         /// </summary>
         public static string AddNewMemberBotSuccessful {
             get {
                 return ResourceManager.GetString("AddNewMemberBotSuccessful", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to associate member to the entity. .
-        /// </summary>
-        public static string AddNewMemberDestinationEntityEmpty {
-            get {
-                return ResourceManager.GetString("AddNewMemberDestinationEntityEmpty", resourceCulture);
             }
         }
         
@@ -138,6 +120,51 @@ namespace ShiftSchedularRL.Resources.MemberManagement {
         public static string AddNewMemberUnexpectedError {
             get {
                 return ResourceManager.GetString("AddNewMemberUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to associate member to the entity. .
+        /// </summary>
+        public static string MemberDestinationEntityEmpty {
+            get {
+                return ResourceManager.GetString("MemberDestinationEntityEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Member identifier is required to perform this operation. If this error persists, please contact support..
+        /// </summary>
+        public static string MemberIdentifierEmpty {
+            get {
+                return ResourceManager.GetString("MemberIdentifierEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Member name cannot be empty..
+        /// </summary>
+        public static string MemberNameEmpty {
+            get {
+                return ResourceManager.GetString("MemberNameEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Member was not found..
+        /// </summary>
+        public static string MemberNotFound {
+            get {
+                return ResourceManager.GetString("MemberNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Requires at least one skillset.
+        /// </summary>
+        public static string SkillSetRequired {
+            get {
+                return ResourceManager.GetString("SkillSetRequired", resourceCulture);
             }
         }
         

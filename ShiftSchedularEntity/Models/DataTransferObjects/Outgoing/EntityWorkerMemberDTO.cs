@@ -8,6 +8,7 @@
         public bool CanCreateSchedules { get; set; }
         public bool IsOwner { get; set; }
         public DateTime DateOfJoin { get; set; }
+        public bool PartOfRotation { get; set; }
         public List<SkillLocalizedDTO> SkillSet { get; set; }
 
         public EntityWorkerMemberDTO()

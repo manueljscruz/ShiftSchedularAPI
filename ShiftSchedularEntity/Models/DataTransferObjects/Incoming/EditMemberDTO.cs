@@ -7,5 +7,6 @@
         public bool IsBot { get; set; }
         public string WorkerName { get; set; }
         public List<SkillLocalizedDTO> AssignedSkills { get; set; }
+        public bool PartOfRotation { get; set; }
     }
 }

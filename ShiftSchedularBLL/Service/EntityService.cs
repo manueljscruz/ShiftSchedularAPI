@@ -503,18 +503,16 @@ namespace ShiftSchedularBLL.Service
 
             if (newMemberDTO != null)
             {
-                // Checks if there is an destination entity
-                //if (string.IsNullOrEmpty(newMemberDTO.DestinationEntityId))
                 if(newMemberDTO.DestinationEntityId == Guid.Empty)
                 {
-                    response.Message = EntityWorkerRelatedMessages.AddNewMemberDestinationEntityEmpty;
+                    response.Message = EntityWorkerRelatedMessages.MemberDestinationEntityEmpty;
                     return response;
                 }
 
                 // Check if there is a name to the Member
                 else if (newMemberDTO.IsBot && string.IsNullOrEmpty(newMemberDTO.MemberName))
                 {
-                    response.Message = EntityWorkerRelatedMessages.AddNewMemberBotNameEmpty;
+                    response.Message = EntityWorkerRelatedMessages.MemberNameEmpty;
                     return response;
                 }
 
@@ -562,7 +560,8 @@ namespace ShiftSchedularBLL.Service
                                     UserBotId = newUserBot.UserBotId,
                                     SkillId = skill.SkillId,
                                     ActiveWorkerStatus = true,
-                                    DateOfJoin = nowUTCTime
+                                    DateOfJoin = nowUTCTime,
+                                    PartOfRotation = newMemberDTO.PartOfRotation
                                 };
                                 
                                 await _unitOfWork.GetGenericRepository<EntityUserBot>().Add(entityUserBot);
@@ -589,7 +588,8 @@ namespace ShiftSchedularBLL.Service
                             IsBot = true,
                             IsOwner = false,
                             DateOfJoin = nowUTCTime,
-                            SkillSet = newMemberDTO.AssignedSkills
+                            SkillSet = newMemberDTO.AssignedSkills,
+                            PartOfRotation = newMemberDTO.PartOfRotation
                         };
 
                         response.Result = entityWorkerMemberDTO;
@@ -613,7 +613,8 @@ namespace ShiftSchedularBLL.Service
                             Email = newMemberDTO.MemberEmail,
                             ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null,
                             InviteDate = nowUTCTime,
-                            SkillsetIds = skillsAggregated
+                            SkillsetIds = skillsAggregated,
+                            PartOfRotation = newMemberDTO.PartOfRotation
                         };
 
                         await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
@@ -653,25 +654,25 @@ namespace ShiftSchedularBLL.Service
             {
                 if (string.IsNullOrEmpty(updateEntityMemberDTO.WorkerId))
                 {
-                    response.Message = "";
+                    response.Message = EntityWorkerRelatedMessages.MemberIdentifierEmpty;
                     return response;
                 }
 
                 else if(updateEntityMemberDTO.EntityId != Guid.Empty)
                 {
-                    response.Message = "";
+                    response.Message = EntityWorkerRelatedMessages.MemberDestinationEntityEmpty;
                     return response;
                 }
 
                 else if(updateEntityMemberDTO.IsBot && string.IsNullOrEmpty(updateEntityMemberDTO.WorkerName))
                 {
-                    response.Message = "";
+                    response.Message = EntityWorkerRelatedMessages.MemberNameEmpty;
                     return response;
                 }
 
                 else if(updateEntityMemberDTO.AssignedSkills.Count == 0)
                 {
-                    response.Message = "";
+                    response.Message = EntityWorkerRelatedMessages.SkillSetRequired;
                     return response;
                 }
 
@@ -690,6 +691,20 @@ namespace ShiftSchedularBLL.Service
                             {
                                 userBot.UserDisplayName = updateEntityMemberDTO.WorkerName;
                                 await _unitOfWork.UserBotRepository.Update(userBot);
+
+                                // Get Entity User Bot Instances
+                                IEnumerable<EntityUserBot> entityUserBotInstances = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotsByEntityAndId(entity.EntityId, userBot.UserBotId);
+                                if (entityUserBotInstances.Count() != 0)
+                                {
+                                    // If any has the rotation flag different, update it
+                                    if (entityUserBotInstances.Any(entityUserBotInstances => entityUserBotInstances.PartOfRotation != updateEntityMemberDTO.PartOfRotation)) { 
+                                        foreach (EntityUserBot entityUserBot in entityUserBotInstances)
+                                        {
+                                            entityUserBot.PartOfRotation = updateEntityMemberDTO.PartOfRotation;
+                                            await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -698,7 +713,7 @@ namespace ShiftSchedularBLL.Service
                     
                         if(entityWorkerInstances.Count == 0)
                         {
-                            response.Message = "";
+                            response.Message = EntityWorkerRelatedMessages.MemberNotFound;
                             return response;
                         }
 
@@ -718,7 +733,8 @@ namespace ShiftSchedularBLL.Service
                                 CanCreateSchedules = false,
                                 IsOwner = false,
                                 SkillId = skill.SkillId,
-                                DateOfJoin = dateOfJoin
+                                DateOfJoin = dateOfJoin,
+                                PartOfRotation = updateEntityMemberDTO.PartOfRotation
                             };
 
                             await _unitOfWork.EntityWorkerRepository.Add(entityWorkerInstance);

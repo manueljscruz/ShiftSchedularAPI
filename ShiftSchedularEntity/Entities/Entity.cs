@@ -46,6 +46,8 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityWorkerAbsence> EntityWorkerAbsences { get; set; }
         public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
         public virtual ICollection<EntityShiftRotation> EntityShiftRotations { get; set; }
+        public virtual ICollection<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
+        public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
 
         #endregion
     }

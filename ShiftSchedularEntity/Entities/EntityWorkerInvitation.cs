@@ -37,6 +37,8 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public string SkillsetIds { get; set; }
 
+        public bool PartOfRotation { get; set; }
+
         #region Navigation Properties
 
         public virtual Entity? Entity { get; set; }

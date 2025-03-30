@@ -54,6 +54,11 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public DateTime DateToExit { get; set; }
 
+        /// <summary>
+        /// Signal if its part of the rotation
+        /// </summary>
+        public bool PartOfRotation { get; set; }
+
         #endregion
 
         #region Navigation Properties

@@ -59,6 +59,8 @@ namespace ShiftSchedularDAL.Data
         public DbSet<UserBot> UserBots { get; set; }
         public DbSet<EntityUserBot> EntityUserBots { get; set; }
         public DbSet<EntityShiftRotation> EntityShiftRotations { get; set; }
+        public DbSet<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
+        public DbSet<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
 
         #endregion
 
@@ -522,6 +524,53 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(esr => esr.Entity)
                 .WithMany(e => e.EntityShiftRotations)
                 .HasForeignKey(esr => esr.EntityId);
+
+            #endregion
+
+            #region Entity User Bot Shift Assigned Configuration
+
+            modelBuilder.Entity<EntityUserBotShiftAssigned>()
+                .HasKey(eubsa => new { eubsa.UserBotId, eubsa.EntityId, eubsa.ShiftId });
+
+            modelBuilder.Entity<EntityUserBotShiftAssigned>()
+                .HasOne(eubsa => eubsa.UserBot)
+                .WithMany(ub => ub.EntityUserBotShiftAssigneds)
+                .HasForeignKey(eubsa => eubsa.UserBotId);
+
+            modelBuilder.Entity<EntityUserBotShiftAssigned>()
+                .HasOne(eubsa => eubsa.Shift)
+                .WithMany(ub => ub.EntityUserBotShiftAssigned)
+                .HasForeignKey(eubsa => eubsa.ShiftId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntityUserBotShiftAssigned>()
+                .HasOne(eubsa => eubsa.Entity)
+                .WithMany(ub => ub.EntityUserBotShiftAssigneds)
+                .HasForeignKey(eubsa => eubsa.EntityId);
+
+            #endregion
+
+            #region Entity Worker Shift Assigned Configuration
+
+
+            modelBuilder.Entity<EntityWorkerShiftAssigned>()
+                .HasKey(ewsa => new { ewsa.ApplicationUserId, ewsa.EntityId, ewsa.ShiftId });
+
+            modelBuilder.Entity<EntityWorkerShiftAssigned>()
+                .HasOne(ewsa => ewsa.ApplicationUser)
+                .WithMany(w => w.EntityWorkerShiftAssigneds)
+                .HasForeignKey(ewsa => ewsa.ApplicationUserId);
+
+            modelBuilder.Entity<EntityWorkerShiftAssigned>()
+                .HasOne(ewsa => ewsa.Shift)
+                .WithMany(s => s.EntityWorkerShiftAssigned)
+                .HasForeignKey(ewsa => ewsa.ShiftId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntityWorkerShiftAssigned>()
+                .HasOne(ewsa => ewsa.Entity)
+                .WithMany(e => e.EntityWorkerShiftAssigneds)
+                .HasForeignKey(ewsa => ewsa.EntityId);
 
             #endregion
         }
