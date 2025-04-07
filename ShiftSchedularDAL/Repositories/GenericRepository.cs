@@ -66,6 +66,12 @@ namespace ShiftSchedularDAL.Repositories
 
         }
 
+        public async Task UpdateRange(IEnumerable<T> entities)
+        {
+            _dbSet.UpdateRange(entities);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         public async Task Delete(int id)
         {
             T entity = await _dbSet.FindAsync(id);

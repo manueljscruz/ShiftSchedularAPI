@@ -287,6 +287,26 @@ namespace ShiftSchedularDAL.UnitOfWork
              
         }
 
+        private IEntityUserBotShiftAssignedsRepository _entityUserBotShiftAssignedsRepository;
+
+        public IEntityUserBotShiftAssignedsRepository EntityUserBotShiftAssignedsRepository
+        {
+            get
+            {
+                return _entityUserBotShiftAssignedsRepository = _entityUserBotShiftAssignedsRepository ?? new EntityUserBotShiftAssignedsRepository(_context, this);
+            }
+        }
+
+        private IEntityWorkerShiftAssignedsRepository _entityWorkerShiftAssignedsRepository;
+
+        public IEntityWorkerShiftAssignedsRepository EntityWorkerShiftAssignedsRepository
+        {
+            get
+            {
+                return _entityWorkerShiftAssignedsRepository = _entityWorkerShiftAssignedsRepository ?? new EntityWorkerShiftAssignedsRepository(_context, this);
+            }
+        }
+
         #endregion
 
         #region Constructor

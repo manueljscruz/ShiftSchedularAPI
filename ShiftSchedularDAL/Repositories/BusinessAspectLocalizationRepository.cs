@@ -75,6 +75,11 @@ namespace ShiftSchedularDAL.Repositories
             throw new NotImplementedException();
         }
 
+        public Task UpdateRange(IEnumerable<BusinessAspectLocalization> entities)
+        {
+            throw new NotImplementedException();
+        }
+
         Task<IEnumerable<BusinessAspectLocalization>> IGenericRepository<BusinessAspectLocalization>.GetAll()
         {
             throw new NotImplementedException();

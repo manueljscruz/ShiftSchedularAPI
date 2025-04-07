@@ -44,6 +44,8 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<IGenericRepository<ShiftTemplate>, GenericRepository<ShiftTemplate>>();
             services.AddScoped<IGenericRepository<ShiftBreakTemplate>, GenericRepository<ShiftBreakTemplate>>();
             services.AddScoped<IShiftTemplateBreaksRepository, ShiftTemplateBreaksRepository>();
+            services.AddScoped<IEntityWorkerShiftAssignedsRepository, EntityWorkerShiftAssignedsRepository>();
+            services.AddScoped<IEntityUserBotShiftAssignedsRepository, EntityUserBotShiftAssignedsRepository>();
             // Repositories - Rules
             services.AddScoped<IBusinessAspectLocalizationRepository, BusinessAspectLocalizationRepository>();
             services.AddScoped<IGenericRepository<BusinessAspect>, GenericRepository<BusinessAspect>>();

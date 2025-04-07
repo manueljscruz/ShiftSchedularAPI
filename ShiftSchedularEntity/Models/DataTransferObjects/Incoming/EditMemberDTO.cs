@@ -1,4 +1,6 @@
-﻿namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
+﻿using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+
+namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 {
     public class EditMemberDTO
     {
@@ -8,5 +10,6 @@
         public string WorkerName { get; set; }
         public List<SkillLocalizedDTO> AssignedSkills { get; set; }
         public bool PartOfRotation { get; set; }
+        public List<ShiftDTO> AssignedShifts { get; set; }
     }
 }

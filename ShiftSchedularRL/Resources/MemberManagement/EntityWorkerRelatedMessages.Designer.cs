@@ -160,6 +160,15 @@ namespace ShiftSchedularRL.Resources.MemberManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No shifts were assigned when not in the rotation..
+        /// </summary>
+        public static string NotPartOfRotationEmptyShifts {
+            get {
+                return ResourceManager.GetString("NotPartOfRotationEmptyShifts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Requires at least one skillset.
         /// </summary>
         public static string SkillSetRequired {

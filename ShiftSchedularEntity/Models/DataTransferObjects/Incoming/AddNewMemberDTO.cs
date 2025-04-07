@@ -1,4 +1,5 @@
 ﻿using System.Web;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 
 namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 {
@@ -14,7 +15,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 
         public List<SkillLocalizedDTO> AssignedSkills { get; set; }
         public bool PartOfRotation { get; set; }
-
+        public List<ShiftDTO> AssignedShifts { get; set; }
         public string LanguageCode { get; set; }
     }
 }

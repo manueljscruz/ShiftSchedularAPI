@@ -9,6 +9,7 @@
         Task<T> Add(T entity);
         Task<List<T>> AddRange(List<T> entities);
         Task Update(T entity);
+        Task UpdateRange(IEnumerable<T> entities);
         Task Delete(int id);
         Task Delete(string id);
         Task Delete(Guid id);

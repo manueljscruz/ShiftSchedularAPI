@@ -31,6 +31,8 @@ namespace ShiftSchedularDAL.UnitOfWork
         IUserBotRepository UserBotRepository { get; }
         IEntityUserBotRepository EntityUserBotRepository { get; }
         IEntityShiftRotationRepository EntityShiftRotationRepository { get; }
+        IEntityUserBotShiftAssignedsRepository EntityUserBotShiftAssignedsRepository { get; }
+        IEntityWorkerShiftAssignedsRepository EntityWorkerShiftAssignedsRepository { get; }
         ISQLRawRepository<object> SQLRawRepository { get; }
         IGenericRepository<T> GetGenericRepository<T>() where T : class;
 

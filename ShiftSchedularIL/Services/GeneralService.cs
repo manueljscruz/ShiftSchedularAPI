@@ -1,5 +1,6 @@
 ﻿using ShiftSchedularIL.IServices;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace ShiftSchedularIL.Services
 {
@@ -51,8 +52,21 @@ namespace ShiftSchedularIL.Services
 
         public Guid ParseStringToGuid(string input)
         {
-            byte[] bytes = Convert.FromBase64String(input);
-            return new Guid(bytes);
+            string guidString = HttpUtility.UrlDecode(input);
+            Guid guid = Guid.Empty;
+
+            if (guidString == string.Empty)
+                return guid;
+
+            bool isValidGuid = Guid.TryParse(guidString, out guid);
+            if (isValidGuid)
+                return guid;
+            else
+            {
+                byte[] bytes = Convert.FromBase64String(guidString);
+                guid = new Guid(bytes);
+            }
+            return guid;
         }
 
         #endregion

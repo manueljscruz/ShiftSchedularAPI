@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Collections;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
@@ -8,6 +9,7 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.QueryModels;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
@@ -363,14 +365,54 @@ namespace ShiftSchedularBLL.Service
                                                     SkillHexFontColor = s.SkillHexFontColor
                                                 }).ToList();
 
+                    entityWorkerMemberDTO.AssignedShifts = GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, baseViewModelRequest.EntityId, entityWorkerMemberDTO.WorkerId, baseViewModelRequest.LanguageCode, viewModel.Shifts).Result.ToList();
+
                     viewModel.EntityMembers.Add(entityWorkerMemberDTO);
 
                 }
             }
-            
+
             viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(baseViewModelRequest.EntityId);
 
             return viewModel;
+        }
+
+        #endregion
+
+        #region Get Assigned Worker Or Bot Shifts
+
+        private async Task<IEnumerable<ShiftDTO>> GetAssignedWorkerOrBotShifts(bool isBot, Guid entityId, string workerId, string languageCode, IEnumerable<ShiftDTO> shifts = null)
+        {
+            List<ShiftDTO> entityShifts = new List<ShiftDTO>();
+
+            if (shifts == null)
+            {
+                entityShifts = (List<ShiftDTO>)await _shiftService.GetEntityShifts(entityId);
+            }
+            else
+            {
+                entityShifts = (List<ShiftDTO>)shifts;
+            }
+
+            Guid workerGuid = _generalService.ParseStringToGuid(workerId);
+
+            if (isBot)
+            {
+                // viewModel.Shifts
+                IEnumerable<EntityUserBotShiftAssigned> userBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityIdAndUserBotId(entityId, workerGuid);
+                var assignedShiftIds = userBotShiftAssigneds.Select(x => x.ShiftId);
+
+                return entityShifts
+                    .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
+            }
+            else
+            {
+                IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityIdAndUserId(entityId, workerGuid);
+                var assignedShiftIds = entityWorkerShiftAssigneds.Select(x => x.ShiftId);
+
+                return entityShifts
+                    .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
+            }
         }
 
         #endregion
@@ -408,6 +450,8 @@ namespace ShiftSchedularBLL.Service
                                                     SkillHexFontColor = s.SkillHexFontColor
                                                 }).ToList();
 
+                    entityWorkerMemberDTO.AssignedShifts = (List<ShiftDTO>)await GetAssignedWorkerOrBotShifts(entityWorkerMember.IsBot, entityId, entityWorkerMember.WorkerId, lcode, null);
+
                     entityWorkerMembers.Add(entityWorkerMemberDTO);
 
                 }
@@ -429,8 +473,8 @@ namespace ShiftSchedularBLL.Service
         public async Task<List<SkillLocalizedDTO>> GetEntitySkills(BaseViewModelRequest baseViewModelRequest)
         {
             List<SkillLocalizedDTO> skillLocalizedDTOs = new List<SkillLocalizedDTO>();
-            
-            if(baseViewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(baseViewModelRequest.LanguageCode))
+
+            if (baseViewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(baseViewModelRequest.LanguageCode))
             {
                 // Gets all skills
                 List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(baseViewModelRequest.LanguageCode);
@@ -485,7 +529,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     string strErr = ex.Message;
                 }
-                
+
             }
 
             return entityProfileViewModel;
@@ -508,7 +552,7 @@ namespace ShiftSchedularBLL.Service
 
             if (newMemberDTO != null)
             {
-                if(newMemberDTO.DestinationEntityId == Guid.Empty)
+                if (newMemberDTO.DestinationEntityId == Guid.Empty)
                 {
                     response.Message = EntityWorkerRelatedMessages.MemberDestinationEntityEmpty;
                     return response;
@@ -535,10 +579,16 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
+                else if (newMemberDTO.IsBot && !newMemberDTO.PartOfRotation && newMemberDTO.AssignedShifts.Count == 0)
+                {
+                    response.Message = EntityWorkerRelatedMessages.NotPartOfRotationEmptyShifts;
+                    return response;
+                }
+
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(newMemberDTO.DestinationEntityId);
 
                 // Destination Entity exists
-                if(entity != null)
+                if (entity != null)
                 {
                     // Save record of time instance
                     DateTime nowUTCTime = DateTime.UtcNow;
@@ -568,14 +618,25 @@ namespace ShiftSchedularBLL.Service
                                     DateOfJoin = nowUTCTime,
                                     PartOfRotation = newMemberDTO.PartOfRotation
                                 };
-                                
+
                                 await _unitOfWork.GetGenericRepository<EntityUserBot>().Add(entityUserBot);
+                            }
+
+                            foreach (ShiftDTO shift in newMemberDTO.AssignedShifts)
+                            {
+                                EntityUserBotShiftAssigned userBotShiftAssigned = new EntityUserBotShiftAssigned
+                                {
+                                    EntityId = entity.EntityId,
+                                    UserBotId = newUserBot.UserBotId,
+                                    ShiftId = shift.ShiftId,
+                                };
+
+                                await _unitOfWork.GetGenericRepository<EntityUserBotShiftAssigned>().Add(userBotShiftAssigned);
                             }
 
                             // Commit changes
                             await _unitOfWork.CommitAsync();
 
-                            
                             response.Message = EntityWorkerRelatedMessages.AddNewMemberBotSuccessful;
                             response.Success = true;
                         }
@@ -594,7 +655,8 @@ namespace ShiftSchedularBLL.Service
                             IsOwner = false,
                             DateOfJoin = nowUTCTime,
                             SkillSet = newMemberDTO.AssignedSkills,
-                            PartOfRotation = newMemberDTO.PartOfRotation
+                            PartOfRotation = newMemberDTO.PartOfRotation,
+                            AssignedShifts = newMemberDTO.AssignedShifts
                         };
 
                         response.Result = entityWorkerMemberDTO;
@@ -604,7 +666,7 @@ namespace ShiftSchedularBLL.Service
                         // Check if there is a entity worker with that email already in the entity
                         ApplicationUser possibleWorker = await _userManager.FindByEmailAsync(newMemberDTO.MemberEmail);
 
-                        if(possibleWorker != null && await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(newMemberDTO.DestinationEntityId, possibleWorker.Id))
+                        if (possibleWorker != null && await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(newMemberDTO.DestinationEntityId, possibleWorker.Id))
                         {
                             response.Message = EntityWorkerRelatedMessages.AddNewMemberAlreadyInEntity;
                             return response;
@@ -619,10 +681,11 @@ namespace ShiftSchedularBLL.Service
                             ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null,
                             InviteDate = nowUTCTime,
                             SkillsetIds = skillsAggregated,
-                            PartOfRotation = newMemberDTO.PartOfRotation
+                            PartOfRotation = newMemberDTO.PartOfRotation,
                         };
 
                         await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
+
                         response.Result = true;
                         response.Message = EntityWorkerRelatedMessages.AddNewMemberInvitationSuccessful;
                         response.Success = true;
@@ -633,7 +696,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     response.Message = EntityWorkerRelatedMessages.AddNewMemberNoDestinationEntityFound;
                     return response;
-                }            
+                }
             }
 
             return response;
@@ -663,35 +726,42 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if(updateEntityMemberDTO.EntityId != Guid.Empty)
+                else if (updateEntityMemberDTO.EntityId == Guid.Empty)
                 {
                     response.Message = EntityWorkerRelatedMessages.MemberDestinationEntityEmpty;
                     return response;
                 }
 
-                else if(updateEntityMemberDTO.IsBot && string.IsNullOrEmpty(updateEntityMemberDTO.WorkerName))
+                else if (updateEntityMemberDTO.IsBot && string.IsNullOrEmpty(updateEntityMemberDTO.WorkerName))
                 {
                     response.Message = EntityWorkerRelatedMessages.MemberNameEmpty;
                     return response;
                 }
 
-                else if(updateEntityMemberDTO.AssignedSkills.Count == 0)
+                else if (updateEntityMemberDTO.AssignedSkills.Count == 0)
                 {
                     response.Message = EntityWorkerRelatedMessages.SkillSetRequired;
                     return response;
                 }
 
+                else if (!updateEntityMemberDTO.PartOfRotation && updateEntityMemberDTO.AssignedShifts.Count == 0)
+                {
+                    response.Message = EntityWorkerRelatedMessages.NotPartOfRotationEmptyShifts;
+                    return response;
+                }
+
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(updateEntityMemberDTO.EntityId);
-                if(entity != null)
+                if (entity != null)
                 {
                     try
                     {
                         await _unitOfWork.BeginTransactionAsync();
 
-                        // If its a bot, update the name
+                        // If its a bot, update the name, rotation and shift assignments
                         if (updateEntityMemberDTO.IsBot)
                         {
-                            UserBot userBot = await _unitOfWork.UserBotRepository.GetById(updateEntityMemberDTO.WorkerId);
+                            Guid userBotId = _generalService.ParseStringToGuid(updateEntityMemberDTO.WorkerId);
+                            UserBot userBot = await _unitOfWork.UserBotRepository.GetById(userBotId);
                             if (userBot != null)
                             {
                                 userBot.UserDisplayName = updateEntityMemberDTO.WorkerName;
@@ -702,47 +772,119 @@ namespace ShiftSchedularBLL.Service
                                 if (entityUserBotInstances.Count() != 0)
                                 {
                                     // If any has the rotation flag different, update it
-                                    if (entityUserBotInstances.Any(entityUserBotInstances => entityUserBotInstances.PartOfRotation != updateEntityMemberDTO.PartOfRotation)) { 
+                                    if (entityUserBotInstances.Any(entityUserBotInstances => entityUserBotInstances.PartOfRotation != updateEntityMemberDTO.PartOfRotation))
+                                    {
+                                        // Set flag for all instances
                                         foreach (EntityUserBot entityUserBot in entityUserBotInstances)
-                                        {
                                             entityUserBot.PartOfRotation = updateEntityMemberDTO.PartOfRotation;
-                                            await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
+
+                                        // Update all instances
+                                        await _unitOfWork.EntityUserBotRepository.UpdateRange(entityUserBotInstances);
+
+                                        // If its now part of rotation, remove all specific assignments
+                                        if (updateEntityMemberDTO.PartOfRotation == true)
+                                            await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(updateEntityMemberDTO.EntityId, userBot.UserBotId);
+                                    }
+
+                                    // If not part of rotation and has specified assignments
+                                    if (!updateEntityMemberDTO.PartOfRotation && updateEntityMemberDTO.AssignedShifts.Count != 0)
+                                    {
+                                        // Delete All Existing
+                                        await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(updateEntityMemberDTO.EntityId, userBot.UserBotId);
+
+                                        List<EntityUserBotShiftAssigned> newBotShiftAssignments = new List<EntityUserBotShiftAssigned>();
+
+                                        // For each assignment
+                                        foreach (ShiftDTO shift in updateEntityMemberDTO.AssignedShifts)
+                                        {
+                                            newBotShiftAssignments.Add(new EntityUserBotShiftAssigned
+                                            {
+                                                EntityId = updateEntityMemberDTO.EntityId,
+                                                UserBotId = userBot.UserBotId,
+                                                ShiftId = shift.ShiftId
+                                            });
                                         }
+
+                                        // Add to repository
+                                        await _unitOfWork.EntityUserBotShiftAssignedsRepository.AddRange(newBotShiftAssignments);
                                     }
                                 }
                             }
                         }
 
-                        // Get Entity Worker Instances
-                        List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
-                    
-                        if(entityWorkerInstances.Count == 0)
+                        // Not a Bot
+                        else
                         {
-                            response.Message = EntityWorkerRelatedMessages.MemberNotFound;
-                            return response;
-                        }
 
-                        DateTime dateOfJoin = entityWorkerInstances.First().DateOfJoin;
+                            // Get Entity Worker Instances
+                            List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(updateEntityMemberDTO.WorkerId, updateEntityMemberDTO.EntityId);
 
-                        // Delete Previous instances
-                        await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkerInstances);
-
-                        // Add new ones
-                        foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
-                        {
-                            EntityWorker entityWorkerInstance = new EntityWorker
+                            if (entityWorkerInstances.Count == 0)
                             {
-                                EntityId = updateEntityMemberDTO.EntityId,
-                                ApplicationUserId = updateEntityMemberDTO.WorkerId,
-                                ActiveWorkerStatus = true,
-                                CanCreateSchedules = false,
-                                IsOwner = false,
-                                SkillId = skill.SkillId,
-                                DateOfJoin = dateOfJoin,
-                                PartOfRotation = updateEntityMemberDTO.PartOfRotation
-                            };
+                                response.Message = EntityWorkerRelatedMessages.MemberNotFound;
+                                return response;
+                            }
 
-                            await _unitOfWork.EntityWorkerRepository.Add(entityWorkerInstance);
+                            DateTime dateOfJoin = entityWorkerInstances.First().DateOfJoin;
+
+                            // Delete Previous instances
+                            await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkerInstances);
+
+                            // If any has the rotation flag different, update it
+                            bool updateRotationValue = entityWorkerInstances.Any(entityWorkerInstances => entityWorkerInstances.PartOfRotation != updateEntityMemberDTO.PartOfRotation);
+
+                            List<EntityWorker> newWorkerEntries = new List<EntityWorker>();
+                            // Add new ones
+                            foreach (SkillLocalizedDTO skill in updateEntityMemberDTO.AssignedSkills)
+                            {
+                                newWorkerEntries.Add( new EntityWorker
+                                {
+                                    EntityId = updateEntityMemberDTO.EntityId,
+                                    ApplicationUserId = updateEntityMemberDTO.WorkerId,
+                                    ActiveWorkerStatus = true,
+                                    CanCreateSchedules = false,
+                                    IsOwner = false,
+                                    SkillId = skill.SkillId,
+                                    DateOfJoin = dateOfJoin,
+                                    PartOfRotation = updateEntityMemberDTO.PartOfRotation,
+                                });
+                            }
+
+                            await _unitOfWork.EntityWorkerRepository.AddRange(newWorkerEntries);
+
+                            if (updateRotationValue)
+                            {
+                                Guid workerGuid = _generalService.ParseStringToGuid(updateEntityMemberDTO.WorkerId);
+                                // If its now part of rotation, remove all specific assignments
+                                if (updateEntityMemberDTO.PartOfRotation == true)
+                                    await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(updateEntityMemberDTO.EntityId, workerGuid);
+                                else
+                                {
+                                    // If not part of rotation and has specified assignments
+                                    if (!updateEntityMemberDTO.PartOfRotation && updateEntityMemberDTO.AssignedShifts.Count != 0)
+                                    {
+                                        // Delete All
+                                        await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(updateEntityMemberDTO.EntityId, workerGuid);
+                                        
+                                        List<EntityWorkerShiftAssigned> newWorkerShiftAssignments = new List<EntityWorkerShiftAssigned>();
+
+                                        // For each assignment
+                                        foreach (ShiftDTO shift in updateEntityMemberDTO.AssignedShifts)
+                                        {
+                                            // Create new instance
+                                            newWorkerShiftAssignments.Add( new EntityWorkerShiftAssigned
+                                            {
+                                                EntityId = entity.EntityId,
+                                                ApplicationUserId = updateEntityMemberDTO.WorkerId,
+                                                ShiftId = shift.ShiftId
+                                            });
+                                        }
+
+                                        // Add to repository
+                                        await _unitOfWork.EntityWorkerShiftAssignedsRepository.AddRange(newWorkerShiftAssignments);
+                                    }
+                                }
+                            }
                         }
 
                         await _unitOfWork.CommitAsync();
@@ -779,7 +921,7 @@ namespace ShiftSchedularBLL.Service
             response.Success = false;
             response.Message = SharedMessages.UnexpectedError;
 
-            if(string.IsNullOrEmpty(workerMemberDTO.WorkerId))
+            if (string.IsNullOrEmpty(workerMemberDTO.WorkerId))
             {
                 response.Message = WorkerRelatedMessages.WorkerIdentifierIsEmpty;
                 return response;
@@ -792,7 +934,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(workerMemberDTO.EntityId);
-            if(entity == null)
+            if (entity == null)
             {
                 response.Message = EntitiesRelatedMessages.EntityNotFound;
                 return response;
@@ -812,6 +954,7 @@ namespace ShiftSchedularBLL.Service
                         IEnumerable<EntityUserBot> entityUserBots = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotsByEntityAndId(entity.EntityId, userBotGuid);
                         if (userBot != null && entityUserBots.Count() != 0)
                         {
+                            await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(workerMemberDTO.EntityId, userBotGuid);
                             // Remove Entity User Bot Instances
                             await _unitOfWork.EntityUserBotRepository.DeleteRange(entityUserBots);
 
@@ -821,10 +964,14 @@ namespace ShiftSchedularBLL.Service
                     }
                     else
                     {
+                        Guid userId = _generalService.ParseStringToGuid(workerMemberDTO.WorkerId);
                         // Remove Entity Worker Instances
                         List<EntityWorker> entityWorkersInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(workerMemberDTO.WorkerId, workerMemberDTO.EntityId);
-                        if(entityWorkersInstances.Count != 0)
+                        if (entityWorkersInstances.Count != 0)
                         {
+                            if(entityWorkersInstances.Any(i => !i.PartOfRotation))
+                                await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(workerMemberDTO.EntityId, userId);
+                            
                             await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkersInstances);
                         }
                     }
@@ -842,7 +989,7 @@ namespace ShiftSchedularBLL.Service
                     _unitOfWork.Dispose();
                 }
             }
-            
+
             return response;
         }
 

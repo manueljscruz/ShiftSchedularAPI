@@ -156,4 +156,7 @@
   <data name="MemberNotFound" xml:space="preserve">
     <value>Member was not found.</value>
   </data>
+  <data name="NotPartOfRotationEmptyShifts" xml:space="preserve">
+    <value>No shifts were assigned when not in the rotation.</value>
+  </data>
 </root>
