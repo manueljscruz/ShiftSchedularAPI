@@ -9,7 +9,7 @@ namespace ShiftSchedularEntity.Entities
         [Column(TypeName = "BINARY(16)")]
         public Guid EntityRuleId { get; set; }
         public int SpecificationId { get; set; }
-        public int SpecificationValue { get; set; }
+        public float SpecificationValue { get; set; }
         public string AspectReferenceId { get; set; }
         public int BusinessAspectId { get; set; }
         public string AspectReferenceId2 { get; set; }

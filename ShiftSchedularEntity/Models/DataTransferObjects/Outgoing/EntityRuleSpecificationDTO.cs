@@ -15,7 +15,7 @@
         /// <summary>
         /// Specified value by the user regarding this rule
         /// </summary>
-        public int RuleSpecificationValue { get; set; }
+        public float RuleSpecificationValue { get; set; }
 
         /// <summary>
         /// First Reference identifier

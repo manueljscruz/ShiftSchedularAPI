@@ -26,6 +26,10 @@ namespace ShiftSchedularEntity.Entities
 
         public bool PartOfRotation { get; set; }
 
+        //public bool WorksWeekDays { get; set; }
+
+        //public bool WorksWeekends { get; set; }
+
         #endregion
 
         #region Navigation Properties

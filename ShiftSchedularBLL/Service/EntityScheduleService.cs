@@ -741,7 +741,7 @@ namespace ShiftSchedularBLL.Service
                 && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(scheduleEntryDTO.ShiftId))).FirstOrDefault();
 
             if (entityRuleDTO != null)
-                maxPerShift = entityRuleDTO.EntityRuleSpecificationDTOs.First().RuleSpecificationValue;
+                maxPerShift = (int)entityRuleDTO.EntityRuleSpecificationDTOs.First().RuleSpecificationValue;
 
             return maxPerShift;
         }
@@ -761,7 +761,7 @@ namespace ShiftSchedularBLL.Service
             if (entityRuleDTO != null)
             {
                 foreach (EntityRuleSpecificationDTO entityRuleSpecificationDTO in entityRuleDTO.EntityRuleSpecificationDTOs)
-                    minSkillQuantity.Add(new Tuple<int, int>(int.Parse(entityRuleSpecificationDTO.AspectReferenceId), entityRuleSpecificationDTO.RuleSpecificationValue));
+                    minSkillQuantity.Add(new Tuple<int, int>(int.Parse(entityRuleSpecificationDTO.AspectReferenceId), (int)entityRuleSpecificationDTO.RuleSpecificationValue));
             }
 
             return minSkillQuantity;
@@ -985,7 +985,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="createEntityScheduleDTO"></param>
         /// <param name="ruleSpecificationValue"></param>
         /// <returns></returns>
-        private async Task<List<ScheduleEntryDTO>> FilterEntriesForConsecutiveTurns(ScheduleEntryDTO currentScheduleEntry, List<ScheduleEntryDTO> scheduleEntryDTOs, CreateEntityScheduleDTO createEntityScheduleDTO, int ruleSpecificationValue)
+        private async Task<List<ScheduleEntryDTO>> FilterEntriesForConsecutiveTurns(ScheduleEntryDTO currentScheduleEntry, List<ScheduleEntryDTO> scheduleEntryDTOs, CreateEntityScheduleDTO createEntityScheduleDTO, float ruleSpecificationValue)
         {
             List<ScheduleEntryDTO> filteredEntries = new List<ScheduleEntryDTO>();
 
@@ -997,7 +997,7 @@ namespace ShiftSchedularBLL.Service
             // if there are entries and are greater than the rule specification value
             if (ruleSpecificationValue != 0 && previousShiftEntries.Count() > 0 && previousShiftEntries.Count() < ruleSpecificationValue)
             {
-                int daysToGoBack = ruleSpecificationValue - previousShiftEntries.Count();
+                int daysToGoBack = (int)(ruleSpecificationValue - previousShiftEntries.Count());
                 DateTime startDate = previousShiftEntries.Last().ScheduleStartDate.AddDays(-daysToGoBack);
                 DateTime endDate = previousShiftEntries.Last().ScheduleStartDate;
 
