@@ -31,6 +31,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityType> EntityTypes { get; set; }
         public DbSet<Entity> Entities { get; set; }
         public DbSet<EntityWorker> EntityWorkers { get; set; }
+        public DbSet<EntityWorkerSkill> EntityWorkerSkills { get; set; }
         public DbSet<EntityTypeLocalization> EntityTypeLocalizations { get; set; }
         public DbSet<Skill> Skills { get; set; }
         public DbSet<SkillLocalization> SkillLocalizations { get; set; }
@@ -58,6 +59,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<BaseEntityRuleSpecification> BaseEntityRuleSpecifications { get; set; }
         public DbSet<UserBot> UserBots { get; set; }
         public DbSet<EntityUserBot> EntityUserBots { get; set; }
+        public DbSet<EntityUserBotSkill> EntityUserBotSkills { get; set; }
         public DbSet<EntityShiftRotation> EntityShiftRotations { get; set; }
         public DbSet<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
         public DbSet<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
@@ -170,7 +172,7 @@ namespace ShiftSchedularDAL.Data
             #region Entity Workers
 
             modelBuilder.Entity<EntityWorker>()
-                .HasKey(ew => new { ew.EntityId, ew.ApplicationUserId, ew.SkillId });
+                .HasKey(ew => new { ew.EntityId, ew.ApplicationUserId });
 
             modelBuilder.Entity<EntityWorker>()
                 .HasOne(ew => ew.Entity)
@@ -182,18 +184,34 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(e => e.EntityWorkers)
                 .HasForeignKey(ew => ew.ApplicationUserId);
 
-            modelBuilder.Entity<EntityWorker>()
-                .HasOne(ew => ew.Skill)
-                .WithMany(s => s.EntityWorkers)
-                .HasForeignKey(ew => ew.SkillId)
-                .IsRequired(false);
+            #endregion
+
+            #region Entity Workers Skills
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasKey(ews => new { ews.ApplicationUserId, ews.EntityId, ews.SkillId });
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasOne(ews => ews.Entity)
+                .WithMany(e => e.EntityWorkerSkills)
+                .HasForeignKey(ews => ews.EntityId);
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasOne(ews => ews.ApplicationUser)
+                .WithMany(w => w.EntityWorkerSkills)
+                .HasForeignKey(ews => ews.ApplicationUserId);
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasOne(ews => ews.Skill)
+                .WithMany(s => s.EntityWorkerSkills)
+                .HasForeignKey(ews => ews.SkillId);
 
             #endregion
 
             #region Entity User Bots
 
             modelBuilder.Entity<EntityUserBot>()
-                .HasKey(eub => new { eub.EntityId, eub.UserBotId, eub.SkillId });
+                .HasKey(eub => new { eub.EntityId, eub.UserBotId });
 
             modelBuilder.Entity<EntityUserBot>()
                 .HasOne(eub => eub.Entity)
@@ -205,10 +223,27 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(ub => ub.EntityUserBots)
                 .HasForeignKey(eub => eub.UserBotId);
 
-            modelBuilder.Entity<EntityUserBot>()
-                .HasOne(eub => eub.Skill)
-                .WithMany(s => s.EntityUserBots)
-                .HasForeignKey(eub => eub.SkillId);
+            #endregion
+
+            #region Entity User Bot Skills
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasKey(eubs => new { eubs.EntityId, eubs.UserBotId, eubs.SkillId });
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasOne(eubs => eubs.Entity)
+                .WithMany(e => e.EntityUserBotSkills)
+                .HasForeignKey(eubs => eubs.EntityId);
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasOne(eubs => eubs.UserBot)
+                .WithMany(ub => ub.EntityUserBotSkills)
+                .HasForeignKey(eubs => eubs.UserBotId);
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasOne(eubs => eubs.Skill)
+                .WithMany(s => s.EntityUserBotSkills)
+                .HasForeignKey(eubs => eubs.SkillId);
 
             #endregion
 

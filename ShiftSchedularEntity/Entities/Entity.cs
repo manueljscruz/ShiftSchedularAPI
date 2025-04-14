@@ -40,11 +40,13 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual EntityType EntityType { get; set; }
         public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
+        public virtual ICollection<EntityWorkerSkill> EntityWorkerSkills { get; set; }
         public virtual ICollection<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
         public virtual ICollection<Shift> EntityShifts { get; set; }
         public virtual ICollection<EntityRule> EntityRules { get; set; }
         public virtual ICollection<EntityWorkerAbsence> EntityWorkerAbsences { get; set; }
         public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
+        public virtual ICollection<EntityUserBotSkill> EntityUserBotSkills { get; set; }
         public virtual ICollection<EntityShiftRotation> EntityShiftRotations { get; set; }
         public virtual ICollection<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
         public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }

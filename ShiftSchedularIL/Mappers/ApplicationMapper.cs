@@ -27,6 +27,15 @@ namespace ShiftSchedularIL.Mappers
             CreateMap<AddNewMemberDTO, UserBot>()
                 .ForMember(dest => dest.UserDisplayName, opt => opt.MapFrom(src => src.MemberName));
 
+            CreateMap<AddNewMemberDTO, EntityUserBot>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.DestinationEntityId))
+                .ForMember(dest => dest.UserBotId, opt => opt.MapFrom(src => Guid.Empty))
+                .ForMember(dest => dest.ActiveWorkerStatus, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.DateOfJoin, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForMember(dest => dest.PartOfRotation, opt => opt.MapFrom(src => src.PartOfRotation))
+                .ForMember(dest => dest.WorksWeekDays, opt => opt.MapFrom(src => src.WorksWeekDays))
+                .ForMember(dest => dest.WorksWeekends, opt => opt.MapFrom(src => src.WorksWeekends));
+
             CreateMap<GenderLocalization, GenderLocalizedDTO>()
                 .ForMember(dest => dest.GenderId, opt => opt.MapFrom(src => src.GenderId))
                 .ForMember(dest => dest.GenderLocalizedName, opt => opt.MapFrom(src => src.GenderDisplayValue));
@@ -60,6 +69,9 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))
                 .ForMember(dest => dest.IsBot, opt => opt.MapFrom(src => src.IsBot))
+                .ForMember(dest => dest.PartOfRotation, opt => opt.MapFrom(src => src.PartOfRotation))
+                .ForMember(dest => dest.WorksWeekDays, opt => opt.MapFrom(src => src.WorksWeekDays))
+                .ForMember(dest => dest.WorksWeekends, opt => opt.MapFrom(src => src.WorksWeekends))
                 .ForMember(dest => dest.CanCreateSchedules, opt => opt.MapFrom(src => src.CanCreateSchedules))
                 .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.IsOwner))
                 .ForMember(dest => dest.DateOfJoin, opt => opt.MapFrom(src => src.DateOfJoin));

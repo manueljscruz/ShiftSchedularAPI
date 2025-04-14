@@ -23,13 +23,6 @@ namespace ShiftSchedularEntity.Entities
         public string ApplicationUserId { get; set; }
 
         /// <summary>
-        /// Composite Key - 3
-        /// Skill Identifier
-        /// </summary>
-        [Required]
-        public int SkillId { get; set; }
-
-        /// <summary>
         /// Part of the active worker roster
         /// </summary>
         public bool ActiveWorkerStatus { get; set; }
@@ -59,9 +52,14 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public bool PartOfRotation { get; set; }
 
-        //public bool WorksWeekDays { get; set; }
+        /// <summary>
+        /// Determines if the worker is available for work on Weekdays
+        public bool WorksWeekDays { get; set; }
 
-        //public bool WorksWeekends { get; set; }
+        /// <summary>
+        /// Determines if the worker is available for work on Weekends
+        /// </summary>
+        public bool WorksWeekends { get; set; }
 
         #endregion
 
@@ -69,7 +67,6 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual Entity Entity { get; set; }
         public virtual ApplicationUser ApplicationUser { get; set; }
-        public virtual Skill Skill { get; set; }
 
         #endregion
 

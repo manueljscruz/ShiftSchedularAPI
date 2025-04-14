@@ -307,6 +307,26 @@ namespace ShiftSchedularDAL.UnitOfWork
             }
         }
 
+        private IEntityUserBotSkillRepository _entityUserBotSkillRepository;
+
+        public IEntityUserBotSkillRepository EntityUserBotSkillRepository
+        {
+            get
+            {
+                return _entityUserBotSkillRepository = _entityUserBotSkillRepository ?? new EntityUserBotSkillRepository(_context, this);
+            }
+        }
+
+        private IEntityWorkerSkillRepository _entityWorkerSkillRepository;
+
+        public IEntityWorkerSkillRepository EntityWorkerSkillRepository
+        {
+            get
+            {
+                return _entityWorkerSkillRepository = _entityWorkerSkillRepository ?? new EntityWorkerSkillRepository(_context, this);
+            }
+        }
+
         #endregion
 
         #region Constructor

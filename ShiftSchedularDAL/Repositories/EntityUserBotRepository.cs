@@ -60,11 +60,11 @@ namespace ShiftSchedularDAL.Repositories
             return null;
         }
 
-        public async Task<IEnumerable<EntityUserBot>> GetEntityUserBotsByEntityAndId(Guid entityId, Guid userId)
+        public async Task<EntityUserBot> GetEntityUserBotByEntityAndId(Guid entityId, Guid userId)
         {
             if (entityId != Guid.Empty && userId != Guid.Empty)
             {
-                return _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userId));
+                return _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userId)).FirstOrDefault();
             }
             else return null;
         }
@@ -86,6 +86,15 @@ namespace ShiftSchedularDAL.Repositories
                     count = Convert.ToInt32(result);
             }
             return count;
+        }
+
+        public async Task<IEnumerable<EntityUserBot>> GetUserBotsByEntityId(Guid entityId)
+        {
+            if(entityId != Guid.Empty)
+            {
+               return _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId));
+            }
+            else return null;
         }
     }
 }

@@ -14,8 +14,15 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public string MemberEmail { get; set; }
 
         public List<SkillLocalizedDTO> AssignedSkills { get; set; }
+
         public bool PartOfRotation { get; set; }
+
+        public bool WorksWeekDays { get; set; }
+
+        public bool WorksWeekends { get; set; }
+
         public List<ShiftDTO> AssignedShifts { get; set; }
+
         public string LanguageCode { get; set; }
     }
 }

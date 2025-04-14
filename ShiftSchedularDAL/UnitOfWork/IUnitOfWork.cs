@@ -17,6 +17,7 @@ namespace ShiftSchedularDAL.UnitOfWork
         IEntityWorkerAbsenceRepository EntityWorkerAbsenceRepository { get; }
         IEntityWorkerInvitationRepository EntityWorkerInvitationRepository { get; }
         IEntityWorkerRepository EntityWorkerRepository { get; }
+        IEntityWorkerSkillRepository EntityWorkerSkillRepository { get; }
         ILocalizationRepository LocalizationRepository { get; }
         IRuleTypeBusinessAspectRepository RuleTypeBusinessAspectRepository { get; }
         IRuleTypeLocalizationRepository RuleTypeLocalizationRepository { get; }
@@ -30,6 +31,7 @@ namespace ShiftSchedularDAL.UnitOfWork
         IGenderLocalizationRepository GenderLocalizationRepository { get; }
         IUserBotRepository UserBotRepository { get; }
         IEntityUserBotRepository EntityUserBotRepository { get; }
+        IEntityUserBotSkillRepository EntityUserBotSkillRepository { get; }
         IEntityShiftRotationRepository EntityShiftRotationRepository { get; }
         IEntityUserBotShiftAssignedsRepository EntityUserBotShiftAssignedsRepository { get; }
         IEntityWorkerShiftAssignedsRepository EntityWorkerShiftAssignedsRepository { get; }

@@ -205,7 +205,7 @@ namespace ShiftSchedularBLL.Service
                 BusinessAspect businessAspect = await _unitOfWork.GetGenericRepository<BusinessAspect>().GetById(entityRuleSpecificationDTO.BusinessAspectId);
                 if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
                 {
-                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId, LocalizationConstants.ENGLISH);
+                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(entityRuleSpecificationDTO.AspectReferenceId), LocalizationConstants.ENGLISH);
                     entityRuleSpecificationDTO.ReferenceName = !string.IsNullOrEmpty(shiftDTO.ShiftName) ? shiftDTO.ShiftName : "";
                 }
                 else if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SKILLS))
@@ -220,7 +220,7 @@ namespace ShiftSchedularBLL.Service
                 BusinessAspect businessAspect = await _unitOfWork.GetGenericRepository<BusinessAspect>().GetById(entityRuleSpecificationDTO.BusinessAspectId2);
                 if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SHIFTS))
                 {
-                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(entityRuleSpecificationDTO.AspectReferenceId2, LocalizationConstants.ENGLISH);
+                    ShiftDTO shiftDTO = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(entityRuleSpecificationDTO.AspectReferenceId2), LocalizationConstants.ENGLISH);
                     entityRuleSpecificationDTO.ReferenceName2 = !string.IsNullOrEmpty(shiftDTO.ShiftName) ? shiftDTO.ShiftName : "";
                 }
                 else if (businessAspect != null && businessAspect.BusinessAspectName.Equals(BusinessAspectsConstants.SKILLS))
@@ -477,11 +477,11 @@ namespace ShiftSchedularBLL.Service
             if (entityRuleViewModelRequestDTO != null && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.WorkerId) && entityRuleViewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(entityRuleViewModelRequestDTO.LanguageCode))
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityRuleViewModelRequestDTO.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
-                entityRuleViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner); 
+                EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
+                entityRuleViewModel.AllowEdit = entityWorkerInstance.IsOwner; 
 
                 // If it can change data
-                if (entityWorkerInstances.Any(i => i.IsOwner))
+                if (entityWorkerInstance.IsOwner)
                 {
                     // Get All business aspect localized
                     IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(entityRuleViewModelRequestDTO.LanguageCode);

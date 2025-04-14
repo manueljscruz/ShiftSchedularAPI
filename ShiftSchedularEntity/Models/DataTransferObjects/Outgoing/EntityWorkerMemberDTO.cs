@@ -11,6 +11,8 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects
         public bool IsOwner { get; set; }
         public DateTime DateOfJoin { get; set; }
         public bool PartOfRotation { get; set; }
+        public bool WorksWeekDays { get; set; }
+        public bool WorksWeekends { get; set; }
         public List<SkillLocalizedDTO> SkillSet { get; set; }
         public List<ShiftDTO> AssignedShifts { get; set; }
         public EntityWorkerMemberDTO()

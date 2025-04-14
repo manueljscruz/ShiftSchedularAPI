@@ -60,11 +60,11 @@ namespace ShiftSchedularBLL.Service
             if (viewModelRequest != null && viewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(viewModelRequest.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
-                viewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
+                EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
+                viewModel.AllowEdit = entityWorkerInstance.IsOwner;
 
                 // If it can change data
-                if (entityWorkerInstances.Any(i => i.IsOwner))
+                if (entityWorkerInstance.IsOwner)
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
@@ -104,7 +104,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                ShiftDTO shift = await _shiftService.GetShiftById(addScheduleEntryDTO.ShiftId, addScheduleEntryDTO.LanguageCode);
+                ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(addScheduleEntryDTO.ShiftId), addScheduleEntryDTO.LanguageCode);
                 if (shift == null)
                 {
                     response.Message = ScheduleRelatedMessages.ShiftNotFound;
@@ -256,7 +256,7 @@ namespace ShiftSchedularBLL.Service
             ScheduleEntryDTO scheduleEntryDTO = new ScheduleEntryDTO();
 
             ScheduleEntry scheduleEntry = await  _unitOfWork.EntityScheduleRepository.GetById(scheduleEntryId);
-            ShiftDTO shift = await _shiftService.GetShiftById(scheduleEntry.ShiftId.ToString(), languageCode);
+            ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(scheduleEntry.ShiftId.ToString()), languageCode);
 
             // Get respective participants of said schedule entry
             IEnumerable<ScheduleEntryWorkers> scheduleEntryWorkers = await _unitOfWork.EntityScheduleWorkersRepository.GetScheduleEntryWorkers(scheduleEntry.ScheduleEntryId.ToString());

@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class EntityUserBot
+    public class EntityUserBotSkill
     {
         #region Properties
 
@@ -16,24 +16,19 @@ namespace ShiftSchedularEntity.Entities
         public Guid EntityId { get; set; }
 
         /// <summary>
-        /// Composite Key - 2
+        /// Composite key - 2
         /// User Bot Identifier
         /// </summary>
         [Required]
         [Column(TypeName = "BINARY(16)")]
         public Guid UserBotId { get; set; }
 
-        public bool ActiveWorkerStatus { get; set; }
-
-        public DateTime DateOfJoin { get; set; }
-
-        public DateTime DateOfExit { get; set; }
-
-        public bool PartOfRotation { get; set; }
-
-        public bool WorksWeekDays { get; set; }
-
-        public bool WorksWeekends { get; set; }
+        /// <summary>
+        /// Composite key - 3
+        /// Skill Identifier
+        /// </summary>
+        [Required]
+        public int SkillId { get; set; }
 
         #endregion
 
@@ -41,6 +36,7 @@ namespace ShiftSchedularEntity.Entities
 
         public virtual Entity Entity { get; set; }
         public virtual UserBot UserBot { get; set; }
+        public virtual Skill Skill { get; set; }
 
         #endregion
     }

@@ -321,11 +321,11 @@ namespace ShiftSchedularBLL.Service
             if (shiftViewModelRequestDTO != null && shiftViewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(shiftViewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(shiftViewModelRequestDTO.LanguageCode))
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(shiftViewModelRequestDTO.EntityId);
-                List<EntityWorker> entityWorkerInstances = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
-                shiftViewModel.AllowEdit = entityWorkerInstances.Any(i => i.IsOwner);
+                EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
+                shiftViewModel.AllowEdit = entityWorkerInstance.IsOwner;
 
                 // If it can change data
-                if (entityWorkerInstances.Any(i => i.IsOwner))
+                if (entityWorkerInstance.IsOwner)
                 {
                     // Get Shift Break Types Localized
                     IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _unitOfWork.ShiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(shiftViewModelRequestDTO.LanguageCode);
@@ -362,12 +362,12 @@ namespace ShiftSchedularBLL.Service
         /// <param name="shiftId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<ShiftDTO> GetShiftById(string shiftId, string lcode)
+        public async Task<ShiftDTO> GetShiftById(Guid shiftId, string lcode)
         {
             ShiftDTO shiftDTO = new ShiftDTO();
 
             // If there is a shift id 
-            if (!string.IsNullOrEmpty(shiftId) && !string.IsNullOrEmpty(lcode))
+            if (shiftId != Guid.Empty && !string.IsNullOrEmpty(lcode))
             {
                 // Get shift and proceed if its different than null
                 Shift shift = await _unitOfWork.ShiftRepository.GetById(shiftId);

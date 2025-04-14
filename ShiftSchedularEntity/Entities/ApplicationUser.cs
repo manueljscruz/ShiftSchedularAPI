@@ -35,6 +35,7 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public virtual Gender Gender { get; set; }
         public virtual ICollection<EntityWorker> EntityWorkers { get; set; }
+        public virtual ICollection<EntityWorkerSkill> EntityWorkerSkills { get; set; }
         public virtual ICollection<EntityWorkerInvitation> EntityWorkerInvitations { get; set; }
         public virtual ICollection<ScheduleEntryWorkers> ScheduleEntryWorkers { get; set; }
         public virtual ICollection<EntityWorkerAbsence> EntityWorkerAbsences { get; set; }

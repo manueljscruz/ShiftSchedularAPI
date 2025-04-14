@@ -5,6 +5,7 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularIL.IServices;
 
 namespace ShiftSchedularAPI.Controllers
 {
@@ -13,10 +14,12 @@ namespace ShiftSchedularAPI.Controllers
     public class ShiftController : ControllerBase
     {
         private readonly IShiftService _shiftService;
+        private readonly IGeneralService _generalService;
 
-        public ShiftController(IShiftService shiftService)
+        public ShiftController(IShiftService shiftService, IGeneralService generalService)
         {
             _shiftService = shiftService;
+            _generalService = generalService;
         }
 
         #region Get Shift By Id
@@ -25,7 +28,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(200, Type = typeof(ShiftDTO))]
         public async Task<IActionResult> GetShiftById(string id, string lcode)
         {
-            var shifts = await _shiftService.GetShiftById(id, lcode);
+            var shifts = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(id), lcode);
             return Ok(shifts);
         }
 

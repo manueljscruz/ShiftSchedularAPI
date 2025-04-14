@@ -23,7 +23,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (entityId != Guid.Empty)
             {
-                return await _dbSet.Where(i => i.EntityId.Equals(entityId)).ToListAsync();
+                return await _dbSet.Include(x=>x.EntityRuleSpecifications).Where(i => i.EntityId.Equals(entityId)).ToListAsync();
             }
             else return null;
         }

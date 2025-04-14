@@ -22,7 +22,7 @@ namespace ShiftSchedularEntity.Entities
         #region Navigation Properties
 
         public virtual ICollection<EntityUserBot> EntityUserBots { get; set; }
-
+        public virtual ICollection<EntityUserBotSkill> EntityUserBotSkills { get; set; }
         public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
 
         #endregion

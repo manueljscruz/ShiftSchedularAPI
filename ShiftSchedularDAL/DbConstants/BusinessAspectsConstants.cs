@@ -2,8 +2,8 @@
 {
     public class BusinessAspectsConstants
     {
-        public const string WORKERS = "Workers";
-        public const string SHIFTS = "Shifts";
-        public const string SKILLS = "Skills";
+        public const string WORKERS = "Worker";
+        public const string SHIFTS = "Shift";
+        public const string SKILLS = "Skill";
     }
 }
