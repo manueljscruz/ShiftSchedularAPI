@@ -19,16 +19,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly IGeneralService _generalService;
         private readonly IUnitOfWork _unitOfWork;
-        // private readonly IGenericRepository<Entity> _entityRepository;
         private readonly ISkillService _skillService;
-        //private readonly IEntityRuleRepository _entityRuleRepository;
-        //private readonly IEntityWorkerRepository _entityWorkerRepository;
-        //private readonly IEntityRuleSpecificationRepository _entityRuleSpecificationRepository;
-        //private readonly IGenericRepository<RuleType> _ruleTypeRepository;
-        //private readonly IRuleTypeLocalizationRepository _ruleTypeLocalizationRepository;
-        //private readonly IGenericRepository<BusinessAspect> _bussinessAspectRepository;
-        //private readonly IBusinessAspectLocalizationRepository _businessAspectLocalizationRepository;
-        //private readonly IRuleTypeBusinessAspectRepository _ruleTypeBusinessAspectRepository;
         private readonly IShiftService _shiftService;
 
         #region Constructor

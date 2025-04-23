@@ -9,8 +9,8 @@ namespace ShiftSchedularBLL.IService
     {
         Task<BaseResponse<EntityWorkerAbsenceDTO>> AbsenceApprovalDecision(AbsenceApprovalDecisionDTO absenceApprovalDecisionDTO);
         Task<BaseResponse<EntityWorkerAbsenceDTO>> AddEntityWorkerAbsence(AddEntityWorkerAbsenceDTO addEntityWorkerAbsence);
-        Task<BaseResponse<bool>> DeleteEntityWorkerAbsence(string absenceId);
-        Task<EntityWorkerAbsenceDTO> GetEntityWorkerAbsenceById(string id, string lcode);
+        Task<BaseResponse<bool>> DeleteEntityWorkerAbsence(Guid absenceId);
+        Task<EntityWorkerAbsenceDTO> GetEntityWorkerAbsenceById(Guid id, string lcode);
         Task<EntityWorkerAbsenceViewModel> GetEntityWorkerAbsenceViewModel(BaseViewModelRequest viewModelRequestDTO);
         Task<BaseResponse<EntityWorkerAbsenceDTO>> UpdateEntityWorkerAbsence(EntityWorkerAbsenceDTO entityWorkerAbsenceDTO);
     }

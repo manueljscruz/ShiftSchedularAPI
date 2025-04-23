@@ -2,8 +2,8 @@
 {
     public class EntityWorkerAbsenceDTO
     {
-        public string EntityWorkerAbsenceId { get; set; }
-        public string EntityId { get; set; }
+        public Guid EntityWorkerAbsenceId { get; set; }
+        public Guid EntityId { get; set; }
         public string WorkerId { get; set; }
         public int AbsenceTypeId { get; set; }
         public string AbsenceTypeDisplayValue { get; set; }

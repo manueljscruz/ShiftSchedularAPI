@@ -30,9 +30,9 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        [HttpGet("get-by-id/{id}/{lcode}")]
+        [HttpGet("get-by-id")]
         [ProducesResponseType(200, Type = typeof(EntityWorkerAbsenceDTO))]
-        public async Task<IActionResult> GetEntityWorkerAbsenceById(string id, string lcode)
+        public async Task<IActionResult> GetEntityWorkerAbsenceById(Guid id, string lcode)
         {
             var entityWorkerAbsence = await _entityWorkerAbsenceService.GetEntityWorkerAbsenceById(id, lcode);
             return Ok(entityWorkerAbsence);
@@ -115,11 +115,11 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="absenceId"></param>
         /// <returns></returns>
-        [HttpDelete("delete-entity-worker-absence/{absenceId}")]
+        [HttpPost("delete-entity-worker-absence")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteEntityWorkerAbsence(string absenceId)
+        public async Task<IActionResult> DeleteEntityWorkerAbsence(SingleIdentifierDTO absenceId)
         {
-            var response = await _entityWorkerAbsenceService.DeleteEntityWorkerAbsence(absenceId);
+            var response = await _entityWorkerAbsenceService.DeleteEntityWorkerAbsence(absenceId.Identifier);
             return Ok(response);
         }
 

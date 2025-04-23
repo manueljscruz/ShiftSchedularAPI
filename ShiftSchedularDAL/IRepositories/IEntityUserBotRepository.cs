@@ -29,5 +29,6 @@ namespace ShiftSchedularDAL.IRepositories
         Task<EntityUserBot> GetEntityUserBotByEntityAndId(Guid entityId, Guid userId);
         Task<IEnumerable<EntityUserBot>> GetUserBotsByEntityId(Guid entityId);
         Task<IEnumerable<int>> GetDistinctSkillsByEntityId(Guid entityId);
+        Task<bool> DeleteEntityUserBot(Guid entityId, Guid userBotId);
     }
 }

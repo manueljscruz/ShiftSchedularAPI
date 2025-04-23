@@ -53,7 +53,7 @@ namespace ShiftSchedularBLL.Service
             if(absenceApprovalDecisionDTO != null)
             {
                 // Absence identifier is empty
-                if(absenceApprovalDecisionDTO.EntityWorkerAbsenceId == null)
+                if(absenceApprovalDecisionDTO.EntityWorkerAbsenceId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceIdIsNull;
                     return response;
@@ -89,7 +89,7 @@ namespace ShiftSchedularBLL.Service
 
                 await _unitOfWork.EntityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
-                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId.ToString(), absenceApprovalDecisionDTO.LanguageCode);
+                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, absenceApprovalDecisionDTO.LanguageCode);
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.AbsenceDecisionApprovalSubmitted;
             }
@@ -127,7 +127,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if(string.IsNullOrEmpty(addEntityWorkerAbsence.EntityId))
+                else if(addEntityWorkerAbsence.EntityId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.EntityIdIsEmpty;
                     return response;
@@ -208,13 +208,13 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="absenceId"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> DeleteEntityWorkerAbsence(string absenceId)
+        public async Task<BaseResponse<bool>> DeleteEntityWorkerAbsence(Guid absenceId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
             response.Message = AbsenceRelatedMessages.DeleteEntityWorkerAbsenceUnexpectedError;
 
-            if(string.IsNullOrWhiteSpace(absenceId))
+            if(absenceId == Guid.Empty)
             {
                 response.Message = AbsenceRelatedMessages.AbsenceIdIsNull;
                 return response;
@@ -246,9 +246,9 @@ namespace ShiftSchedularBLL.Service
         /// <param name="id"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
-        public async Task<EntityWorkerAbsenceDTO> GetEntityWorkerAbsenceById(string id, string lcode)
+        public async Task<EntityWorkerAbsenceDTO> GetEntityWorkerAbsenceById(Guid id, string lcode)
         {
-            if (!string.IsNullOrEmpty(id))
+            if (id != Guid.Empty)
             {
                 EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(id);
 
@@ -340,7 +340,7 @@ namespace ShiftSchedularBLL.Service
 
             if(entityWorkerAbsenceDTO != null)
             {
-                if (string.IsNullOrEmpty(entityWorkerAbsenceDTO.EntityWorkerAbsenceId))
+                if (entityWorkerAbsenceDTO.EntityWorkerAbsenceId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceIdIsNull;
                     return response;
@@ -365,7 +365,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if (string.IsNullOrEmpty(entityWorkerAbsenceDTO.EntityId))
+                else if (entityWorkerAbsenceDTO.EntityId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.EntityIdIsEmpty;
                     return response;

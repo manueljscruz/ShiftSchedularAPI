@@ -370,6 +370,9 @@ namespace ShiftSchedularBLL.Service
 
             if (entityWorkerMembers != null)
             {
+                // Order by name
+                entityWorkerMembers = entityWorkerMembers.OrderBy(i => i.WorkerName);
+
                 foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
                 {
                     EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
@@ -386,9 +389,19 @@ namespace ShiftSchedularBLL.Service
                                                     SkillHexFontColor = s.SkillHexFontColor
                                                 }).ToList();
 
-                    entityWorkerMemberDTO.AssignedShifts = GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, baseViewModelRequest.EntityId, entityWorkerMemberDTO.WorkerId, baseViewModelRequest.LanguageCode, viewModel.Shifts).Result.ToList();
+                    string toDebugName = entityWorkerMemberDTO.WorkerName;
 
-                    viewModel.EntityMembers.Add(entityWorkerMemberDTO);
+                    if (!entityWorkerMemberDTO.PartOfRotation)
+                    {
+                        var data = await GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, baseViewModelRequest.EntityId, entityWorkerMemberDTO.WorkerId, baseViewModelRequest.LanguageCode, viewModel.Shifts);
+                        if(data != null)
+                            entityWorkerMemberDTO.AssignedShifts = data.ToList();
+                    }
+                        
+                    else
+                        entityWorkerMemberDTO.AssignedShifts = new List<ShiftDTO>();
+
+                        viewModel.EntityMembers.Add(entityWorkerMemberDTO);
 
                 }
             }
@@ -406,34 +419,44 @@ namespace ShiftSchedularBLL.Service
         {
             List<ShiftDTO> entityShifts = new List<ShiftDTO>();
 
-            if (shifts == null)
+            try
             {
-                entityShifts = (List<ShiftDTO>)await _shiftService.GetEntityShifts(entityId);
+                if (shifts == null)
+                {
+                    entityShifts = (List<ShiftDTO>)await _shiftService.GetEntityShifts(entityId);
+                }
+                else
+                {
+                    entityShifts = (List<ShiftDTO>)shifts;
+                }
+
+                Guid workerGuid = _generalService.ParseStringToGuid(workerId);
+
+                if (isBot)
+                {
+                    // viewModel.Shifts
+                    IEnumerable<EntityUserBotShiftAssigned> userBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityIdAndUserBotId(entityId, workerGuid);
+                    var assignedShiftIds = userBotShiftAssigneds.Select(x => x.ShiftId);
+
+                    return entityShifts
+                        .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
+                }
+                else
+                {
+                    IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityIdAndUserId(entityId, workerGuid);
+                    var assignedShiftIds = entityWorkerShiftAssigneds.Select(x => x.ShiftId);
+
+                    return entityShifts
+                        .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
+                }
             }
-            else
+            catch (Exception ex)
             {
-                entityShifts = (List<ShiftDTO>)shifts;
+                string strError = ex.Message;
+                return null;
             }
 
-            Guid workerGuid = _generalService.ParseStringToGuid(workerId);
-
-            if (isBot)
-            {
-                // viewModel.Shifts
-                IEnumerable<EntityUserBotShiftAssigned> userBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityIdAndUserBotId(entityId, workerGuid);
-                var assignedShiftIds = userBotShiftAssigneds.Select(x => x.ShiftId);
-
-                return entityShifts
-                    .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
-            }
-            else
-            {
-                IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityIdAndUserId(entityId, workerGuid);
-                var assignedShiftIds = entityWorkerShiftAssigneds.Select(x => x.ShiftId);
-
-                return entityShifts
-                    .Where(shift => assignedShiftIds.Contains(shift.ShiftId));
-            }
+            return entityShifts;
         }
 
         #endregion
@@ -1064,7 +1087,7 @@ namespace ShiftSchedularBLL.Service
                             await _unitOfWork.EntityUserBotSkillRepository.DeleteAllByEntityIdAndUserBotId(workerMemberDTO.EntityId, userBotGuid);
 
                             // Remove Entity User Bot Instance
-                            await _unitOfWork.EntityUserBotRepository.Delete(userBotGuid);
+                            await _unitOfWork.EntityUserBotRepository.DeleteEntityUserBot(workerMemberDTO.EntityId, userBotGuid);
                             // Remove User Bot instance
                             await _unitOfWork.UserBotRepository.Delete(userBotGuid);
                         }

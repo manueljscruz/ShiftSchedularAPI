@@ -21,6 +21,24 @@ namespace ShiftSchedularDAL.Repositories
             _sqlRawRepository = sqlRawRepository;
         }
 
+        public async Task<bool> DeleteEntityUserBot(Guid entityId, Guid userBotId)
+        {
+            bool result = false;
+
+            if(entityId != Guid.Empty && userBotId != Guid.Empty)
+            {
+                var entityUserBot = _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userBotId)).FirstOrDefault();
+                if (entityUserBot != null)
+                {
+                    _entityUserBotDbSet.Remove(entityUserBot);
+                    _context.SaveChanges();
+                    result = true;
+                }
+            }
+
+            return result;
+        }
+
         public async Task<IEnumerable<int>> GetDistinctSkillsByEntityId(Guid entityId)
         {
             List<int> skillIds = new List<int>();

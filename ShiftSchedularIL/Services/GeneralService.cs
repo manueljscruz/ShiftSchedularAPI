@@ -52,6 +52,44 @@ namespace ShiftSchedularIL.Services
 
         public Guid ParseStringToGuid(string input)
         {
+            if (string.IsNullOrWhiteSpace(input))
+                return Guid.Empty;
+
+            string guidString = HttpUtility.UrlDecode(input.Trim());
+
+            // Fix '+' that got decoded as space
+            guidString = guidString.Replace(" ", "+");
+
+            // Try parsing as a regular GUID
+            if (Guid.TryParse(guidString, out Guid parsedGuid))
+                return parsedGuid;
+
+            try
+            {
+                // Handle URL-safe Base64
+                string base64 = guidString
+                    .Replace('-', '+')
+                    .Replace('_', '/');
+
+                // Fix padding if needed
+                switch (base64.Length % 4)
+                {
+                    case 2: base64 += "=="; break;
+                    case 3: base64 += "="; break;
+                }
+
+                byte[] bytes = Convert.FromBase64String(base64);
+                return new Guid(bytes);
+            }
+            catch
+            {
+                return Guid.Empty; // or throw if you prefer strict behavior
+            }
+        }
+
+
+        public Guid _ParseStringToGuid(string input)
+        {
             string guidString = HttpUtility.UrlDecode(input);
             Guid guid = Guid.Empty;
 
