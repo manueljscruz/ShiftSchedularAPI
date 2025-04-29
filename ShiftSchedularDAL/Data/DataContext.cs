@@ -63,6 +63,7 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityShiftRotation> EntityShiftRotations { get; set; }
         public DbSet<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
         public DbSet<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
+        public DbSet<ScheduleEntryBots> ScheduleEntryBots { get; set; }
 
         #endregion
 
@@ -606,6 +607,23 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(ewsa => ewsa.Entity)
                 .WithMany(e => e.EntityWorkerShiftAssigneds)
                 .HasForeignKey(ewsa => ewsa.EntityId);
+
+            #endregion
+
+            #region Schedule Entry Bots Configuration
+
+            modelBuilder.Entity<ScheduleEntryBots>()
+                .HasKey(seb => new { seb.ScheduleEntryId, seb.UserBotId });
+
+            modelBuilder.Entity<ScheduleEntryBots>()
+                .HasOne(seb => seb.ScheduleEntry)
+                .WithMany(se => se.ScheduleEntryBots)
+                .HasForeignKey(seb => seb.ScheduleEntryId);
+
+            modelBuilder.Entity<ScheduleEntryBots>()
+                .HasOne(seb => seb.UserBot)
+                .WithMany(ub => ub.ScheduleEntryBots)
+                .HasForeignKey(seb => seb.UserBotId);
 
             #endregion
         }

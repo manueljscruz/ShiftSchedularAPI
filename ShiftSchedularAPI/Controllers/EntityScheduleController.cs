@@ -80,6 +80,23 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Generate Entity Schedule
+
+        /// <summary>
+        /// Generates an entity schedule based on the provided parameters.
+        /// </summary>
+        /// <param name="createEntityScheduleDTO">The DTO containing the details for creating the entity schedule.</param>
+        /// <returns>A response containing the result of the schedule generation.</returns>
+        [HttpPost("generate-entity-schedule")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GenerateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO)
+        {
+            var scheduleEntryResult = await _entityScheduleService.CreateEntitySchedule(createEntityScheduleDTO);
+
+            return Ok(scheduleEntryResult);
+        }
+
+        #endregion
 
         #endregion
     }

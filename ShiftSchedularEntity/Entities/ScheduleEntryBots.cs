@@ -3,20 +3,21 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class ScheduleEntryWorkers
+    public class ScheduleEntryBots
     {
         [Required]
         [Column(TypeName = "BINARY(16)")]
         public Guid ScheduleEntryId { get; set; }
 
         [Required]
-        public string ApplicationUserId { get; set; }
+        [Column(TypeName = "BINARY(16)")]
+        public Guid UserBotId { get; set; }
 
         public string SpecificSkillAssignments { get; set; }
 
         #region Navigation Properties
 
-        public virtual ApplicationUser? ApplicationUser { get; set; }
+        public virtual UserBot UserBot { get; set; }
         public virtual ScheduleEntry ScheduleEntry { get; set; }
 
         #endregion
