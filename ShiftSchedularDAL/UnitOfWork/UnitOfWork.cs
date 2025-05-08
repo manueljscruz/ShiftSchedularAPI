@@ -327,6 +327,16 @@ namespace ShiftSchedularDAL.UnitOfWork
             }
         }
 
+        private IScheduleEntryBotsRepository _scheduleEntryBotsRepository;
+
+        public IScheduleEntryBotsRepository ScheduleEntryBotsRepository
+        {
+            get
+            {
+                return _scheduleEntryBotsRepository = _scheduleEntryBotsRepository ?? new ScheduleEntryBotsRepository(_context, this);
+            }
+        }
+
         #endregion
 
         #region Constructor

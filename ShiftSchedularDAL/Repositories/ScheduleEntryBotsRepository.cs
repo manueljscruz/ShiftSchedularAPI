@@ -1,4 +1,5 @@
 ﻿using ShiftSchedularDAL.Data;
+using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ShiftSchedularDAL.Repositories
 {
-    public class ScheduleEntryBotsRepository : GenericRepository<ScheduleEntryBots>
+    public class ScheduleEntryBotsRepository : GenericRepository<ScheduleEntryBots>, IScheduleEntryBotsRepository
     {
         public ScheduleEntryBotsRepository(DataContext context, IUnitOfWork unitOfWork) : base(context, unitOfWork)
         {
