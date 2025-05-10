@@ -2,6 +2,7 @@
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Repositories;
+using System.Data.Common;
 
 namespace ShiftSchedularDAL.UnitOfWork
 {
@@ -251,7 +252,7 @@ namespace ShiftSchedularDAL.UnitOfWork
             get
             {
                 return _sqlRawRepository = _sqlRawRepository
-                    ?? new SqlRawRepository<object>(_context);
+                    ?? new SqlRawRepository<object>(_context, this);
             }
         }
 
@@ -387,6 +388,13 @@ namespace ShiftSchedularDAL.UnitOfWork
         public IGenericRepository<T> GetGenericRepository<T>() where T : class
         {
             return new GenericRepository<T>(_context, this);
+        }
+
+        public DbTransaction ReturnCurrentTransaction()
+        {
+            if (activeTransaction)
+                return _transaction.GetDbTransaction();
+            else return null;
         }
 
         #endregion

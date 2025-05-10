@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
+using ShiftSchedularDAL.UnitOfWork;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data;
 using System.Data.Common;
@@ -11,13 +12,15 @@ namespace ShiftSchedularDAL.Repositories
     {
         private readonly DataContext _context;
         private readonly DbConnection _connection;
+        private readonly IUnitOfWork _unitOfWork;
 
         #region Constructor
 
-        public SqlRawRepository(DataContext context)
+        public SqlRawRepository(DataContext context, IUnitOfWork unitOfWork)
         {
             _context = context;
             _connection = _context.Database.GetDbConnection();
+            _unitOfWork = unitOfWork;
         }
 
         #endregion
@@ -105,6 +108,8 @@ namespace ShiftSchedularDAL.Repositories
                 await using var command = connection.CreateCommand();
                 command.CommandText = query;
                 command.CommandType = CommandType.Text;
+                if (this._unitOfWork.ReturnTransactionStatus())
+                    command.Transaction = this._unitOfWork.ReturnCurrentTransaction();
 
                 foreach (var param in parameters)
                 {
@@ -156,6 +161,7 @@ namespace ShiftSchedularDAL.Repositories
             catch (Exception ex)
             {
                 string error = ex.Message;
+                throw new Exception(error);
             }
 
 

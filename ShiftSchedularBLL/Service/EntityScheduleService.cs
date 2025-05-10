@@ -315,10 +315,6 @@ namespace ShiftSchedularBLL.Service
 
                         #region Get Relevant Data
 
-                        // Get date differential between start and end date
-                        TimeSpan dateDifference = createEntityScheduleDTO.EndDate - createEntityScheduleDTO.StartDate;
-                        DateTime cycleDate = createEntityScheduleDTO.StartDate;
-
                         List<ShiftDTO> shifts = new List<ShiftDTO>();
                         List<EntityRuleDTO> ruleDTOs = new List<EntityRuleDTO>();
                         List<EntityWorkerMemberDTO> entityWorkerMemberDTOs = new List<EntityWorkerMemberDTO>();
@@ -347,6 +343,10 @@ namespace ShiftSchedularBLL.Service
                         //    }
                         //}
 
+                        // Get Members
+                        if (createEntityScheduleDTO.FilteredMembers.Count() == 0)
+                            entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, new List<string>(), createEntityScheduleDTO.LanguageCode);
+
                         #endregion
 
                         #region Get Shift Rotation
@@ -357,48 +357,98 @@ namespace ShiftSchedularBLL.Service
 
                         #region Create Shift Entries
 
-                        // For each day
-                        for (int i = 0; i < dateDifference.Days; i++)
+                        #region Get date differential between start and end date V1
+                        //TimeSpan dateDifference = createEntityScheduleDTO.EndDate - createEntityScheduleDTO.StartDate;
+                        //DateTime cycleDate = createEntityScheduleDTO.StartDate;
+
+                        //// For each day
+                        //for (int i = 0; i < dateDifference.Days; i++)
+                        //{
+                        //    // Check if its the weekend
+                        //    bool isWeekend = cycleDate.DayOfWeek == DayOfWeek.Saturday || cycleDate.DayOfWeek == DayOfWeek.Sunday;
+                        //    // For each shift
+                        //    foreach(ShiftDTO shift in shifts)
+                        //    {
+                        //        // If there isnt a rule to include this shift on the weekends
+                        //        if(isWeekend && !ruleDTOs.Any(i => i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
+                        //        {
+                        //            continue;
+                        //        }
+
+                        //        // Create Schedule Entry
+                        //        ScheduleEntry scheduleEntry = new ScheduleEntry
+                        //        {
+                        //            ScheduleEntryId = new Guid(),
+                        //            ShiftId = shift.ShiftId,
+                        //            ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
+                        //        };
+
+                        //        // Calculate and set schedule end date based on shift breaks
+                        //        TimeSpan totalBreakIncludedDuration = shift.ShiftBreakDTOs
+                        //            .Where(sb => sb.IncludedInShift)
+                        //            .Select(sb => sb.ShiftBreakDuration)
+                        //            .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
+
+                        //        scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftDuration).Add(totalBreakIncludedDuration);
+
+                        //        // Add entry to the database
+                        //        scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
+
+                        //        // Map it, add shift info and include entry to the list
+                        //        ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
+                        //        scheduleEntryDTO.ShiftDTO = shift;
+                        //        scheduleEntryDTO.ScheduleParticipants = new List<EntityWorkerMemberDTO>();
+                        //        scheduleEntryDTOs.Add(scheduleEntryDTO);
+                        //    }
+
+                        //    // Increment to the next day
+                        //    cycleDate = cycleDate.AddDays(1);
+                        //}
+
+                        #endregion
+
+                        DateTime cycleDate = createEntityScheduleDTO.StartDate;
+
+                        while (cycleDate <= createEntityScheduleDTO.EndDate)
                         {
-                            // Check if its the weekend
                             bool isWeekend = cycleDate.DayOfWeek == DayOfWeek.Saturday || cycleDate.DayOfWeek == DayOfWeek.Sunday;
-                            // For each shift
-                            foreach(ShiftDTO shift in shifts)
+
+                            foreach (ShiftDTO shift in shifts)
                             {
-                                // If there isnt a rule to include this shift on the weekends
-                                if(isWeekend && !ruleDTOs.Any(i => i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
+                                if (isWeekend && !ruleDTOs.Any(i =>
+                                    i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) &&
+                                    i.EntityRuleSpecificationDTOs.Any(j =>
+                                        _generalService.ParseStringToGuid(j.AspectReferenceId).Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
                                 {
                                     continue;
                                 }
 
-                                // Create Schedule Entry
-                                ScheduleEntry scheduleEntry = new ScheduleEntry
+                                var scheduleEntry = new ScheduleEntry
                                 {
-                                    ScheduleEntryId = new Guid(),
+                                    ScheduleEntryId = Guid.NewGuid(),
                                     ShiftId = shift.ShiftId,
                                     ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
                                 };
 
-                                // Calculate and set schedule end date based on shift breaks
-                                TimeSpan totalBreakIncludedDuration = shift.ShiftBreakDTOs
+                                var totalBreakIncludedDuration = shift.ShiftBreakDTOs
                                     .Where(sb => sb.IncludedInShift)
                                     .Select(sb => sb.ShiftBreakDuration)
                                     .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
 
-                                scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftDuration).Add(totalBreakIncludedDuration);
+                                scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate
+                                    .Add(shift.ShiftDuration)
+                                    .Add(totalBreakIncludedDuration);
 
-                                // Add entry to the database
                                 scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
 
-                                // Map it, add shift info and include entry to the list
-                                ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
+                                var scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
                                 scheduleEntryDTO.ShiftDTO = shift;
                                 scheduleEntryDTO.ScheduleParticipants = new List<EntityWorkerMemberDTO>();
                                 scheduleEntryDTOs.Add(scheduleEntryDTO);
                             }
 
-                            // Increment to the next day
-                            cycleDate.AddDays(1);
+                            // Move to the next day
+                            cycleDate = cycleDate.AddDays(1);
                         }
 
                         #endregion
@@ -406,6 +456,7 @@ namespace ShiftSchedularBLL.Service
                         scheduleEntryDTOs = await FillOutSchedule(scheduleEntryDTOs, shifts, ruleDTOs, entityWorkerMemberDTOs, entityShiftRotations, createEntityScheduleDTO);
                     
                         response.Result = scheduleEntryDTOs;
+                        response.Success = true;
                     }
                     catch (Exception ex)
                     {

@@ -1,4 +1,5 @@
 ﻿using ShiftSchedularDAL.IRepositories;
+using System.Data.Common;
 
 namespace ShiftSchedularDAL.UnitOfWork
 {
@@ -42,6 +43,7 @@ namespace ShiftSchedularDAL.UnitOfWork
         // Methods
         bool ReturnTransactionStatus();
         Task BeginTransactionAsync();
+        DbTransaction ReturnCurrentTransaction();
         Task SaveChangesAsync();
         Task CommitAsync();
         Task RollbackAsync();

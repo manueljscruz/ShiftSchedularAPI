@@ -504,6 +504,65 @@ namespace ShiftSchedularBLL.Service
             return entityWorkerMembers;
         }
 
+        public async Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode)
+        {
+            List<EntityWorkerMemberDTO> entityMembers = new List<EntityWorkerMemberDTO>();
+
+            List<SkillLocalizedDTO> skills = await _skillService.GetAllSkillsByLocalization(lcode);
+
+            IEnumerable<ShiftDTO> shifts = await _shiftService.GetEntityShifts(entityId);
+
+            // Get regular members
+            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId);
+
+            // Get user bots
+            IEnumerable<EntityWorkerMemberModel> userBots = await _unitOfWork.EntityUserBotRepository.GetDistinctUserBotsByEntityId(entityId);
+
+            // Merge all members if there is a bot instance
+            if (userBots != null)
+                entityWorkerMembers = entityWorkerMembers.Concat(userBots);
+
+            if (entityWorkerMembers != null)
+            {
+                // Order by name
+                entityWorkerMembers = entityWorkerMembers.OrderBy(i => i.WorkerName);
+
+                foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
+                {
+                    EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
+                    entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
+
+                    int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
+
+                    entityWorkerMemberDTO.SkillSet = skills.Where(i => skillIds.Contains(i.SkillId))
+                                                .Select(s => new SkillLocalizedDTO
+                                                {
+                                                    SkillId = s.SkillId,
+                                                    SkillLocalizedName = s.SkillLocalizedName,
+                                                    SkillHexBGColor = s.SkillHexBGColor,
+                                                    SkillHexFontColor = s.SkillHexFontColor
+                                                }).ToList();
+
+                    string toDebugName = entityWorkerMemberDTO.WorkerName;
+
+                    if (!entityWorkerMemberDTO.PartOfRotation)
+                    {
+                        var data = await GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, entityId, entityWorkerMemberDTO.WorkerId, lcode, shifts);
+                        if (data != null)
+                            entityWorkerMemberDTO.AssignedShifts = data.ToList();
+                    }
+
+                    else
+                        entityWorkerMemberDTO.AssignedShifts = new List<ShiftDTO>();
+
+                    entityMembers.Add(entityWorkerMemberDTO);
+
+                }
+            }
+
+            return entityMembers;
+        }
+
         #endregion
 
         #region Get Entity Skills

@@ -4,6 +4,7 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Queries;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -33,7 +34,7 @@ namespace ShiftSchedularDAL.Repositories
                 parameters.Add("@EndDateSearch", endDateSearch);
                 parameters.Add("@WorkerId", workerId);
 
-                IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetScheduleEntries, parameters);
+                IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetWorkerScheduleEntries, parameters);
                 return scheduleEntries.ToList();
             }
             else
