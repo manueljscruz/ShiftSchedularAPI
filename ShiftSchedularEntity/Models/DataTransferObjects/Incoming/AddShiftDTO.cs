@@ -8,6 +8,7 @@
         public string ShiftDescription { get; set; }
         public TimeSpan ShiftStartHour { get; set; }
         public TimeSpan ShiftDuration { get; set; }
+        public string ShiftColorHex { get; set; }
         public List<AddShiftBreakDTO> ShiftBreakDTOs { get; set; }
     }
 }

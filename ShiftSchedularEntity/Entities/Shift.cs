@@ -55,6 +55,12 @@ namespace ShiftSchedularEntity.Entities
         [Range(typeof(TimeSpan), "00:00:00", "24:00:00")]
         public TimeSpan ShiftDuration { get; set; }
 
+        /// <summary>
+        /// Color the owners picked to represent the shift
+        /// </summary>
+        [MaxLength(7)]
+        public string ShiftColorHex { get; set; }
+
         #endregion
 
         #region Navigation Properties

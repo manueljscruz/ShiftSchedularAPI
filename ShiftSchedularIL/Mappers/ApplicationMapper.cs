@@ -82,7 +82,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
                 .ForMember(dest => dest.ShiftDescription, opt => opt.MapFrom(src => src.ShiftDescription))
                 .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
-                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration));
+                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration))
+                .ForMember(dest => dest.ShiftColorHex, opt => opt.MapFrom(src => src.ShiftColorHex));
 
             CreateMap<Shift, ShiftDTO>()
                 .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
@@ -91,7 +92,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.ShiftAlias, opt => opt.MapFrom(src => src.ShiftAlias))
                 .ForMember(dest => dest.ShiftDescription, opt => opt.MapFrom(src => src.ShiftDescription))
                 .ForMember(dest => dest.ShiftStartHour, opt => opt.MapFrom(src => src.ShiftStartHour))
-                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration)).ReverseMap();
+                .ForMember(dest => dest.ShiftDuration, opt => opt.MapFrom(src => src.ShiftDuration))
+                .ForMember(dest => dest.ShiftColorHex, opt => opt.MapFrom(src => src.ShiftColorHex)).ReverseMap();
 
             CreateMap<AddShiftBreakDTO, ShiftBreak>()
                 .ForMember(dest => dest.ShiftBreakTypeId, opt => opt.MapFrom(src => src.ShiftBreakTypeId))

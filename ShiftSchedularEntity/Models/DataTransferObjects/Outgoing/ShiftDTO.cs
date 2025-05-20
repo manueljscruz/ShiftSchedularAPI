@@ -14,6 +14,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
         public TimeSpan ShiftStartHour { get; set; }
         [JsonConverter(typeof(TimeSpanConverter))]
         public TimeSpan ShiftDuration { get; set; }
+        public string ShiftColorHex { get; set; }
         public List<ShiftBreakDTO> ShiftBreakDTOs { get; set; }
 
         public ShiftDTO()
