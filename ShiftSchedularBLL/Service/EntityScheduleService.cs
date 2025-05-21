@@ -501,13 +501,61 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+
         public async Task<List<ScheduleEntryDTO>> FillOutSchedule(
-    List<ScheduleEntryDTO> scheduleEntryDTOs,
-    List<ShiftDTO> shifts,
-    List<EntityRuleDTO> entityRules,
-    List<EntityWorkerMemberDTO> entityWorkerMemberDTOs,
-    List<EntityShiftRotationDTO> entityShiftRotationDTOs,
-    CreateEntityScheduleDTO createEntityScheduleDTO)
+            List<ScheduleEntryDTO> scheduleEntryDTOs,
+            List<ShiftDTO> shifts,
+            List<EntityRuleDTO> entityRules,
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs,
+            List<EntityShiftRotationDTO> entityShiftRotationDTOs,
+            CreateEntityScheduleDTO createEntityScheduleDTO)
+        {
+            if (entityShiftRotationDTOs.Count != 0 &&
+                entityShiftRotationDTOs.Any(i => shifts.Select(j => j.ShiftId).Contains(i.ShiftId)))
+            {
+                // There is at least one matching ShiftId
+            }
+
+
+            return scheduleEntryDTOs;
+        }
+
+        private async Task<List<ScheduleEntryDTO>> ApplyRotationEntries(List<ScheduleEntryDTO> scheduleEntryDTOs, ScheduleEntry currentScheduleEntry, List<EntityWorkerMemberDTO> eligibleMembers, List<EntityShiftRotationDTO> entityShiftRotationDTOs, List<EntityRuleDTO> entityRules)
+        {
+            List<ScheduleEntryIneligibility> ineligibilities = new List<ScheduleEntryIneligibility>();
+
+            foreach(ScheduleEntryDTO scheduleEntry in scheduleEntryDTOs)
+            {
+                // Check if this entry is a rotation Type
+                if (entityShiftRotationDTOs.Any(i => i.ShiftId.Equals(scheduleEntry.ShiftId)))
+                {
+                    // 2.1 Determine minimum skillset required
+                    List<Tuple<int, int>> requiredSkillQuantities = GetMinimumSkilletSetPerShift(entityRules, scheduleEntry);
+
+                    // Fallback: if no skills are defined, allow any eligible worker
+                    if (requiredSkillQuantities == null || !requiredSkillQuantities.Any())
+                    {
+                        var maxPerShift = ReturnMaxWorkersPerShift(entityRules, scheduleEntry);
+                        requiredSkillQuantities = new List<Tuple<int, int>> { new Tuple<int, int>(-1, maxPerShift) };
+                    }
+
+
+                }
+                else continue;
+            }
+
+
+            return scheduleEntryDTOs;
+        }
+
+
+        public async Task<List<ScheduleEntryDTO>> _FillOutSchedule(
+            List<ScheduleEntryDTO> scheduleEntryDTOs,
+            List<ShiftDTO> shifts,
+            List<EntityRuleDTO> entityRules,
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs,
+            List<EntityShiftRotationDTO> entityShiftRotationDTOs,
+            CreateEntityScheduleDTO createEntityScheduleDTO)
         {
             // 1. Preprocess ineligible workers (e.g., based on weekends off rule)
             List<ScheduleEntryIneligibility> scheduleEntryIneligibilities = ApplyMonthlyWeekends(scheduleEntryDTOs, entityWorkerMemberDTOs, entityRules);
@@ -707,7 +755,7 @@ namespace ShiftSchedularBLL.Service
 
         #region _Fill Out Schedule
 
-        public async Task<List<ScheduleEntryDTO>> _FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, List<EntityShiftRotationDTO> entityShiftRotationDTOs, CreateEntityScheduleDTO createEntityScheduleDTO)
+        public async Task<List<ScheduleEntryDTO>> __FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, List<EntityShiftRotationDTO> entityShiftRotationDTOs, CreateEntityScheduleDTO createEntityScheduleDTO)
         {
             Random rand = new Random();
             List<ScheduleEntryIneligibility> scheduleEntryIneligibilities = new List<ScheduleEntryIneligibility>();
@@ -906,7 +954,7 @@ namespace ShiftSchedularBLL.Service
         #endregion
 
 
-        private async Task ApplyRotationEntries(List<ScheduleEntryDTO> scheduleEntryDTOs, ScheduleEntry currentScheduleEntry, List<EntityWorkerMemberDTO> eligibleMembers, List<EntityShiftRotationDTO> entityShiftRotationDTOs)
+        private async Task _ApplyRotationEntries(List<ScheduleEntryDTO> scheduleEntryDTOs, ScheduleEntry currentScheduleEntry, List<EntityWorkerMemberDTO> eligibleMembers, List<EntityShiftRotationDTO> entityShiftRotationDTOs)
         {
             // Confirm that is a rotation entry
             if(!entityShiftRotationDTOs.Any(i => i.ShiftId.Equals(currentScheduleEntry.ShiftId))){
@@ -1409,7 +1457,7 @@ namespace ShiftSchedularBLL.Service
 
             // if there is any rule for the weekdays quantity of skillset regarding this shift
             else if (entityRuleDTOs.Any(i => i.RuleTypeId.Equals(RuleTypeConstants.REQ_QTY_SKILL_SHIFT_WEEKENDS_ID)
-                && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId2.Equals(scheduleEntryDTO.ShiftId))
+                && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId2.Equals(scheduleEntryDTO.ShiftId.ToString()))
                 && isWeekend))
             {
                 entityRuleDTO = entityRuleDTOs
