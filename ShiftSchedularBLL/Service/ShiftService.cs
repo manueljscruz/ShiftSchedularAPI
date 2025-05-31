@@ -205,24 +205,24 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId"></param>
         /// <param name="shiftId"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> DeleteEntityShift(string entityId, string shiftId)
+        public async Task<BaseResponse<bool>> DeleteEntityShift(Guid entityId, Guid shiftId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
             response.Message = "";
 
-            if (string.IsNullOrEmpty(entityId))
+            if (entityId == Guid.Empty)
             {
                 response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
                 return response;
             }
-            else if (string.IsNullOrEmpty(shiftId))
+            else if (shiftId == Guid.Empty)
             {
                 response.Message = ShiftRelatedMessages.ShiftIdIsNull;
                 return response;
             }
 
-            Shift shiftInstance = await _unitOfWork.ShiftRepository.GetById(Guid.Parse(shiftId));
+            Shift shiftInstance = await _unitOfWork.ShiftRepository.GetById(shiftId);
             if (shiftInstance == null)
             {
                 response.Message = ShiftRelatedMessages.ShiftNotFound;
@@ -274,19 +274,19 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="deleteEntityShiftBreak"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> DeleteEntityShiftBreak(string shiftBreakId)
+        public async Task<BaseResponse<bool>> DeleteEntityShiftBreak(Guid shiftBreakId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
             response.Message = ShiftRelatedMessages.DeleteShiftBreakUnexpectedError;
 
-            if (string.IsNullOrEmpty(shiftBreakId))
+            if (shiftBreakId == Guid.Empty)
             {
                 response.Message = ShiftRelatedMessages.DeleteShiftBreakIdIsNull;
                 return response;
             }
 
-            ShiftBreak shiftBreak = await _unitOfWork.ShiftBreakRepository.GetById(Guid.Parse(shiftBreakId));
+            ShiftBreak shiftBreak = await _unitOfWork.ShiftBreakRepository.GetById(shiftBreakId);
             if (shiftBreak == null)
             {
                 response.Message = ShiftRelatedMessages.DeleteShiftBreaksNotFound;
@@ -429,7 +429,7 @@ namespace ShiftSchedularBLL.Service
             shiftDTO = _mapper.Map<ShiftDTO>(shift);
 
             // Get Shift breaks related to the shift
-            IEnumerable<ShiftBreak> shiftBreaks = await _unitOfWork.ShiftBreakRepository.GetBreaksByShiftId(shift.ShiftId.ToString());
+            IEnumerable<ShiftBreak> shiftBreaks = await _unitOfWork.ShiftBreakRepository.GetBreaksByShiftId(shift.ShiftId);
 
             // If any, map them to the 
             if (shiftBreaks.Count() != 0 && shiftBreakTypeLocalizations.Count() != 0)

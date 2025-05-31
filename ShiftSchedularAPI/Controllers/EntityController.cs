@@ -233,19 +233,19 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Entity by Id
 
-        [HttpDelete("delete-by-id/{id}")]
+        [HttpDelete("delete-by-id")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteEntityById([FromRoute]Guid id)
+        public async Task<IActionResult> DeleteEntityById(SingleIdentifierDTO singleIdentifierDTO)
         {
-            if(id == Guid.Empty)
+            if(singleIdentifierDTO.Identifier == Guid.Empty)
             {
                 return BadRequest();
             }
 
             // string entityId = HttpUtility.UrlDecode(id);
-            BaseResponse<bool> response = await _entityService.DeleteEntityById(id);
+            BaseResponse<bool> response = await _entityService.DeleteEntityById(singleIdentifierDTO.Identifier);
 
             if (!response.Success)
             {
@@ -297,8 +297,6 @@ namespace ShiftSchedularAPI.Controllers
             {
                 return BadRequest();
             }
-
-            // updateEntityMemberDTO.EntityId = HttpUtility.UrlDecode(updateEntityMemberDTO.EntityId);
 
             BaseResponse<bool> response = await _entityService.UpdateEntityMember(updateEntityMemberDTO);
 

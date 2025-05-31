@@ -637,9 +637,21 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
-        public Task<List<EntityRuleDTO>> GetSpecificRules(List<string> filteredRules, string languageCode)
+        public async Task<List<EntityRuleDTO>> GetSpecificRules(Guid entityId, List<string> filteredRules, string languageCode)
         {
-            throw new NotImplementedException();
+            if(filteredRules.Count != 0)
+            {
+                List<EntityRuleDTO> entityRules = await this.GetEntityRules(entityId, languageCode);
+
+                if (entityRules != null && entityRules.Count != 0)
+                {
+                    List<EntityRuleDTO> filteredEntityRules = entityRules.Where(i => filteredRules.Contains(i.EntityRuleId.ToString())).ToList();
+                    return filteredEntityRules;
+                }
+            }
+
+            return new List<EntityRuleDTO>();
+            
         }
 
         #endregion

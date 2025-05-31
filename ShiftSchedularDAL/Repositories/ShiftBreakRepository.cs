@@ -36,9 +36,9 @@ namespace ShiftSchedularDAL.Repositories
         /// </summary>
         /// <param name="shiftId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<ShiftBreak>> GetBreaksByShiftId(string shiftId)
+        public async Task<IEnumerable<ShiftBreak>> GetBreaksByShiftId(Guid shiftId)
         {
-            if (!string.IsNullOrEmpty(shiftId))
+            if (shiftId != Guid.Empty)
             {
                 return await _dbSet.Where(i => i.ShiftId.Equals(shiftId)).ToListAsync();
             }

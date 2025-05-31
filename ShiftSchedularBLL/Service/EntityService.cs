@@ -522,6 +522,11 @@ namespace ShiftSchedularBLL.Service
             if (userBots != null)
                 entityWorkerMembers = entityWorkerMembers.Concat(userBots);
 
+            if (workers.Count > 0)
+            {
+                entityWorkerMembers = entityWorkerMembers.Where(i => workers.Contains(i.WorkerId)).ToList();
+            }
+
             if (entityWorkerMembers != null)
             {
                 // Order by name
@@ -559,6 +564,8 @@ namespace ShiftSchedularBLL.Service
 
                 }
             }
+
+            
 
             return entityMembers;
         }

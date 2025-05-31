@@ -120,11 +120,16 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Shift
 
-        [HttpDelete("delete-entity-shift/{entityId}/{shiftId}")]
+        [HttpDelete("delete-entity-shift")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteShift(string entityId, string shiftId)
+        public async Task<IActionResult> DeleteShift(DeleteEntityObjectDTO deleteEntityObjectDTO)
         {
-            var response = await _shiftService.DeleteEntityShift(entityId, shiftId);
+            if(deleteEntityObjectDTO.EntityId == Guid.Empty || deleteEntityObjectDTO.ObjectId == Guid.Empty)
+            {
+                return BadRequest("EntityId and object identifier cannot be empty.");
+            }
+
+            var response = await _shiftService.DeleteEntityShift(deleteEntityObjectDTO.EntityId, deleteEntityObjectDTO.ObjectId);
             return Ok(response);
         }
 
@@ -132,11 +137,16 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Shift Break
 
-        [HttpDelete("delete-entity-shift-break/{shiftBreakId}")]
+        [HttpDelete("delete-entity-shift-break")]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> DeleteShiftBreak(string shiftBreakId)
+        public async Task<IActionResult> DeleteShiftBreak(SingleIdentifierDTO shiftBreakId)
         {
-            var response = await _shiftService.DeleteEntityShiftBreak(shiftBreakId);
+            if(shiftBreakId.Identifier == Guid.Empty)
+            {
+                return BadRequest("Shift identifier is required");
+            }
+
+            var response = await _shiftService.DeleteEntityShiftBreak(shiftBreakId.Identifier);
             return Ok(response);
         }
 

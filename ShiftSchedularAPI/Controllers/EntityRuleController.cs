@@ -139,37 +139,41 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Entity Rule
 
-        [HttpDelete("delete-entity-rule/{entityId}/{entityRuleId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [HttpDelete("delete-entity-rule")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteEntityRule(Guid entityId, Guid entityRuleId)
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteEntityRule(DeleteEntityObjectDTO deleteEntityObjectDTO)
         {
-            if(entityId == Guid.Empty || entityRuleId == Guid.Empty)
+            if(deleteEntityObjectDTO.EntityId == Guid.Empty || deleteEntityObjectDTO.ObjectId == Guid.Empty)
             {
                 return BadRequest();
             }
 
-            // entityId = HttpUtility.UrlDecode(entityId);
-
-            var response = await _entityRuleService.DeleteEntityRule(entityId, entityRuleId);
-            return Ok(response);
+            var response = await _entityRuleService.DeleteEntityRule(deleteEntityObjectDTO.EntityId, deleteEntityObjectDTO.ObjectId);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
 
         #endregion
 
         #region Delete Entity Rule Specification
 
-        [HttpDelete("delete-entity-rule-spec/{entityRuleId}/{specId}")]
+        [HttpDelete("delete-entity-rule-spec")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> DeleteEntityRuleSpec(Guid entityRuleId, int specId)
+        public async Task<IActionResult> DeleteEntityRuleSpec(DeleteEntityRuleSpecDTO deleteEntityRuleSpec)
         {
-            if(entityRuleId == Guid.Empty || specId == 0)
+            if(deleteEntityRuleSpec.EntityId == Guid.Empty || deleteEntityRuleSpec.ObjectId == Guid.Empty || deleteEntityRuleSpec.RuleSpecId == 0)
             {
                 return BadRequest();
             }
 
-            var response = await _entityRuleService.DeleteEntityRuleSpecification(entityRuleId, specId);
+            var response = await _entityRuleService.DeleteEntityRuleSpecification(deleteEntityRuleSpec.ObjectId, deleteEntityRuleSpec.RuleSpecId);
             return Ok(response);
         }
 
@@ -177,7 +181,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Rule Specifications
 
-        [HttpDelete("delete-entity-rule-specs/{entityRuleId}")]
+        [HttpDelete("delete-entity-rule-specs")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> DeleteEntityRuleSpecs(Guid entityRuleId)

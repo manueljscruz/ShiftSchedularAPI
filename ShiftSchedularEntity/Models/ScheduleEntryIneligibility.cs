@@ -15,6 +15,7 @@ namespace ShiftSchedularEntity.Models
         public ScheduleEntryIneligibility(Guid scheduleEntryID) : base()
         {
             ScheduleEntryID = scheduleEntryID;
+            MembersIneligible = new List<EntityWorkerMemberDTO>();
         }
     }
 }
