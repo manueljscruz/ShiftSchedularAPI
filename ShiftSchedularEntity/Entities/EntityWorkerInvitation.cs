@@ -43,6 +43,8 @@ namespace ShiftSchedularEntity.Entities
 
         public bool WorksWeekends { get; set; }
 
+        public bool MultipleShiftAssignments { get; set; }
+
         #region Navigation Properties
 
         public virtual Entity? Entity { get; set; }

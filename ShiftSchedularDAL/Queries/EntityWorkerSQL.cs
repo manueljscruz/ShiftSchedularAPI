@@ -32,6 +32,7 @@
                 EW.PartOfRotation,
                 EW.WorksWeekDays,
                 EW.WorksWeekends,
+                EW.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds
             FROM [ShiftSchedular].[dbo].[EntityWorkers] EW
             LEFT JOIN [ShiftSchedular].[dbo].[AspNetUsers] W 
@@ -59,6 +60,7 @@
                 EUB.PartOfRotation,
                 EUB.WorksWeekDays,
                 EUB.WorksWeekends,
+                EUB.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds
             FROM [ShiftSchedular].[dbo].[EntityUserBots] EUB
             LEFT JOIN [ShiftSchedular].[dbo].[UserBots] UB 

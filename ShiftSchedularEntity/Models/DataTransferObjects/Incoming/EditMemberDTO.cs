@@ -12,6 +12,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public bool PartOfRotation { get; set; }
         public bool WorksWeekDays { get; set; }
         public bool WorksWeekends { get; set; }
+        public bool MultipleShiftAssignments { get; set; }
         public List<ShiftDTO> AssignedShifts { get; set; }
     }
 }

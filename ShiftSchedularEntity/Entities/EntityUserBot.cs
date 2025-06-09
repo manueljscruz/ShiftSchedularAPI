@@ -35,6 +35,8 @@ namespace ShiftSchedularEntity.Entities
 
         public bool WorksWeekends { get; set; }
 
+        public bool MultipleShiftAssignments { get; set; }
+
         #endregion
 
         #region Navigation Properties

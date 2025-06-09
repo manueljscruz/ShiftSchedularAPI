@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250602151628_OrderNoToRuleType")]
+    partial class OrderNoToRuleType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -505,9 +508,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<DateTime>("DateOfJoin")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("MultipleShiftAssignments")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("PartOfRotation")
                         .HasColumnType("bit");
 
@@ -585,9 +585,6 @@ namespace ShiftSchedularDAL.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsOwner")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("MultipleShiftAssignments")
                         .HasColumnType("bit");
 
                     b.Property<bool>("PartOfRotation")
@@ -675,9 +672,6 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Property<DateTime>("InviteDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("MultipleShiftAssignments")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("PartOfRotation")
                         .HasColumnType("bit");

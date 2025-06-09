@@ -61,6 +61,11 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public bool WorksWeekends { get; set; }
 
+        /// <summary>
+        /// Determines if the worker is available to work more than one shift in a day
+        /// </summary>
+        public bool MultipleShiftAssignments { get; set; }
+
         #endregion
 
         #region Navigation Properties

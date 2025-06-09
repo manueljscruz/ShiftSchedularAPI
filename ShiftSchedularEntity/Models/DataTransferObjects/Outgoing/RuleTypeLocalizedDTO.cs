@@ -8,6 +8,7 @@
         public bool IsSpecValuesBoolean { get; set; }
         public string RuleTypeDescriptionLocalized { get; set; }
         public List<BusinessAspectLocalizedDTO> BusinessAspectLocalizedDTOs { get; set; }
+        public int OrderNo { get; set; }
 
         public RuleTypeLocalizedDTO()
         {

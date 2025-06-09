@@ -394,14 +394,14 @@ namespace ShiftSchedularBLL.Service
                     if (!entityWorkerMemberDTO.PartOfRotation)
                     {
                         var data = await GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, baseViewModelRequest.EntityId, entityWorkerMemberDTO.WorkerId, baseViewModelRequest.LanguageCode, viewModel.Shifts);
-                        if(data != null)
+                        if (data != null)
                             entityWorkerMemberDTO.AssignedShifts = data.ToList();
                     }
-                        
+
                     else
                         entityWorkerMemberDTO.AssignedShifts = new List<ShiftDTO>();
 
-                        viewModel.EntityMembers.Add(entityWorkerMemberDTO);
+                    viewModel.EntityMembers.Add(entityWorkerMemberDTO);
 
                 }
             }
@@ -564,8 +564,6 @@ namespace ShiftSchedularBLL.Service
 
                 }
             }
-
-            
 
             return entityMembers;
         }
@@ -788,7 +786,8 @@ namespace ShiftSchedularBLL.Service
                     DateOfJoin = nowUTCTime,
                     SkillSet = newMemberDTO.AssignedSkills,
                     PartOfRotation = newMemberDTO.PartOfRotation,
-                    AssignedShifts = newMemberDTO.AssignedShifts
+                    AssignedShifts = newMemberDTO.AssignedShifts,
+                    MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments,
                 };
             }
             catch (Exception ex)
@@ -828,7 +827,8 @@ namespace ShiftSchedularBLL.Service
                 SkillsetIds = skillsAggregated,
                 PartOfRotation = newMemberDTO.PartOfRotation,
                 WorksWeekDays = newMemberDTO.WorksWeekDays,
-                WorksWeekends = newMemberDTO.WorksWeekends
+                WorksWeekends = newMemberDTO.WorksWeekends,
+                MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments
             };
 
             await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
@@ -962,61 +962,58 @@ namespace ShiftSchedularBLL.Service
                 {
                     entityUserBot.WorksWeekDays = userBotData.WorksWeekDays;
                     entityUserBot.WorksWeekends = userBotData.WorksWeekends;
+                    entityUserBot.MultipleShiftAssignments = userBotData.MultipleShiftAssignments;
 
-                    if (entityUserBot.PartOfRotation != userBotData.PartOfRotation)
+                    // If Part of Rotation flags are different and the user has been assigned as part of rotation
+                    if (userBotData.PartOfRotation != entityUserBot.PartOfRotation && userBotData.PartOfRotation)
                     {
-                        entityUserBot.PartOfRotation = userBotData.PartOfRotation;
-
-                        // If its now part of the rotation, remove all specific assignments
-                        if (entityUserBot.PartOfRotation)
+                        // Get and clear all specific assignments
+                        IEnumerable<EntityUserBotShiftAssigned> userBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
+                        if (userBotShiftAssigneds.Count() != 0)
                         {
-                            IEnumerable<EntityUserBotShiftAssigned> userBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
-                            if (userBotShiftAssigneds.Count() != 0)
-                            {
-                                await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
-                            }
-                        }
-
-                        // Not part of the rotation
-                        else
-                        {
-                            // Delete all pre-existing assignments
                             await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
-
-                            // For each assignment, add it to the Entity assigned shifts
-                            List<EntityUserBotShiftAssigned> newBotShiftAssignments = new List<EntityUserBotShiftAssigned>();
-                            foreach (ShiftDTO shift in userBotData.AssignedShifts)
-                            {
-                                newBotShiftAssignments.Add(new EntityUserBotShiftAssigned
-                                {
-                                    EntityId = userBotData.EntityId,
-                                    UserBotId = userBotId,
-                                    ShiftId = shift.ShiftId
-                                });
-                            }
-
-                            await _unitOfWork.EntityUserBotShiftAssignedsRepository.AddRange(newBotShiftAssignments);
                         }
+                    }
 
-                        // Delete all pre-existing skills
-                        await _unitOfWork.EntityUserBotSkillRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
+                    entityUserBot.PartOfRotation = userBotData.PartOfRotation;
+                    await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
 
-                        List<EntityUserBotSkill> entityUserBotSkills = new List<EntityUserBotSkill>();
-                        foreach (SkillLocalizedDTO skillLocalizedDTO in userBotData.AssignedSkills)
+                    // Not part of the rotation
+                    if (!entityUserBot.PartOfRotation)
+                    {
+                        // Delete all pre-existing assignments
+                        await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
+
+                        // For each assignment, add it to the Entity assigned shifts
+                        List<EntityUserBotShiftAssigned> newBotShiftAssignments = new List<EntityUserBotShiftAssigned>();
+                        foreach (ShiftDTO shift in userBotData.AssignedShifts)
                         {
-                            entityUserBotSkills.Add(new EntityUserBotSkill
+                            newBotShiftAssignments.Add(new EntityUserBotShiftAssigned
                             {
                                 EntityId = userBotData.EntityId,
                                 UserBotId = userBotId,
-                                SkillId = skillLocalizedDTO.SkillId
+                                ShiftId = shift.ShiftId
                             });
                         }
 
-                        await _unitOfWork.EntityUserBotSkillRepository.AddRange(entityUserBotSkills);
-
-                        await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
-                        
+                        await _unitOfWork.EntityUserBotShiftAssignedsRepository.AddRange(newBotShiftAssignments);
                     }
+
+                    // Delete all pre-existing skills
+                    await _unitOfWork.EntityUserBotSkillRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
+
+                    List<EntityUserBotSkill> entityUserBotSkills = new List<EntityUserBotSkill>();
+                    foreach (SkillLocalizedDTO skillLocalizedDTO in userBotData.AssignedSkills)
+                    {
+                        entityUserBotSkills.Add(new EntityUserBotSkill
+                        {
+                            EntityId = userBotData.EntityId,
+                            UserBotId = userBotId,
+                            SkillId = skillLocalizedDTO.SkillId
+                        });
+                    }
+
+                    await _unitOfWork.EntityUserBotSkillRepository.AddRange(entityUserBotSkills);
 
                     response.Success = true;
                     response.Result = true;
@@ -1050,45 +1047,58 @@ namespace ShiftSchedularBLL.Service
             {
                 entityWorker.WorksWeekDays = editMemberDTO.WorksWeekDays;
                 entityWorker.WorksWeekends = editMemberDTO.WorksWeekends;
+                entityWorker.MultipleShiftAssignments = editMemberDTO.MultipleShiftAssignments;
 
                 // if there is a rotation change
-                if(entityWorker.PartOfRotation != editMemberDTO.PartOfRotation)
+                if (entityWorker.PartOfRotation != editMemberDTO.PartOfRotation && editMemberDTO.PartOfRotation)
                 {
-                    entityWorker.PartOfRotation = editMemberDTO.PartOfRotation;
-
-                    // If its now part of the rotation, remove all specific assignments
-                    if (entityWorker.PartOfRotation)
+                    IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityIdAndUserId(editMemberDTO.EntityId, userId);
+                    if (entityWorkerShiftAssigneds.Count() != 0)
                     {
-                        IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityIdAndUserId(editMemberDTO.EntityId, userId);
-                        if (entityWorkerShiftAssigneds.Count() != 0)
-                        {
-                            await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, userId);
-                        }
-                    }
-                    else
-                    {
-                        // Delete all pre-existing assignments
                         await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, userId);
-
-                        List<EntityWorkerShiftAssigned> entityWorkerShifts = new List<EntityWorkerShiftAssigned>();
-
-                        // For each assignment, add it to the Entity assigned shifts
-                        foreach(ShiftDTO shift in editMemberDTO.AssignedShifts)
-                        {
-                            entityWorkerShifts.Add(new EntityWorkerShiftAssigned
-                            {
-                                EntityId = editMemberDTO.EntityId,
-                                ApplicationUserId = userId.ToString(),
-                                ShiftId = shift.ShiftId
-                            });
-                        }
-
-                        await _unitOfWork.EntityWorkerShiftAssignedsRepository.AddRange(entityWorkerShifts);
                     }
                 }
 
+                entityWorker.PartOfRotation = editMemberDTO.PartOfRotation;
                 // Update the entity worker instance
                 await _unitOfWork.EntityWorkerRepository.Update(entityWorker);
+
+                if (!entityWorker.PartOfRotation)
+                {
+                    // Delete all pre-existing assignments
+                    await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, userId);
+
+                    List<EntityWorkerShiftAssigned> entityWorkerShifts = new List<EntityWorkerShiftAssigned>();
+
+                    // For each assignment, add it to the Entity assigned shifts
+                    foreach (ShiftDTO shift in editMemberDTO.AssignedShifts)
+                    {
+                        entityWorkerShifts.Add(new EntityWorkerShiftAssigned
+                        {
+                            EntityId = editMemberDTO.EntityId,
+                            ApplicationUserId = userId.ToString(),
+                            ShiftId = shift.ShiftId
+                        });
+                    }
+
+                    await _unitOfWork.EntityWorkerShiftAssignedsRepository.AddRange(entityWorkerShifts);
+                }
+
+                await _unitOfWork.EntityWorkerSkillRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, _generalService.ParseStringToGuid(editMemberDTO.WorkerId));
+                List<EntityWorkerSkill> entityUserBotSkills = new List<EntityWorkerSkill>();
+
+                foreach(SkillLocalizedDTO skillLocalizedDTO in editMemberDTO.AssignedSkills)
+                {
+                    entityUserBotSkills.Add(new EntityWorkerSkill
+                    {
+                        EntityId = editMemberDTO.EntityId,
+                        ApplicationUserId = userId.ToString(),
+                        SkillId = skillLocalizedDTO.SkillId
+                    });
+                }
+
+                await _unitOfWork.EntityWorkerSkillRepository.AddRange(entityUserBotSkills);
+
                 response.Success = true;
                 response.Result = true;
             }
@@ -1146,7 +1156,7 @@ namespace ShiftSchedularBLL.Service
                         if (userBot != null && entityUserBot != null)
                         {
                             // Check if the bot is not part of rotation and remove specifics
-                            if(!entityUserBot.PartOfRotation)
+                            if (!entityUserBot.PartOfRotation)
                                 await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteAllByEntityIdAndUserBotId(workerMemberDTO.EntityId, userBotGuid);
 
                             // Remove user bot skills
@@ -1168,7 +1178,7 @@ namespace ShiftSchedularBLL.Service
                         Guid userId = _generalService.ParseStringToGuid(workerMemberDTO.WorkerId);
 
                         EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(workerMemberDTO.WorkerId, workerMemberDTO.EntityId);
-                        if(entityWorker != null)
+                        if (entityWorker != null)
                         {
                             // Check if the worker is not part of rotation and remove specifics
                             if (!entityWorker.PartOfRotation)

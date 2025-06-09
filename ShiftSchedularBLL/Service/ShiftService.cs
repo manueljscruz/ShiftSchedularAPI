@@ -790,6 +790,8 @@ namespace ShiftSchedularBLL.Service
                     }
 
                     await _unitOfWork.CommitAsync();
+
+                    response.Message = ShiftRelatedMessages.ShiftRotationDeletedSuccess;
                     response.Success = true;
                 }
                 catch (Exception ex)
@@ -797,9 +799,6 @@ namespace ShiftSchedularBLL.Service
                     await _unitOfWork.RollbackAsync();
                     return response;
                 }
-                await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(entityShiftRotation);
-                response.Success = true;
-                response.Message = ShiftRelatedMessages.ShiftRotationDeletedSuccess;
             }
 
             return response;

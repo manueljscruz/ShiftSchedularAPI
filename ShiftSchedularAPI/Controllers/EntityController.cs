@@ -271,8 +271,6 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            // newMemberDTO.DestinationEntityId = HttpUtility.UrlDecode(newMemberDTO.DestinationEntityId);
-
             BaseResponse<object> response = await _entityService.AddNewEntityMember(newMemberDTO);
 
             if(!response.Success)

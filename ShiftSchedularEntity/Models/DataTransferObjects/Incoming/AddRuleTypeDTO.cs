@@ -8,6 +8,7 @@
         public bool MultipleSpecification { get; set; }
         public bool IsSpecValuesBoolean { get; set; }
         public string RuleTypeDescription { get; set; }
+        public int OrderNo { get; set; }
 
         #endregion
 

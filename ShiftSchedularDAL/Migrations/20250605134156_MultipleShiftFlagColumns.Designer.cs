@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250605134156_MultipleShiftFlagColumns")]
+    partial class MultipleShiftFlagColumns
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -675,9 +678,6 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.Property<DateTime>("InviteDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("MultipleShiftAssignments")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("PartOfRotation")
                         .HasColumnType("bit");
