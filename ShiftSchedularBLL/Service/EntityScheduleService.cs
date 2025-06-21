@@ -530,11 +530,17 @@ namespace ShiftSchedularBLL.Service
             // 1. Preprocess ineligible workers (e.g., based on weekends off rule)
             List<ScheduleEntryIneligibility> scheduleEntryIneligibilities = new List<ScheduleEntryIneligibility>();
 
-            scheduleEntryIneligibilities = ApplyMonthlyWeekends(scheduleEntryDTOs, entityWorkerMemberDTOs, entityRules);
+            // scheduleEntryIneligibilities = ApplyMonthlyWeekends(scheduleEntryDTOs, entityWorkerMemberDTOs, entityRules);
+
+            DateTime trackingDay = scheduleEntryDTOs.Count != 0 ? scheduleEntryDTOs[0].ScheduleStartDate.Date : new DateTime();
+            bool isFirstDay = true;
+
 
             // 2. Iterate over all schedule entries to assign workers
-            foreach (var scheduleEntry in scheduleEntryDTOs)
+            for (int i = 0; i < scheduleEntryDTOs.Count; i++)
             {
+                ScheduleEntryDTO scheduleEntry = scheduleEntryDTOs[i];
+
                 // 2.1 Determine minimum skillset required
                 List<Tuple<int, int>> requiredSkillQuantities = GetMinimumSkilletSetPerShift(entityRules, scheduleEntry);
 
@@ -563,7 +569,7 @@ namespace ShiftSchedularBLL.Service
                 var postShiftRestRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.POST_SHIFT_REST_HOURS_ID);
                 // var avgHoursWeeklyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.AVG_HOURS_WEEK_ID);
                 // var avgHoursMonthlyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.AVG_HOURS_MONTH_ID); 
-                // var consecutiveTurnsRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_CONSECUTIVE_DAYS_NON_ROTATIONERS_ID);
+                var consecutiveNonRotationTurnsRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_CONSECUTIVE_DAYS_NON_ROTATIONERS_ID);
 
                 // 2.5 Get daily and weekly entries
                 var dailyEntries = scheduleEntryDTOs.Where(e => e.ScheduleStartDate.Date == scheduleEntry.ScheduleStartDate.Date);
@@ -574,12 +580,6 @@ namespace ShiftSchedularBLL.Service
                 var previousShiftEntries = scheduleEntryDTOs
                     .Where(e => e.ScheduleStartDate < scheduleEntry.ScheduleStartDate)
                     .OrderByDescending(e => e.ScheduleStartDate);
-
-                // 2.7 Get entries for consecutive turns logic
-                //var consecutiveEntries = consecutiveTurnsRule != null
-                //    ? await FilterEntriesForConsecutiveTurns(scheduleEntry, scheduleEntryDTOs, createEntityScheduleDTO,
-                //        (float)consecutiveTurnsRule.EntityRuleSpecificationDTOs.First().RuleSpecificationValue)
-                //    : new List<ScheduleEntryDTO>();
 
                 // 2.8 Assign workers
                 var assigned = new List<EntityWorkerMemberDTO>();
@@ -594,12 +594,6 @@ namespace ShiftSchedularBLL.Service
                         ? eligibleWorkers.ToList()
                         : eligibleWorkers.Where(w => w.SkillSet.Any(s => s.SkillId == skillId)).ToList();
 
-
-                    //if (skillId == -1 && quantity == 0)
-                    //{
-                    //    quantity = (int)Math.Ceiling((double)eligibleWorkers.Count() / shifts.Count);
-                    //}
-
                     int skillAssigned = 0;
 
                     foreach (var worker in skillEligibleWorkers)
@@ -607,113 +601,33 @@ namespace ShiftSchedularBLL.Service
                         if (maxPerShiftFinal != 0 && assigned.Count >= maxPerShiftFinal) break;
                         if (scheduleEntry.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId)) continue;
 
-                        if (maxDailyRule != null && !CheckMaxHoursPerDay(scheduleEntry, dailyEntries, worker, maxDailyRule, shifts)) continue; // Check maximum amount of hours per day
-                        if (maxWeeklyRule != null && !CheckMaxHoursPerWeek(weeklyEntries, worker, maxWeeklyRule, shifts)) continue;             // Check maximum amount of hours per week
+                        if (maxDailyRule != null && !CheckMaxHoursPerDay(scheduleEntry, dailyEntries, worker, maxDailyRule, shifts))
+                            continue; // Check maximum amount of hours per day
+                        if (maxWeeklyRule != null && !CheckMaxHoursPerWeek(weeklyEntries, worker, maxWeeklyRule, shifts))
+                            continue;             // Check maximum amount of hours per week
                         // if(avgHoursWeeklyRule != null && !CheckAverageHoursPerWeek(weeklyEntries, worker, avgHoursWeeklyRule, shifts)) continue;
                         // if (avgHoursMonthlyRule != null && !CheckAverageHoursPerMonth(monthEntries, worker, avgHoursMonthlyRule, shifts)) continue;
-                        if (postShiftRestRule != null && !CheckForPostShiftRest(scheduleEntry, previousShiftEntries, worker, postShiftRestRule)) continue;  // Check for mandatory rest post shift
-                        if (scheduleEntryDTOs.Any(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date) 
-                            && i.ScheduleEntryId != scheduleEntry.ScheduleEntryId 
-                            && !worker.MultipleShiftAssignments 
-                            && i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId)))) continue;  // Check if worker has already an assignment on the same day and not eligible for multiple
+                        if (postShiftRestRule != null && !CheckForPostShiftRest(scheduleEntry, previousShiftEntries, worker, postShiftRestRule))
+                            continue;  // Check for mandatory rest post shift
+                        if (scheduleEntryDTOs.Any(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date)
+                            && i.ScheduleEntryId != scheduleEntry.ScheduleEntryId
+                            && !worker.MultipleShiftAssignments
+                            && i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId))))
+                            continue;  // Check if worker has already an assignment on the same day and not eligible for multiple
 
-                        //if (consecutiveTurnsRule != null && consecutiveEntries
-                        //        .Count(e => e.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId)) >=
-                        //    consecutiveTurnsRule.EntityRuleSpecificationDTOs.First().RuleSpecificationValue)
-                        //    continue;
+                        if (consecutiveNonRotationTurnsRule != null && !worker.PartOfRotation && !CheckConsecutiveTurns(scheduleEntryDTOs, scheduleEntry, worker, consecutiveNonRotationTurnsRule))  // Check for consecutive turns for non rotationers
+                            continue;
 
                         // Assign worker
                         assigned.Add(worker);
                         skillAssigned++;
                         eligibleWorkers.Remove(worker); // Remove to prevent duplication
 
-                        // If a worker can only be assigned one shift a day
-                        if(!worker.MultipleShiftAssignments)
-                        {
-                            // Get Other Entries of the day
-                            IEnumerable<ScheduleEntryDTO> currentDayEntries = scheduleEntryDTOs.Where(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date) && i.ScheduleEntryId != scheduleEntry.ScheduleEntryId);
-
-                            // Apply specific ineligibilities to the current day entries
-                            scheduleEntryIneligibilities = ApplySpecificInegibilities(currentDayEntries, worker, scheduleEntryIneligibilities);
-                        }
-                        
-
-                        // Check if the worker is part of a rotation
-                        if (isRotation && worker.PartOfRotation)
-                        {
-                            EntityShiftRotationDTO currentShiftRotationStage = entityShiftRotationDTOs.Where(i => i.ShiftId.Equals(scheduleEntry.ShiftId)).FirstOrDefault();
-
-                            EntityShiftRotationDTO nextStepOfRotation = entityShiftRotationDTOs.Where(i => i.OrderNo == currentShiftRotationStage.OrderNo + 1).FirstOrDefault();
-
-                            // If there isnt a next rotation, go back to 1
-                            if (nextStepOfRotation == null)
-                            {
-                                // Get the first step of rotation
-                                nextStepOfRotation = entityShiftRotationDTOs.Where(i => i.OrderNo == 1).FirstOrDefault();
-                            }
-                            
-                            // Check if the next step of rotation is not a leave
-                            if (!nextStepOfRotation.IsLeave)
-                            {
-                                List<ScheduleEntryDTO> nextIneligibleEntries = new List<ScheduleEntryDTO>();
-                                if (worker.MultipleShiftAssignments)
-                                {
-                                    // Check if the next step of rotation can still be done on the same day
-                                    ShiftDTO nextRotationShift = shifts.Where(i => i.ShiftId.Equals(nextStepOfRotation.ShiftId)).FirstOrDefault();
-                                    ScheduleEntryDTO nextRotationEntry = scheduleEntryDTOs.Where(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date) && i.ShiftId.Equals(nextRotationShift.ShiftId)).FirstOrDefault();
-
-
-                                    // 1. Check if current schedule start date is earlier than the next rotation entry of the same day
-                                    bool canDoSameDay = (nextRotationEntry != null && scheduleEntry.ScheduleStartDate < nextRotationEntry.ScheduleStartDate);
-
-                                    bool maxHourAllowed = (maxDailyRule == null || CheckMaxHoursPerDay(nextRotationEntry, dailyEntries, worker, maxDailyRule, shifts));
-
-                                    if(canDoSameDay && maxHourAllowed)
-                                    {
-                                        nextIneligibleEntries = scheduleEntryDTOs.Where(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date)
-                                            && !i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId))
-                                            && !i.ShiftId.Equals(nextStepOfRotation.ShiftId)).ToList();
-                                    }
-
-                                    // Else, get all entries of the next day and make all ineligible, except for the next rotation entry 
-                                    else
-                                    {
-                                        nextIneligibleEntries = scheduleEntryDTOs.Where(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date.AddDays(1))
-                                            && !i.ShiftId.Equals(nextStepOfRotation.ShiftId)).ToList();
-                                    }
-                                }
-                                else
-                                {
-                                    // Get Entries of the next day where its not the same shift
-                                    nextIneligibleEntries = scheduleEntryDTOs.Where(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date.AddDays(1))
-                                        && !i.ShiftId.Equals(nextStepOfRotation.ShiftId)).ToList();
-                                }
-                                
-                                scheduleEntryIneligibilities = ApplySpecificInegibilities(nextIneligibleEntries, worker, scheduleEntryIneligibilities);
-                            }
-
-                            // Its a mandatory leave
-                            else
-                            {
-                                DateTime leaveStart = scheduleEntry.ScheduleEndDate;
-                                DateTime leaveEnd = leaveStart.Add(nextStepOfRotation.LeaveDuration);
-
-                                IEnumerable<ScheduleEntryDTO> mandatoryLeaveEntries = scheduleEntryDTOs
-                                        .Where(i => i.ScheduleStartDate >= scheduleEntry.ScheduleStartDate && i.ScheduleStartDate <= leaveEnd);
-
-                                scheduleEntryIneligibilities = ApplySpecificInegibilities(mandatoryLeaveEntries, worker, scheduleEntryIneligibilities);
-                            }
-                        }
-
-                        // If not part of the rotation
-                        else if (!worker.PartOfRotation)
-                        {
-                            scheduleEntryIneligibilities = CheckAndApplyIneligiblitiesForConsecutiveEntries(entityRules, worker, scheduleEntryDTOs, scheduleEntry, scheduleEntryIneligibilities);
-                        }
+                        scheduleEntryIneligibilities = ValidatePostSelectionIneligibilities(worker, scheduleEntry, scheduleEntryDTOs, scheduleEntryIneligibilities, shifts, entityShiftRotationDTOs, entityRules);
 
                         if (skillId != -1 && quantity != 0 && skillAssigned >= quantity)
                             break;
-                        // END OF Consecutive Check
+
                     }
 
                     if (quantity != 0 && assigned.Count >= quantity)
@@ -721,17 +635,297 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 scheduleEntry.ScheduleParticipants = assigned;
+
+                //Check if there is a next entry and its a different day from the one being tracked // isFirstDay &&
+                //if ( i + 1 < scheduleEntryDTOs.Count && scheduleEntryDTOs[i + 1].ScheduleStartDate.Date != trackingDay)
+                //{
+                //    Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>> refillResults = await RefillDailies(scheduleEntryDTOs, scheduleEntryDTOs[i].ScheduleStartDate.Date, entityWorkerMemberDTOs, shifts, entityRules, entityShiftRotationDTOs, scheduleEntryIneligibilities, createEntityScheduleDTO);
+                //    // isFirstDay = false;
+                //    trackingDay = scheduleEntryDTOs[i + 1].ScheduleStartDate.Date;
+                //    scheduleEntryDTOs = refillResults.Item1;
+                //    scheduleEntryIneligibilities = refillResults.Item2;
+                //}
             }
-            
+
             return scheduleEntryDTOs;
         }
 
         #endregion
 
-        private List<ScheduleEntryIneligibility> ValidatePostSelectionIneligibilities(EntityWorkerMemberDTO worker, 
-            ScheduleEntryDTO scheduleEntry, 
-            List<ScheduleEntryDTO> scheduleEntryDTOs, 
-            List<ScheduleEntryIneligibility> scheduleEntryIneligibilities, 
+        #region Refill Dailies
+
+        private async Task<Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>>> RefillDailies(
+            List<ScheduleEntryDTO> scheduleEntries,
+            DateTime dayToRefill,
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs,
+            List<ShiftDTO> shifts,
+            List<EntityRuleDTO> entityRules,
+            List<EntityShiftRotationDTO> shiftRotationDTOs,
+            List<ScheduleEntryIneligibility> scheduleEntryIneligibilities,
+            CreateEntityScheduleDTO createEntityScheduleDTO)
+        {
+            // 1. Only consider schedule entries for the target day
+            List<ScheduleEntryDTO> dayEntries = scheduleEntries
+                .Where(e => e.ScheduleStartDate.Date == dayToRefill.Date)
+                .ToList();
+
+            // 2. Find all workers who are NOT already assigned on this day
+            var notPickedWorkers = entityWorkerMemberDTOs
+                .Where(worker =>
+                    !dayEntries.Any(entry =>
+                        entry.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId)))
+                .ToList();
+
+            // 3. Rules we need repeatedly
+            var maxDailyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_DAY_ID);
+            var maxWeeklyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_WEEK_ID);
+            var postShiftRestRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.POST_SHIFT_REST_HOURS_ID);
+            var consecutiveNonRotationTurnsRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_CONSECUTIVE_DAYS_NON_ROTATIONERS_ID);
+
+            foreach (var worker in notPickedWorkers)
+            {
+                for (int i = 0; i < dayEntries.Count; i++)
+                {
+                    ScheduleEntryDTO scheduleEntry = dayEntries[i];
+
+                    var maxPerShiftFinal = ReturnMaxWorkersPerShift(entityRules, scheduleEntry);
+
+                    // Skip if full
+                    if (maxPerShiftFinal != 0 && scheduleEntry.ScheduleParticipants.Count >= maxPerShiftFinal)
+                        continue;
+
+                    // Skip if already assigned (redundant due to outer check, but safe)
+                    if (scheduleEntry.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId))
+                        continue;
+
+                    // Check if eligible at all
+                    bool isRotation = shiftRotationDTOs.Any(rot => rot.ShiftId == scheduleEntry.ShiftId);
+                    var filtered = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities);
+                    if (!filtered.Any())
+                        continue;
+
+                    // Skill requirement
+                    var requiredSkills = GetMinimumSkilletSetPerShift(entityRules, scheduleEntry)
+                        ?? new List<Tuple<int, int>> { Tuple.Create(-1, maxPerShiftFinal) };
+
+                    bool hasRequiredSkill = requiredSkills.Any(req =>
+                        req.Item1 == -1 || worker.SkillSet.Any(s => s.SkillId == req.Item1));
+
+                    if (!hasRequiredSkill)
+                        continue;
+
+                    // Daily/weekly/monthly entries
+                    var dailyEntries = scheduleEntries.Where(e => e.ScheduleStartDate.Date == dayToRefill.Date);
+                    var weeklyEntries = await FilterWeeklySessions(scheduleEntry, scheduleEntries, createEntityScheduleDTO);
+                    var monthEntries = await FilterMonthlyEntries(scheduleEntry, scheduleEntries, createEntityScheduleDTO);
+                    var previousShiftEntries = scheduleEntries
+                        .Where(e => e.ScheduleStartDate < scheduleEntry.ScheduleStartDate)
+                        .OrderByDescending(e => e.ScheduleStartDate);
+
+                    // Rule checks
+                    if (maxDailyRule != null && !CheckMaxHoursPerDay(scheduleEntry, dailyEntries, worker, maxDailyRule, shifts))
+                        continue;
+
+                    if (maxWeeklyRule != null && !CheckMaxHoursPerWeek(weeklyEntries, worker, maxWeeklyRule, shifts))
+                        continue;
+
+                    if (postShiftRestRule != null && !CheckForPostShiftRest(scheduleEntry, previousShiftEntries, worker, postShiftRestRule))
+                        continue;
+
+                    if (consecutiveNonRotationTurnsRule != null && !worker.PartOfRotation && !CheckConsecutiveTurns(scheduleEntries, scheduleEntry, worker, consecutiveNonRotationTurnsRule))  // Check for consecutive turns for non rotationers
+                        continue;
+
+                    // Conflict: another shift on the same day
+                    bool hasConflictingAssignment = scheduleEntries.Any(i =>
+                        i.ScheduleStartDate.Date == scheduleEntry.ScheduleStartDate.Date &&
+                        i.ScheduleEntryId != scheduleEntry.ScheduleEntryId &&
+                        !worker.MultipleShiftAssignments &&
+                        i.ScheduleParticipants.Any(j => j.WorkerId == worker.WorkerId));
+
+                    if (hasConflictingAssignment)
+                        continue;
+
+                    // Passed all checks — assign
+                    scheduleEntry.ScheduleParticipants.Add(worker);
+
+                    // Update ineligibility list
+                    scheduleEntryIneligibilities = ValidatePostSelectionIneligibilities(
+                        worker,
+                        scheduleEntry,
+                        scheduleEntries,
+                        scheduleEntryIneligibilities,
+                        shifts,
+                        shiftRotationDTOs,
+                        entityRules
+                    );
+
+                    //dayEntries = dayEntries.OrderBy(i => i.ScheduleParticipants.Count)
+                    //    .ThenBy(i => i.ScheduleStartDate).ToList();
+
+                    //i = 0;
+
+                    if (!worker.MultipleShiftAssignments)
+                        break;
+                }
+            }
+
+            return Tuple.Create(scheduleEntries, scheduleEntryIneligibilities);
+        }
+
+
+        private async Task<Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>>> _RefillDailies(List<ScheduleEntryDTO> scheduleEntries,
+            DateTime dayToRefill,
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs,
+            List<ShiftDTO> shifts,
+            List<EntityRuleDTO> entityRules,
+            List<EntityShiftRotationDTO> shiftRotationDTOs,
+            List<ScheduleEntryIneligibility> scheduleEntryIneligibilities,
+            CreateEntityScheduleDTO createEntityScheduleDTO
+            )
+        {
+            List<EntityWorkerMemberDTO> notPickedWorkers = entityWorkerMemberDTOs
+                .Where(worker => !scheduleEntries.Any(entry => entry.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId) && entry.ScheduleStartDate.Date == dayToRefill.Date))
+                .ToList();
+
+            // For every worker not picked
+            foreach (EntityWorkerMemberDTO worker in notPickedWorkers)
+            {
+                bool dayAssigned = false;
+                foreach (var scheduleEntry in scheduleEntries.Where(e => e.ScheduleStartDate.Date == dayToRefill.Date))
+                {
+                    // Check if the schedule entry is maxed
+                    var maxPerShiftFinal = ReturnMaxWorkersPerShift(entityRules, scheduleEntry);
+
+                    if (maxPerShiftFinal != 0 && scheduleEntry.ScheduleParticipants.Count >= maxPerShiftFinal)
+                        continue; // Skip if max workers per shift is reached
+
+                    bool isRotation = shiftRotationDTOs.Any(rot => rot.ShiftId == scheduleEntry.ShiftId);
+
+                    // Check if the worker is eligible
+                    bool eligible = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities).Count != 0;
+
+                    var maxDailyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_DAY_ID);
+                    var maxWeeklyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_WEEK_ID);
+                    var postShiftRestRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.POST_SHIFT_REST_HOURS_ID);
+                    // var avgHoursWeeklyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.AVG_HOURS_WEEK_ID);
+                    // var avgHoursMonthlyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.AVG_HOURS_MONTH_ID);
+
+                    // 2.1 Determine minimum skillset required
+                    List<Tuple<int, int>> requiredSkillQuantities = GetMinimumSkilletSetPerShift(entityRules, scheduleEntry);
+
+                    // Fallback: if no skills are defined, allow any eligible worker
+                    if (requiredSkillQuantities == null || !requiredSkillQuantities.Any())
+                    {
+                        requiredSkillQuantities = new List<Tuple<int, int>> { new Tuple<int, int>(-1, maxPerShiftFinal) };
+                    }
+
+                    // 2.5 Get daily and weekly entries
+                    var dailyEntries = scheduleEntries.Where(e => e.ScheduleStartDate.Date == scheduleEntry.ScheduleStartDate.Date);
+                    var weeklyEntries = await FilterWeeklySessions(scheduleEntry, scheduleEntries, createEntityScheduleDTO);
+                    var monthEntries = await FilterMonthlyEntries(scheduleEntry, scheduleEntries, createEntityScheduleDTO);
+
+                    // 2.6 Get previous shift entries for rest check
+                    var previousShiftEntries = scheduleEntries
+                        .Where(e => e.ScheduleStartDate < scheduleEntry.ScheduleStartDate)
+                        .OrderByDescending(e => e.ScheduleStartDate);
+
+                    var assigned = scheduleEntry.ScheduleParticipants;
+
+                    if (maxPerShiftFinal != 0 && assigned.Count >= maxPerShiftFinal) break;
+                    if (scheduleEntry.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId)) continue;
+
+                    if (maxDailyRule != null && !CheckMaxHoursPerDay(scheduleEntry, dailyEntries, worker, maxDailyRule, shifts)) break; // Check maximum amount of hours per day
+                    if (maxWeeklyRule != null && !CheckMaxHoursPerWeek(weeklyEntries, worker, maxWeeklyRule, shifts)) break;             // Check maximum amount of hours per week
+                                                                                                                                         // if(avgHoursWeeklyRule != null && !CheckAverageHoursPerWeek(weeklyEntries, worker, avgHoursWeeklyRule, shifts)) continue;
+                                                                                                                                         // if (avgHoursMonthlyRule != null && !CheckAverageHoursPerMonth(monthEntries, worker, avgHoursMonthlyRule, shifts)) continue;
+                    if (postShiftRestRule != null && !CheckForPostShiftRest(scheduleEntry, previousShiftEntries, worker, postShiftRestRule)) break;  // Check for mandatory rest post shift
+                    if (scheduleEntries.Any(i => i.ScheduleStartDate.Date.Equals(scheduleEntry.ScheduleStartDate.Date)
+                        && i.ScheduleEntryId != scheduleEntry.ScheduleEntryId
+                        && !worker.MultipleShiftAssignments
+                        && i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId)))) break;  // Check if worker has already an assignment on the same day and not eligible for multiple
+
+                    // Assign worker
+                    scheduleEntry.ScheduleParticipants.Add(worker);
+                    dayAssigned = true;
+
+                    scheduleEntryIneligibilities = ValidatePostSelectionIneligibilities(worker, scheduleEntry, scheduleEntries, scheduleEntryIneligibilities, shifts, shiftRotationDTOs, entityRules);
+                }
+            }
+
+            // foreach (entityWo)
+            // FOR WORKER
+            // FOR SCHEDULE
+            // if assigned, shuffle order
+
+            return new Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>>(scheduleEntries, scheduleEntryIneligibilities);
+        }
+
+        #endregion
+
+        private bool IsWorkerEligible(ScheduleEntryDTO scheduleEntry, EntityWorkerMemberDTO worker)
+        {
+            bool result = false;
+
+
+
+            result = true;
+
+            return result;
+        }
+
+        #region Check Consecutive Turns
+
+        private bool CheckConsecutiveTurns(List<ScheduleEntryDTO> scheduleEntries, ScheduleEntryDTO currentEntry, EntityWorkerMemberDTO worker, EntityRuleDTO consecutiveShiftsRule)
+        {
+            if (consecutiveShiftsRule == null || consecutiveShiftsRule.EntityRuleSpecificationDTOs.Count == 0)
+                return true;
+
+            int maxConsecutiveDays = (int)consecutiveShiftsRule.EntityRuleSpecificationDTOs[0].RuleSpecificationValue;
+
+            // Step 1: Get all unique dates the worker is scheduled
+            var workerDates = scheduleEntries
+                .Where(e => e.ScheduleParticipants.Any(p => p.WorkerId == worker.WorkerId))
+                .Select(e => e.ScheduleStartDate.Date)
+                .Distinct()
+                .OrderByDescending(d => d)
+                .ToList();
+
+            if (!workerDates.Contains(currentEntry.ScheduleStartDate.Date))
+            {
+                workerDates.Add(currentEntry.ScheduleStartDate.Date); // Include the current entry's date if not already present
+                workerDates = workerDates.OrderByDescending(d => d).ToList(); // Re-sort
+            }
+
+            // Step 2: Check for consecutive days starting from currentEntry date
+            DateTime expectedDate = currentEntry.ScheduleStartDate.Date;
+            int consecutiveCount = 0;
+
+            foreach (var date in workerDates)
+            {
+                if (date == expectedDate)
+                {
+                    consecutiveCount++;
+                    expectedDate = expectedDate.AddDays(-1);
+                    if (consecutiveCount > maxConsecutiveDays)
+                        return false; // Violates the rule
+                }
+                else if (date < expectedDate)
+                {
+                    break; // Gap found, streak ends
+                }
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Validate Post Selection Ineligibilities
+
+        private List<ScheduleEntryIneligibility> ValidatePostSelectionIneligibilities(EntityWorkerMemberDTO worker,
+            ScheduleEntryDTO scheduleEntry,
+            List<ScheduleEntryDTO> scheduleEntryDTOs,
+            List<ScheduleEntryIneligibility> scheduleEntryIneligibilities,
             List<ShiftDTO> shifts,
             List<EntityShiftRotationDTO> entityShiftRotationDTOs,
             List<EntityRuleDTO> entityRules
@@ -828,6 +1022,8 @@ namespace ShiftSchedularBLL.Service
             return scheduleEntryIneligibilities;
         }
 
+        #endregion
+
         #region Check And Apply Ineligiblities For Consecutive Entries
 
         private List<ScheduleEntryIneligibility> CheckAndApplyIneligiblitiesForConsecutiveEntries(List<EntityRuleDTO> entityRules, EntityWorkerMemberDTO worker, List<ScheduleEntryDTO> scheduleEntryDTOs, ScheduleEntryDTO scheduleEntry, List<ScheduleEntryIneligibility> scheduleEntryIneligibilities)
@@ -842,15 +1038,21 @@ namespace ShiftSchedularBLL.Service
                     int consecutiveDaysRuleAmount = (int)consecutiveTurnsRule.EntityRuleSpecificationDTOs[0].RuleSpecificationValue;
 
                     // Get Entries where worker is Assigned, order by latest
-                    List<ScheduleEntryDTO> workerEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId))).OrderByDescending(i => i.ScheduleStartDate).ToList();
+                    List<ScheduleEntryDTO> workerEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.WorkerId.Equals(worker.WorkerId)))
+                        .OrderByDescending(i => i.ScheduleStartDate).ToList();
+
+                    workerEntries = workerEntries
+                        .GroupBy(e => e.ScheduleStartDate.Date)
+                        .Select(g => g.First())
+                        .ToList();
 
                     // Check if worker with this assignment has enough consecutive turns
                     if (consecutiveDaysRuleAmount > 0 && workerEntries.Count != 0)
                     {
                         DateTime nextExpectedDate = scheduleEntry.ScheduleStartDate.AddDays(-1);
                         int currentConsecutive = 1;
-                        
-                        if(workerEntries.Count > 1)
+
+                        if (workerEntries.Count > 1)
                         {
                             for (int i = 0; i < consecutiveDaysRuleAmount && i < workerEntries.Count; i++) // workerEntries.Count && currentConsecutive < consecutiveDaysRuleAmount
                             {
@@ -872,15 +1074,34 @@ namespace ShiftSchedularBLL.Service
                                         if (weekDaysOffRule != null)
                                         {
                                             int weekDaysRestAmount = (int)weekDaysOffRule.EntityRuleSpecificationDTOs[0].RuleSpecificationValue;
-                                            // apply inegilibity for next amount of rest days
-                                            dateStart = scheduleEntry.ScheduleEndDate;
-                                            dateEnd = dateStart.AddDays(weekDaysRestAmount);
+
+                                            // Worker can still be assigned to other shifts on the same day
+                                            if (worker.MultipleShiftAssignments)
+                                            {
+                                                dateStart = scheduleEntry.ScheduleStartDate.Date.AddDays(1);
+                                                dateEnd = dateStart.AddDays(weekDaysRestAmount).AddSeconds(-1);
+                                            }
+                                            else
+                                            {
+                                                // apply inegilibity for next amount of rest days
+                                                dateStart = scheduleEntry.ScheduleEndDate;
+                                                dateEnd = dateStart.AddDays(weekDaysRestAmount);
+                                            }
+
                                         }
                                         else
                                         {
-                                            // apply inegilibity for next day
-                                            dateStart = scheduleEntry.ScheduleEndDate;
-                                            dateEnd = dateStart.AddDays(1);
+                                            if (worker.MultipleShiftAssignments)
+                                            {
+                                                dateStart = scheduleEntry.ScheduleStartDate.Date.AddDays(1);
+                                                dateEnd = dateStart.AddDays(1).AddSeconds(-1);
+                                            }
+                                            else
+                                            {
+                                                // apply inegilibity for next day
+                                                dateStart = scheduleEntry.ScheduleEndDate;
+                                                dateEnd = dateStart.AddDays(1);
+                                            }
                                         }
 
                                         IEnumerable<ScheduleEntryDTO> mandatoryLeaveEntries = scheduleEntryDTOs
@@ -906,7 +1127,7 @@ namespace ShiftSchedularBLL.Service
             {
                 string strErr = ex.Message;
             }
-            
+
             return scheduleEntryIneligibilities;
         }
 
@@ -926,7 +1147,7 @@ namespace ShiftSchedularBLL.Service
                 if (scheduleEntryIneligibility == null)
                 {
                     // Create a new one and add assigned worker to the list of Ineligible
-                    scheduleEntryIneligibility = new ScheduleEntryIneligibility(schedule.ScheduleEntryId);
+                    scheduleEntryIneligibility = new ScheduleEntryIneligibility(schedule.ScheduleEntryId, schedule.ScheduleStartDate);
                     scheduleEntryIneligibility.MembersIneligible.Add(worker);
                     scheduleEntrysIneligibilities.Add(scheduleEntryIneligibility);
                 }
@@ -961,7 +1182,7 @@ namespace ShiftSchedularBLL.Service
                 IEnumerable<ScheduleEntryDTO> weekEndEntries = scheduleEntryDTOs.Where(j => j.ScheduleStartDate.DayOfWeek == DayOfWeek.Saturday || j.ScheduleStartDate.DayOfWeek == DayOfWeek.Sunday);
                 foreach (ScheduleEntryDTO weekEndEntry in weekEndEntries)
                 {
-                    ScheduleEntryIneligibility ineligibility = new ScheduleEntryIneligibility(weekEndEntry.ScheduleEntryId);
+                    ScheduleEntryIneligibility ineligibility = new ScheduleEntryIneligibility(weekEndEntry.ScheduleEntryId, weekEndEntry.ScheduleStartDate);
                     ineligibility.MembersIneligible = entityWorkerMembers.Where(i => i.PartOfRotation.Equals(false) && i.WorksWeekends.Equals(false)).ToList();
 
                     scheduleEntryIneligibilities.Add(ineligibility);
@@ -1033,7 +1254,7 @@ namespace ShiftSchedularBLL.Service
                                 var ineligibility = scheduleEntryIneligibilities.FirstOrDefault(i => i.ScheduleEntryID == entry.ScheduleEntryId);
                                 if (ineligibility == null)
                                 {
-                                    ineligibility = new ScheduleEntryIneligibility(entry.ScheduleEntryId);
+                                    ineligibility = new ScheduleEntryIneligibility(entry.ScheduleEntryId, entry.ScheduleStartDate);
                                     scheduleEntryIneligibilities.Add(ineligibility);
                                 }
 
@@ -1354,7 +1575,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Is Skill set fullfilled
+        #region Is Skill Set Fullfilled
 
         private bool IsSkillSetFullfilled(List<EntityWorkerMemberDTO> assignedWorkers, List<Tuple<int, int>> quantityPerSkillset)
         {
@@ -1377,6 +1598,16 @@ namespace ShiftSchedularBLL.Service
 
         #region Check Max Hours Per Day
 
+        /// <summary>
+        /// Checks if a worker is not allocated beyond the amount of hours
+        /// allowed by the defined rules
+        /// </summary>
+        /// <param name="currentScheduleEntry">Current Schedule Entry</param>
+        /// <param name="presentDayEntries">Entries of the day being analyzed</param>
+        /// <param name="entityWorkerMemberDTO">Worker Information</param>
+        /// <param name="maxDailyHoursRule">Max</param>
+        /// <param name="shiftDTOs"></param>
+        /// <returns>True if the worker is eligible</returns>
         private bool CheckMaxHoursPerDay(
             ScheduleEntryDTO currentScheduleEntry,
             IEnumerable<ScheduleEntryDTO> presentDayEntries,
@@ -1441,7 +1672,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     ShiftDTO shiftDTO = shiftDTOs.Where(i => i.ShiftId.Equals(scheduleEntryDTO.ShiftId)).FirstOrDefault();
                     if (shiftDTO != null)
-                        totalHours+= shiftDTO.ShiftDuration;
+                        totalHours += shiftDTO.ShiftDuration;
                 }
             }
 
@@ -1520,7 +1751,7 @@ namespace ShiftSchedularBLL.Service
             // double minAllowed = expectedHours * (1 - tolerance);
             double maxAllowed = expectedHours * (1 + tolerance);
 
-            return  actualHours <= maxAllowed; // actualHours >= minAllowed &&
+            return actualHours <= maxAllowed; // actualHours >= minAllowed &&
         }
 
 
@@ -1593,8 +1824,10 @@ namespace ShiftSchedularBLL.Service
                         EndDateSearch = createEntityScheduleDTO.StartDate
                     };
 
+                    List<ScheduleEntryDTO> previousEntries = await GetScheduleEntries(weekRequest);
+
                     // Get Schedule entries from Start of Week Date to Start Date
-                    filteredWeeklyEntries = filteredWeeklyEntries.Concat(await GetScheduleEntries(weekRequest)).ToList();
+                    filteredWeeklyEntries = filteredWeeklyEntries.Concat(previousEntries).ToList();
                 }
             }
 
