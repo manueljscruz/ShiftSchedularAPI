@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,7 +16,8 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
         public DateTime ScheduleStartDate { get; set; }
         public DateTime ScheduleEndDate { get; set; }
         public ShiftDTO ShiftDTO { get; set; }
-        public List<EntityWorkerMemberDTO> ScheduleParticipants { get; set; }
+        // public List<EntityWorkerMemberDTO> ScheduleParticipants { get; set; }
+        public List<ScheduleEntryParticipantDTO> ScheduleParticipants { get; set; }
 
         #endregion
 
@@ -23,7 +25,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
 
         public ScheduleEntryDTO()
         {
-            ScheduleParticipants = new List<EntityWorkerMemberDTO>();
+            ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
         }
 
         #endregion
