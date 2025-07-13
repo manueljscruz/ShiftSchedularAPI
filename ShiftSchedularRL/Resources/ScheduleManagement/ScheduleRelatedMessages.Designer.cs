@@ -115,6 +115,15 @@ namespace ShiftSchedularRL.Resources.ScheduleManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid date inputted for this operation..
+        /// </summary>
+        public static string DateInvalidError {
+            get {
+                return ResourceManager.GetString("DateInvalidError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Schedule entry was removed successfuly..
         /// </summary>
         public static string DeleteScheduleEntrySuccess {

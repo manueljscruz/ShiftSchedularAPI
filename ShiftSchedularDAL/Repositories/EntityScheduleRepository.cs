@@ -28,12 +28,23 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (entityId != Guid.Empty)
             {
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityId);
-                parameters.Add("@StartDateSearch", startDateSearch);
-                parameters.Add("@EndDateSearch", endDateSearch);
-                IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetEntityScheduleEntries, parameters);
-                return scheduleEntries.ToList();
+                try
+                {
+                    IEnumerable<ScheduleEntry> scheduleEntries = _scheduleEntriesDbSet.Where(i => i.Shift.EntityId.Equals(entityId)
+                        && i.ScheduleStartDate.Date >= startDateSearch.Date
+                        && i.ScheduleEndDate.Date <= endDateSearch.Date);
+                    //Dictionary<string, object> parameters = new Dictionary<string, object>();
+                    //parameters.Add("@EntityId", entityId);
+                    //parameters.Add("@StartDateSearch", startDateSearch);
+                    //parameters.Add("@EndDateSearch", endDateSearch);
+                    //IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetEntityScheduleEntries, parameters);
+                    return scheduleEntries.ToList();
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                
             }
             else
                 return null;
@@ -55,5 +66,36 @@ namespace ShiftSchedularDAL.Repositories
             else
                 return null;
         }
+
+        #region Get By Shift And Date Entry
+
+        public async Task<ScheduleEntry> GetByShiftAndDateEntry(Guid shiftId, DateTime date)
+        {
+            if (shiftId != Guid.Empty)
+            {
+                return await _scheduleEntriesDbSet
+                    .Include(i => i.ScheduleEntryBots)
+                    .Include(i => i.ScheduleEntryWorkers)
+                    .Where(i => i.ShiftId.Equals(shiftId) && i.ScheduleStartDate.Date.Equals(date.Date)).FirstOrDefaultAsync();
+            }
+            else
+                return null;
+            
+        }
+
+        public async Task<ScheduleEntry> GetById(Guid id)
+        {
+            if (id != Guid.Empty)
+            {
+                return await _scheduleEntriesDbSet.Include(i => i.ScheduleEntryBots)
+                    .Include(i => i.ScheduleEntryWorkers)
+                    .Where(i => i.ScheduleEntryId.Equals(id)).FirstOrDefaultAsync();
+            }
+            else
+                return null;
+        }
+
+        #endregion
+
     }
 }

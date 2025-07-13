@@ -1,4 +1,6 @@
-﻿namespace ShiftSchedularEntity.Models.QueryModels
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ShiftSchedularEntity.Models.QueryModels
 {
     public class EntityWorkerMemberModel
     {

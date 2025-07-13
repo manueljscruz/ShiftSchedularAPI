@@ -8,6 +8,7 @@
 				se.ShiftId,
 				se.ScheduleStartDate,
 				se.ScheduleEndDate
+				se.ConfirmedSchedule
 			FROM ScheduleEntry se
 			LEFT JOIN ScheduleEntryWorkers sew ON se.ScheduleEntryId = sew.ScheduleEntryId
 			LEFT JOIN Shifts sh ON se.ShiftId = sh.ShiftId
@@ -24,7 +25,8 @@
 				se.ScheduleEntryId,
 				se.ShiftId,
 				se.ScheduleStartDate,
-				se.ScheduleEndDate
+				se.ScheduleEndDate,
+				se.ConfirmedSchedule
 			FROM ScheduleEntry se
 			LEFT JOIN Shifts sh ON se.ShiftId = sh.ShiftId
 			LEFT JOIN Entities et ON et.EntityId = sh.EntityId

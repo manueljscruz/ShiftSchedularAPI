@@ -135,6 +135,9 @@
   <data name="AddScheduleParticipantUnexpectedError" xml:space="preserve">
     <value>An expected error occured while adding a schedule participant. Please try again later.</value>
   </data>
+  <data name="DateInvalidError" xml:space="preserve">
+    <value>Invalid date inputted for this operation.</value>
+  </data>
   <data name="DeleteScheduleEntrySuccess" xml:space="preserve">
     <value>Schedule entry was removed successfuly.</value>
   </data>

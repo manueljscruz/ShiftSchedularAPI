@@ -461,7 +461,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Get Entity Member By Id
+        #region Get Entity Members By List
 
         /// <summary>
         /// Get Entity Member By Id
@@ -518,21 +518,29 @@ namespace ShiftSchedularBLL.Service
             // Get user bots
             IEnumerable<EntityWorkerMemberModel> userBots = await _unitOfWork.EntityUserBotRepository.GetDistinctUserBotsByEntityId(entityId);
 
+            List<EntityWorkerMemberModel> members = new(entityWorkerMembers.ToList());
+
             // Merge all members if there is a bot instance
             if (userBots != null)
-                entityWorkerMembers = entityWorkerMembers.Concat(userBots);
+                members.AddRange(userBots);
 
             if (workers.Count > 0)
             {
-                entityWorkerMembers = entityWorkerMembers.Where(i => workers.Contains(i.WorkerId)).ToList();
+                members = members
+                    .Where(m =>
+                        (!m.IsBot && workers.Contains(m.WorkerId)) ||
+                        (m.IsBot && workers.Contains(_generalService.ParseStringToGuid(m.WorkerId).ToString()))
+                    )
+                    .ToList();
+
             }
 
-            if (entityWorkerMembers != null)
+            if (members != null)
             {
                 // Order by name
-                entityWorkerMembers = entityWorkerMembers.OrderBy(i => i.WorkerName);
+                members = members.OrderBy(i => i.WorkerName).ToList();
 
-                foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMembers)
+                foreach (EntityWorkerMemberModel entityWorkerMember in members)
                 {
                     EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
                     entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
@@ -720,7 +728,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Add UserBot To Entity
+        #region Add User Bot To Entity
 
         private async Task<BaseResponse<object>> AddUserBotToEntity(Entity entity, AddNewMemberDTO newMemberDTO, DateTime nowUTCTime)
         {

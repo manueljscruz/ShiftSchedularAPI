@@ -9,9 +9,10 @@ namespace ShiftSchedularBLL.IService
     {
         Task<EntityScheduleViewModel> GetEntityScheduleViewModel(ScheduleViewModelRequestDTO viewModelRequest);
         Task<List<ScheduleEntryDTO>> GetScheduleEntries(ScheduleViewModelRequestDTO viewModelRequest);
+        Task<BaseResponse<ScheduleEntryDTO>> AssignEntry(AssignEntryDTO assignEntryDTO);
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO);
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp);
-        Task<ScheduleEntryDTO> GetScheduleEntryById(string scheduleEntryId, string languageCode);
+        Task<ScheduleEntryDTO> GetScheduleEntryById(Guid scheduleEntryId, string languageCode);
         Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO);
     }
 }
