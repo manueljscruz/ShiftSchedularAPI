@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
@@ -91,7 +89,6 @@ namespace ShiftSchedularAPI.Controllers
             return Ok(scheduleEntryOp);
         }
 
-
         #endregion
 
         #region Add Schedule Entry
@@ -110,18 +107,66 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPost("add-schedule-participant")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp)
         {
+            if (scheduleParticipantOp == null)
+                return BadRequest("Object is null");
+
             var scheduleParticipantResult = await _entityScheduleService.AddScheduleParticipant(scheduleParticipantOp);
-            return Ok(scheduleParticipantResult);
+
+            if (scheduleParticipantResult.Success)
+                return Ok(scheduleParticipantResult);
+
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, scheduleParticipantResult.Message);
         }
 
         #endregion
 
+        #region Get Schedules
 
+        [HttpPost("get-entity-schedules")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetEntitySchedules(ScheduleViewModelRequestDTO requestDTO)
+        {
+            if(requestDTO == null)
+            {
+                return BadRequest("Object is null");
+            }
 
+            var scheduleEntries = await _entityScheduleService.GetScheduleEntries(requestDTO);
 
+            if (scheduleEntries.Count == 0)
+                return NotFound("No schedules were found");
 
+            else
+                return Ok(scheduleEntries);
+        }
+
+        #endregion
+
+        [HttpPost("apply-rotation-cycle")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO)
+        {
+            if(rotationCycleDTO == null)
+            {
+                return BadRequest("Object is null");
+            }
+
+            var response = await _entityScheduleService.ApplyRotationCycle(rotationCycleDTO);
+
+            if (response.Success)
+                return Ok(response);
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
 
 
 

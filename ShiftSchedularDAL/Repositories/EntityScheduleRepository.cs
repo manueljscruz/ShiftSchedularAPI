@@ -32,12 +32,8 @@ namespace ShiftSchedularDAL.Repositories
                 {
                     IEnumerable<ScheduleEntry> scheduleEntries = _scheduleEntriesDbSet.Where(i => i.Shift.EntityId.Equals(entityId)
                         && i.ScheduleStartDate.Date >= startDateSearch.Date
-                        && i.ScheduleEndDate.Date <= endDateSearch.Date);
-                    //Dictionary<string, object> parameters = new Dictionary<string, object>();
-                    //parameters.Add("@EntityId", entityId);
-                    //parameters.Add("@StartDateSearch", startDateSearch);
-                    //parameters.Add("@EndDateSearch", endDateSearch);
-                    //IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetEntityScheduleEntries, parameters);
+                        && i.ScheduleEndDate.Date <= endDateSearch.Date).OrderBy(i => i.ScheduleStartDate);
+                    
                     return scheduleEntries.ToList();
                 }
                 catch (Exception ex)

@@ -317,10 +317,6 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-
-
-        
-
         #region Get Schedule Entries
 
         /// <summary>
@@ -407,7 +403,7 @@ namespace ShiftSchedularBLL.Service
                 }
             }
 
-            foreach(ScheduleEntryBots entryBot in scheduleEntry.ScheduleEntryBots)
+            foreach (ScheduleEntryBots entryBot in scheduleEntry.ScheduleEntryBots)
             {
                 // Find the worker in the entity members
                 EntityWorkerMemberDTO worker = entityWorkerMemberDTOs.FirstOrDefault(i => _generalService.ParseStringToGuid(i.WorkerId).Equals(entryBot.UserBotId));
@@ -629,10 +625,6 @@ namespace ShiftSchedularBLL.Service
 
                         foreach (ScheduleEntryDTO entry in scheduleEntryDTOs)
                         {
-
-                            // Save Id in the DTO
-                            // entry.ScheduleEntryId = mappedEntry.ScheduleEntryId;
-
                             // Add each participant to the entry
                             foreach (ScheduleEntryParticipantDTO participantDTO in entry.ScheduleParticipants)
                             {
@@ -689,7 +681,174 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region 
+        #region Apply Rotation Cycle
+
+
+        public async Task<BaseResponse<List<ScheduleEntryDTO>>> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO)
+        {
+            BaseResponse<List<ScheduleEntryDTO>> response = new BaseResponse<List<ScheduleEntryDTO>>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            List<EntityWorkerMemberDTO> entityWorkerMembersFound = await _entityService.GetEntityMembers(rotationCycleDTO.EntityId, new List<string> { rotationCycleDTO.WorkerId }, rotationCycleDTO.LanguageCode);
+
+            // Worker Not found
+            if (entityWorkerMembersFound.Count == 0)
+            {
+                response.Message = "";
+                return response;
+            }
+
+            // Invalid date selection
+            if (rotationCycleDTO.CycleStartDate > rotationCycleDTO.CycleEndDate)
+            {
+                response.Message = "";
+                return response;
+            }
+
+            // Store Worker
+            EntityWorkerMemberDTO worker = entityWorkerMembersFound[0];
+
+            // Get Relevant data
+            List<EntityShiftRotationDTO> entityShiftRotationDTOs = await _shiftService.GetEntityShiftRotations(rotationCycleDTO.EntityId);
+            List<EntityRuleDTO> entityRules = await _entityRuleService.GetEntityRules(rotationCycleDTO.EntityId, rotationCycleDTO.LanguageCode);
+            IEnumerable<ShiftDTO> shiftDTOs = await _shiftService.GetEntityShifts(rotationCycleDTO.EntityId);
+            List<SkillLocalizedDTO> entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
+            {
+                EntityId = rotationCycleDTO.EntityId,
+                LanguageCode = rotationCycleDTO.LanguageCode
+            });
+
+            // Check and Get Schedule Entries between the requested dates
+            ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO
+            {
+                WorkerId = rotationCycleDTO.WorkerId,
+                EntityId = rotationCycleDTO.EntityId,
+                LanguageCode = rotationCycleDTO.LanguageCode,
+                StartDateSearch = rotationCycleDTO.CycleStartDate,
+                EndDateSearch = rotationCycleDTO.CycleEndDate
+            };
+
+            List<ScheduleEntryDTO> scheduleEntries = await GetScheduleEntries(scheduleViewModelRequest);
+            DateTime dateToTrack = rotationCycleDTO.CycleStartDate;
+
+            CreateEntityScheduleDTO createEntityScheduleDTO = new CreateEntityScheduleDTO
+            {
+                EntityId = rotationCycleDTO.EntityId,
+                LanguageCode = rotationCycleDTO.LanguageCode,
+                WorkerId = rotationCycleDTO.WorkerId,
+                StartDate = rotationCycleDTO.CycleStartDate,
+                EndDate = rotationCycleDTO.CycleEndDate,
+                SingleRoleResponsibility = false,
+                ClearExistingSchedule = false,
+                ForceNoSkill = true
+            };
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                while (dateToTrack <= rotationCycleDTO.CycleEndDate)
+                {
+                    foreach (ShiftDTO shift in shiftDTOs)
+                    {
+                        ScheduleEntryDTO scheduleEntry = scheduleEntries
+                            .FirstOrDefault(i => i.ScheduleStartDate.Date.Equals(dateToTrack.Date) && i.ShiftId.Equals(shift.ShiftId));
+
+                        if (scheduleEntry != null)
+                            continue;
+
+                        // If no entry exists, create a new one
+                        ScheduleEntry newEntry = new ScheduleEntry
+                        {
+                            ShiftId = shift.ShiftId,
+                            ScheduleStartDate = dateToTrack.Add(shift.ShiftStartHour),
+                            ScheduleEndDate = dateToTrack.Add(shift.ShiftStartHour).Add(shift.ShiftDuration)
+                        };
+
+                        var totalBreakIncludedDuration = shift.ShiftBreakDTOs
+                            .Where(sb => sb.IncludedInShift)
+                            .Select(sb => sb.ShiftBreakDuration)
+                            .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
+
+                        newEntry.ScheduleEndDate = newEntry.ScheduleStartDate
+                            .Add(shift.ShiftDuration)
+                            .Add(totalBreakIncludedDuration);
+
+                        // Add the new entry to the schedule entries list
+                        newEntry = await _unitOfWork.EntityScheduleRepository.Add(newEntry);
+
+                        var scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(newEntry);
+                        scheduleEntryDTO.ShiftDTO = shift;
+                        scheduleEntryDTO.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
+                        scheduleEntries.Add(scheduleEntryDTO);
+
+                        scheduleEntries = scheduleEntries.OrderBy(i => i.ScheduleStartDate).ToList();
+                    }
+
+                    dateToTrack = dateToTrack.AddDays(1);
+                }
+
+                scheduleEntries = await FillOutSchedule(scheduleEntries, shiftDTOs.ToList(), entityRules, new List<EntityWorkerMemberDTO> { worker }, entityShiftRotationDTOs, entitySkills, createEntityScheduleDTO);
+
+                #region Add To Db
+
+                // Go for each entry and check where the worker was added
+                foreach (ScheduleEntryDTO entry in scheduleEntries)
+                {
+                    if(entry.ScheduleParticipants.Any(i => i.Worker.Equals(worker)))
+                    {
+                        ScheduleEntryParticipantDTO participantDTO = entry.ScheduleParticipants.Where(i => i.Worker.Equals(worker)).FirstOrDefault(); 
+                        
+                        if(participantDTO != null)
+                        {
+                            // If bot
+                            if (participantDTO.Worker.IsBot)
+                            {
+                                ScheduleEntryBots scheduleEntryBot = new ScheduleEntryBots
+                                {
+                                    ScheduleEntryId = entry.ScheduleEntryId,
+                                    UserBotId = _generalService.ParseStringToGuid(participantDTO.Worker.WorkerId),
+                                    SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
+                                };
+
+                                await _unitOfWork.ScheduleEntryBotsRepository.Add(scheduleEntryBot);
+                            }
+
+                            // Regular worker
+                            else
+                            {
+                                ScheduleEntryWorkers scheduleEntryWorker = new ScheduleEntryWorkers
+                                {
+                                    ScheduleEntryId = entry.ScheduleEntryId,
+                                    ApplicationUserId = participantDTO.Worker.WorkerId,
+                                    SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
+                                };
+
+                                await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorker);
+                            }
+                        }
+                    }
+                }
+
+                #endregion
+
+                await _unitOfWork.CommitAsync();
+
+                response.Success = true;
+                response.Result = scheduleEntries;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
+        }
+
 
 
         #endregion
@@ -749,7 +908,7 @@ namespace ShiftSchedularBLL.Service
                 List<Tuple<int, int>> requiredSkillQuantities = GetMinimumSkilletSetPerShift(entityRules, scheduleEntry);
 
                 // Fallback: if no skills are defined, allow any eligible worker
-                if (requiredSkillQuantities == null || !requiredSkillQuantities.Any())
+                if (requiredSkillQuantities == null || !requiredSkillQuantities.Any() || createEntityScheduleDTO.ForceNoSkill)
                 {
                     var maxPerShift = ReturnMaxWorkersPerShift(entityRules, scheduleEntry);
                     requiredSkillQuantities = new List<Tuple<int, int>> { new Tuple<int, int>(-1, maxPerShift) };
@@ -764,7 +923,8 @@ namespace ShiftSchedularBLL.Service
                     entityRules,
                     entityWorkerMemberDTOs,
                     isRotation,
-                    scheduleEntryIneligibilities);
+                    scheduleEntryIneligibilities,
+                    createEntityScheduleDTO.ForceNoSkill);
 
                 // 2.4 Get related max rules
                 var maxPerShiftFinal = ReturnMaxWorkersPerShift(entityRules, scheduleEntry);
@@ -856,7 +1016,7 @@ namespace ShiftSchedularBLL.Service
                         break;
                 }
 
-                scheduleEntry.ScheduleParticipants = assigned;
+                scheduleEntry.ScheduleParticipants = scheduleEntry.ScheduleParticipants.Concat(assigned).ToList();
 
                 //Check if there is a next entry and its a different day from the one being tracked // isFirstDay &&
                 //if ( i + 1 < scheduleEntryDTOs.Count && scheduleEntryDTOs[i + 1].ScheduleStartDate.Date != trackingDay)
@@ -922,7 +1082,7 @@ namespace ShiftSchedularBLL.Service
 
                     // Check if eligible at all
                     bool isRotation = shiftRotationDTOs.Any(rot => rot.ShiftId == scheduleEntry.ShiftId);
-                    var filtered = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities);
+                    var filtered = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities, createEntityScheduleDTO.ForceNoSkill);
                     if (!filtered.Any())
                         continue;
 
@@ -1027,7 +1187,7 @@ namespace ShiftSchedularBLL.Service
                     bool isRotation = shiftRotationDTOs.Any(rot => rot.ShiftId == scheduleEntry.ShiftId);
 
                     // Check if the worker is eligible
-                    bool eligible = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities).Count != 0;
+                    bool eligible = FilterEligibleWorkers(scheduleEntry, entityRules, new List<EntityWorkerMemberDTO> { worker }, isRotation, scheduleEntryIneligibilities, createEntityScheduleDTO.ForceNoSkill).Count != 0;
 
                     var maxDailyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_DAY_ID);
                     var maxWeeklyRule = entityRules.FirstOrDefault(r => r.RuleTypeId == RuleTypeConstants.MAX_HOURS_WEEK_ID);
@@ -1647,7 +1807,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityWorkerMembers"></param>
         /// <param name="isShiftRotation">Flag that indicates to filter by members who are part of the rotation</param>
         /// <returns></returns>
-        private List<EntityWorkerMemberDTO> FilterEligibleWorkers(ScheduleEntryDTO scheduleEntryDTO, List<EntityRuleDTO> entityRulesDTO, List<EntityWorkerMemberDTO> entityWorkerMembers, bool isShiftRotation, List<ScheduleEntryIneligibility> scheduleEntryIneligibilities)
+        private List<EntityWorkerMemberDTO> FilterEligibleWorkers(ScheduleEntryDTO scheduleEntryDTO, List<EntityRuleDTO> entityRulesDTO, List<EntityWorkerMemberDTO> entityWorkerMembers, bool isShiftRotation, List<ScheduleEntryIneligibility> scheduleEntryIneligibilities, bool forceNoSkill)
         {
             List<EntityWorkerMemberDTO> filteredWorkers = entityWorkerMembers;
 
@@ -1671,9 +1831,10 @@ namespace ShiftSchedularBLL.Service
                 // List<Tuple<int, int>> minSkillsetPerShift = GetMinimumSkilletSetPerShift(entityRulesDTO, scheduleEntryDTO);
 
                 // Filter list of workers valid for this entry
-                filteredWorkers = filteredWorkers
-                    .Where(worker => worker.SkillSet.Any(skill => wantedSkillset.Contains(skill.SkillId)))
-                    .ToList();
+                if(!forceNoSkill)
+                    filteredWorkers = filteredWorkers
+                        .Where(worker => worker.SkillSet.Any(skill => wantedSkillset.Contains(skill.SkillId)))
+                        .ToList();
             }
 
             // If this is a shift not part of rotation
@@ -2398,7 +2559,6 @@ namespace ShiftSchedularBLL.Service
 
             return response;
         }
-
 
         #endregion
 

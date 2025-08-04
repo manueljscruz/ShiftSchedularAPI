@@ -6,6 +6,7 @@
         public DateTime EndDate { get; set; }
         public bool SingleRoleResponsibility { get; set; }
         public bool ClearExistingSchedule { get; set; }
+        public bool ForceNoSkill { get; set; }
         public List<string> FilteredMembers { get; set; }
         public List<string> FilteredShifts { get; set; }
         public List<string> FilteredRules { get; set; }

@@ -504,6 +504,10 @@ namespace ShiftSchedularBLL.Service
             return entityWorkerMembers;
         }
 
+        #endregion
+
+        #region Get Entity Members
+
         public async Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode)
         {
             List<EntityWorkerMemberDTO> entityMembers = new List<EntityWorkerMemberDTO>();
@@ -518,21 +522,34 @@ namespace ShiftSchedularBLL.Service
             // Get user bots
             IEnumerable<EntityWorkerMemberModel> userBots = await _unitOfWork.EntityUserBotRepository.GetDistinctUserBotsByEntityId(entityId);
 
-            List<EntityWorkerMemberModel> members = new(entityWorkerMembers.ToList());
+            List<EntityWorkerMemberModel> members = new();
 
-            // Merge all members if there is a bot instance
-            if (userBots != null)
-                members.AddRange(userBots);
-
-            if (workers.Count > 0)
+            if(workers.Count > 0)
             {
-                members = members
-                    .Where(m =>
-                        (!m.IsBot && workers.Contains(m.WorkerId)) ||
-                        (m.IsBot && workers.Contains(_generalService.ParseStringToGuid(m.WorkerId).ToString()))
-                    )
-                    .ToList();
+                foreach (string workerId in workers)
+                {
+                    EntityWorkerMemberModel member = entityWorkerMembers.FirstOrDefault(m => m.WorkerId == workerId);
+                    if (member != null)
+                    {
+                        members.Add(member);
+                    }
+                    else
+                    {
+                        bool isIdBinary = workerId.Length < 25;
 
+                        EntityWorkerMemberModel bot = userBots.FirstOrDefault(b => isIdBinary ? b.WorkerId == workerId
+                            : _generalService.ParseStringToGuid(b.WorkerId).ToString() == workerId);
+
+                        if (bot != null)
+                        {
+                            members.Add(bot);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                members = entityWorkerMembers.Concat(userBots).ToList();
             }
 
             if (members != null)
