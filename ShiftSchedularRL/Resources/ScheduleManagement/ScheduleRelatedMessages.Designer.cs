@@ -142,6 +142,15 @@ namespace ShiftSchedularRL.Resources.ScheduleManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to End date cannot be smaller than the Start date..
+        /// </summary>
+        public static string InvalidDateInputOrder {
+            get {
+                return ResourceManager.GetString("InvalidDateInputOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Schedule entry not found. If this persists, contact support to resolve this issue..
         /// </summary>
         public static string ScheduleEntryNotFound {

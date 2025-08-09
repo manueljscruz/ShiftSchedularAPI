@@ -144,6 +144,9 @@
   <data name="DeleteScheduleEntryUnexpectedError" xml:space="preserve">
     <value>An expected error occured while removing a schedule entry. Please try again later.</value>
   </data>
+  <data name="InvalidDateInputOrder" xml:space="preserve">
+    <value>End date cannot be smaller than the Start date.</value>
+  </data>
   <data name="ScheduleEntryNotFound" xml:space="preserve">
     <value>Schedule entry not found. If this persists, contact support to resolve this issue.</value>
   </data>

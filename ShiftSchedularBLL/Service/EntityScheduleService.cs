@@ -11,6 +11,7 @@ using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
 using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.Dashboard;
+using ShiftSchedularRL.Resources.MemberManagement;
 using ShiftSchedularRL.Resources.ScheduleManagement;
 using ShiftSchedularRL.Resources.Shared;
 using ShiftSchedularRL.Resources.ShiftManagement;
@@ -694,14 +695,14 @@ namespace ShiftSchedularBLL.Service
             // Worker Not found
             if (entityWorkerMembersFound.Count == 0)
             {
-                response.Message = "";
+                response.Message = EntityWorkerRelatedMessages.MemberNotFound;
                 return response;
             }
 
             // Invalid date selection
             if (rotationCycleDTO.CycleStartDate > rotationCycleDTO.CycleEndDate)
             {
-                response.Message = "";
+                response.Message = ScheduleRelatedMessages.InvalidDateInputOrder;
                 return response;
             }
 
@@ -879,7 +880,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Fill Out Schedule V1
+        #region Fill Out Schedule
 
         public async Task<List<ScheduleEntryDTO>> FillOutSchedule(
             List<ScheduleEntryDTO> scheduleEntryDTOs,
@@ -1018,15 +1019,6 @@ namespace ShiftSchedularBLL.Service
 
                 scheduleEntry.ScheduleParticipants = scheduleEntry.ScheduleParticipants.Concat(assigned).ToList();
 
-                //Check if there is a next entry and its a different day from the one being tracked // isFirstDay &&
-                //if ( i + 1 < scheduleEntryDTOs.Count && scheduleEntryDTOs[i + 1].ScheduleStartDate.Date != trackingDay)
-                //{
-                //    Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>> refillResults = await RefillDailies(scheduleEntryDTOs, scheduleEntryDTOs[i].ScheduleStartDate.Date, entityWorkerMemberDTOs, shifts, entityRules, entityShiftRotationDTOs, scheduleEntryIneligibilities, createEntityScheduleDTO);
-                //    // isFirstDay = false;
-                //    trackingDay = scheduleEntryDTOs[i + 1].ScheduleStartDate.Date;
-                //    scheduleEntryDTOs = refillResults.Item1;
-                //    scheduleEntryIneligibilities = refillResults.Item2;
-                //}
             }
 
             return scheduleEntryDTOs;
@@ -1034,7 +1026,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Refill Dailies
+        #region Refill Dailies WIP
 
         private async Task<Tuple<List<ScheduleEntryDTO>, List<ScheduleEntryIneligibility>>> RefillDailies(
             List<ScheduleEntryDTO> scheduleEntries,
@@ -1249,17 +1241,6 @@ namespace ShiftSchedularBLL.Service
         }
 
         #endregion
-
-        private bool IsWorkerEligible(ScheduleEntryDTO scheduleEntry, EntityWorkerMemberDTO worker)
-        {
-            bool result = false;
-
-
-
-            result = true;
-
-            return result;
-        }
 
         #region Check Consecutive Turns
 
