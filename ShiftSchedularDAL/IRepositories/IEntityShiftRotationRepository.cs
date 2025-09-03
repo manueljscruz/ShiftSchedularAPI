@@ -5,7 +5,7 @@ namespace ShiftSchedularDAL.IRepositories
     public interface IEntityShiftRotationRepository : IGenericRepository<EntityShiftRotation>
     {
         Task<List<int>> GetAssignedOrderNumbersByEntityId(Guid entityId);
-        Task<EntityShiftRotation> GetEntityShiftRotation(Guid entityId, int orderNo, bool isLeave);
+        Task<EntityShiftRotation> GetEntityShiftRotation(Guid entityId, int orderNo);
         Task<bool> DeleteEntityShiftRotation(EntityShiftRotation entityShiftRotation);
         Task<List<EntityShiftRotation>> GetEntityShiftsRotation(Guid entityId);
     }

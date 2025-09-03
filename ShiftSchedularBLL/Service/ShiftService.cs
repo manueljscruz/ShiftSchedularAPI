@@ -619,6 +619,7 @@ namespace ShiftSchedularBLL.Service
                     {
                         entityShiftRotationDTO.DisplayName = ShiftRelatedMessages.LeaveNAPlaceholder;
                         entityShiftRotationDTO.Alias = ShiftRelatedMessages.LeaveNAAlias;
+                        entityShiftRotationDTO.LeaveDurationText = entityShiftRotationDTO.LeaveDuration.ToString();
                     }
                     else
                     {
@@ -806,9 +807,9 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Update Entity Shift Rotation
+        #region Update Entity Shift Rotation Order
 
-        public async Task<BaseResponse<bool>> UpdateEntityShiftRotation(UpdateShiftRotationDTO shiftRotationDTO)
+        public async Task<BaseResponse<bool>> UpdateEntityShiftRotationOrder(UpdateShiftRotationDTO shiftRotationDTO)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
@@ -820,7 +821,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo, shiftRotationDTO.IsLeave);
+            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo);
             if(entityShiftRotation == null)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
@@ -878,6 +879,47 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Update Shift Rotation
+
+        public async Task<BaseResponse<bool>> UpdateEntityShiftRotation(EntityShiftRotationDTO shiftRotationDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Success = false;
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (shiftRotationDTO == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationIsNull;
+                return response;
+            }
+
+            EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo);
+            if (entityShiftRotation == null)
+            {
+                response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
+                return response;
+            }
+
+            try
+            {
+                entityShiftRotation.IsLeave = shiftRotationDTO.IsLeave;
+                entityShiftRotation.ShiftId = shiftRotationDTO.ShiftId;
+                entityShiftRotation.LeaveDuration = ReturnDuration(shiftRotationDTO.LeaveDurationText).Ticks;
+
+                await _unitOfWork.EntityShiftRotationRepository.Update(entityShiftRotation);
+                response.Success = true;
+                response.Message = ShiftRelatedMessages.UpdateShiftRotationSucess;
+            }
+            catch (Exception ex)
+            {
+                string strErr = ex.Message;
+            }
+
+            return response;
+        }
+
+        #endregion
+
         #region Return Duration
 
         private TimeSpan ReturnDuration(string dateString)
@@ -885,7 +927,13 @@ namespace ShiftSchedularBLL.Service
             TimeSpan duration = TimeSpan.Zero;
             if (!string.IsNullOrEmpty(dateString))
             {
-                string[] daySplit = dateString.Split(' ');
+                string[] daySplit;
+
+                if (dateString.Contains('.'))
+                    daySplit = dateString.Split('.');
+
+                else 
+                    daySplit = dateString.Split(' ');
                 
 
                 if (daySplit.Length == 2)

@@ -28,11 +28,11 @@ namespace ShiftSchedularDAL.Repositories
             else return null;
         }
 
-        public async Task<EntityShiftRotation> GetEntityShiftRotation(Guid entityId, int orderNo, bool isLeave)
+        public async Task<EntityShiftRotation> GetEntityShiftRotation(Guid entityId, int orderNo)
         {
             if(entityId != Guid.Empty)
             {
-                return await _dbSet.FirstOrDefaultAsync(i => i.EntityId.Equals(entityId) && i.OrderNo.Equals(orderNo) && i.IsLeave.Equals(isLeave));
+                return await _dbSet.FirstOrDefaultAsync(i => i.EntityId.Equals(entityId) && i.OrderNo.Equals(orderNo));
             }
             else return null;
         }

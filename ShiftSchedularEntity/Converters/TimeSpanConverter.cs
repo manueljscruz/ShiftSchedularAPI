@@ -14,6 +14,10 @@ namespace ShiftSchedularEntity.Converters
                 return timeSpan;
             }
 
+            // Try parsing as a DateTime
+            if (DateTime.TryParse(timeString, out var dateTime))
+                return dateTime - DateTime.UnixEpoch;
+
             throw new JsonException($"Invalid TimeSpan format: {timeString}");
         }
 

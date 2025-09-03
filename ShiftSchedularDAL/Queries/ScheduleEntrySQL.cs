@@ -7,7 +7,7 @@
 				se.ScheduleEntryId,
 				se.ShiftId,
 				se.ScheduleStartDate,
-				se.ScheduleEndDate
+				se.ScheduleEndDate,
 				se.ConfirmedSchedule
 			FROM ScheduleEntry se
 			LEFT JOIN ScheduleEntryWorkers sew ON se.ScheduleEntryId = sew.ScheduleEntryId

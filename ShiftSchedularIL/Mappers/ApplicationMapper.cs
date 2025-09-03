@@ -255,8 +255,7 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.OrderNo, opt => opt.MapFrom(src => src.OrderNo))
                 .ForMember(dest => dest.IsLeave, opt => opt.MapFrom(src => src.IsLeave))
-                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId))
-                .ForMember(dest => dest.LeaveDuration, opt => opt.MapFrom(src => TimeSpan.FromTicks(src.LeaveDuration)));
+                .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId)).ReverseMap();
         }
     }
 }

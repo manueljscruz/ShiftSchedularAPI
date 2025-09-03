@@ -41,19 +41,19 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> GetEntityShiftsViewModel(BaseViewModelRequest viewModelRequestDTO)
         {
-            if(viewModelRequestDTO == null)
+            if (viewModelRequestDTO == null)
             {
                 return BadRequest();
             }
 
-            var shifts = await _shiftService.GetEntityShiftsViewModel(viewModelRequestDTO);
+            var shiftViewModel = await _shiftService.GetEntityShiftsViewModel(viewModelRequestDTO);
 
-            if(shifts == null)
+            if (shiftViewModel == null)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "");
             }
             else
-                return Ok(shifts);
+                return Ok(shiftViewModel);
         }
 
         #endregion
@@ -124,7 +124,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteShift(DeleteEntityObjectDTO deleteEntityObjectDTO)
         {
-            if(deleteEntityObjectDTO.EntityId == Guid.Empty || deleteEntityObjectDTO.ObjectId == Guid.Empty)
+            if (deleteEntityObjectDTO.EntityId == Guid.Empty || deleteEntityObjectDTO.ObjectId == Guid.Empty)
             {
                 return BadRequest("EntityId and object identifier cannot be empty.");
             }
@@ -141,7 +141,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteShiftBreak(SingleIdentifierDTO shiftBreakId)
         {
-            if(shiftBreakId.Identifier == Guid.Empty)
+            if (shiftBreakId.Identifier == Guid.Empty)
             {
                 return BadRequest("Shift identifier is required");
             }
@@ -189,13 +189,35 @@ namespace ShiftSchedularAPI.Controllers
             }
         }
 
+        [HttpPut("update-shift-rotation-order")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateShiftRotationOrder(UpdateShiftRotationDTO shiftRotationDTO)
+        {
+            if (shiftRotationDTO == null)
+            {
+                return BadRequest("");
+            }
+
+            BaseResponse<bool> response = await _shiftService.UpdateEntityShiftRotationOrder(shiftRotationDTO);
+            if (response.Success)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+        }
+
         [HttpPut("update-shift-rotation")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateShiftRotation(UpdateShiftRotationDTO shiftRotationDTO)
+        public async Task<IActionResult> UpdateShiftRotation(EntityShiftRotationDTO shiftRotationDTO)
         {
-            if (shiftRotationDTO == null)
+            if(shiftRotationDTO == null)
             {
                 return BadRequest("");
             }
@@ -209,6 +231,7 @@ namespace ShiftSchedularAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
             }
+
         }
 
         [HttpDelete("delete-shift-rotation")]

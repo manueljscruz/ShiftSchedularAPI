@@ -9,5 +9,6 @@
         public string DisplayName { get; set; }
         public string Alias { get; set; }
         public TimeSpan LeaveDuration { get; set; }
+        public string LeaveDurationText { get; set; }
     }
 }
