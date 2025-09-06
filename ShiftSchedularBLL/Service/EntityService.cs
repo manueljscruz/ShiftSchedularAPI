@@ -487,7 +487,7 @@ namespace ShiftSchedularBLL.Service
             // If pagination is being used
             if(nextPage != 0 && itemsPerPage != 0)
             {
-                int skipRows = nextPage - 1 * itemsPerPage;
+                int skipRows = (nextPage - 1) * itemsPerPage;
                 
                 entityWorkerMembers = entityWorkerMembers.Skip(skipRows).Take(itemsPerPage).ToList();
             }
