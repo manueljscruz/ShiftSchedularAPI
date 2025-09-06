@@ -73,13 +73,13 @@ namespace ShiftSchedularBLL.Service
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
-                    BaseViewModelRequest baseRequest = new BaseViewModelRequest
+                    MemberListModelRequest baseRequest = new MemberListModelRequest
                     {
                         EntityId = viewModelRequest.EntityId,
                         LanguageCode = viewModelRequest.LanguageCode
                     };
                     EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
-                    viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers;
+                    viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data;
                 }
 
 

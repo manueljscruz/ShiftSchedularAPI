@@ -2,6 +2,7 @@
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
+using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularRL.Resources.Dashboard;
 using ShiftSchedularRL.Resources.Home;
@@ -107,18 +108,37 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entities-members-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntitiesMembersViewModel(BaseViewModelRequest baseViewModelRequest)
+        public async Task<IActionResult> GetEntitiesMembersViewModel(MemberListModelRequest memberListModelRequest)
         {
-            if (baseViewModelRequest.EntityId != Guid.Empty)
+            if (memberListModelRequest.EntityId != Guid.Empty)
             {
                 // string decodedEntityId = HttpUtility.UrlDecode(entityId);
-                var entities = await _entityService.GetEntitiesMembersViewModel(baseViewModelRequest);
+                var entities = await _entityService.GetEntitiesMembersViewModel(memberListModelRequest);
                 return Ok(entities);
             }
             else
             {
                 return BadRequest(EntitiesRelatedMessages.EntityNoIdentifierError);
             }
+        }
+
+        #endregion
+
+        #region Get Entity Members Pagination
+
+        [HttpPost("get-entity-members-pagination")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetEntityMembersPagination(MemberListModelRequest memberListModelRequest)
+        {
+            if(memberListModelRequest == null)
+            {
+                return BadRequest();
+            }
+
+            PagedList<EntityWorkerMemberDTO> memberList = await _entityService.GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.LanguageCode, memberListModelRequest.CurrentPage, memberListModelRequest.ItemsPerPage);
+
+            return Ok(null);
         }
 
         #endregion

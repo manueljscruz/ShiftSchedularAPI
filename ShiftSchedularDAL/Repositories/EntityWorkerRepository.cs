@@ -4,6 +4,7 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Queries;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.QueryModels;
 
@@ -114,6 +115,14 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
+
+        //public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembersPagination(Guid entityId, int currentIndex, int nextIndex, int itemsPerPage)
+        //{
+        //    if (!string.IsNullOrEmpty(entityId.ToString()))
+        //    {
+
+        //    }
+        //}
 
         #region Get Distinct Members By Entity Id
 
