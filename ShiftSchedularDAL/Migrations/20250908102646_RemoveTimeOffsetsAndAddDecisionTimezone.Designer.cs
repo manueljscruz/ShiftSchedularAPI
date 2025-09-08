@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftSchedularDAL.Data;
 
@@ -11,9 +12,11 @@ using ShiftSchedularDAL.Data;
 namespace ShiftSchedularDAL.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250908102646_RemoveTimeOffsetsAndAddDecisionTimezone")]
+    partial class RemoveTimeOffsetsAndAddDecisionTimezone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -618,9 +621,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<DateTime>("AbsenceDateDecision")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("AbsenceDateDecisionOffset")
-                        .HasColumnType("int");
-
                     b.Property<string>("AbsenceDecisionOwner")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -637,9 +637,6 @@ namespace ShiftSchedularDAL.Migrations
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("DateOffset")
-                        .HasColumnType("int");
 
                     b.Property<string>("DecisionTimezoneId")
                         .IsRequired()

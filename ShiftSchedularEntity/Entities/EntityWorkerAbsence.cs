@@ -52,9 +52,14 @@ namespace ShiftSchedularEntity.Entities
         public DateTime AbsenceEndDate { get; set; }
 
         /// <summary>
-        /// Offset of the submission entry
+        /// Offset of the submission entry in minutes
         /// </summary>
-        public TimeSpan DateOffset { get; set; }
+        public int DateOffset { get; set; }
+
+        /// <summary>
+        /// Timezone id
+        /// </summary>
+        public string TimezoneId { get; set; }
 
         /// <summary>
         /// Flag that indicates if the absence has been approved
@@ -72,9 +77,11 @@ namespace ShiftSchedularEntity.Entities
         public DateTime AbsenceDateDecision { get; set; }
 
         /// <summary>
-        /// Offset of the date when the decision was made
+        /// Offset of the date when the decision was made in minutes
         /// </summary>
-        public TimeSpan AbsenceDateDecisionOffset { get; set; }
+        public int AbsenceDateDecisionOffset { get; set; }
+
+        public string DecisionTimezoneId { get; set; }
 
         #region Navigation Properties
 

@@ -49,13 +49,34 @@ namespace ShiftSchedularAPI.Controllers
         /// <returns></returns>
         [HttpPost("get-entity-worker-absence-model")]
         [ProducesResponseType(200)]
-        public async Task<IActionResult> GetEntityWorkerAbsencesViewModel(BaseViewModelRequest viewModelRequestDTO)
+        public async Task<IActionResult> GetEntityWorkerAbsencesViewModel(PagedModelRequest viewModelRequestDTO)
         {
             var viewModel = await _entityWorkerAbsenceService.GetEntityWorkerAbsenceViewModel(viewModelRequestDTO);
             return Ok(viewModel);
         }
 
         #endregion
+
+        #region Get Entity Worker Absences
+
+        [HttpPost("get-entity-worker-absence-pagination")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetEntityWorkerAbsencesPagination(PagedModelRequest pagedModelRequest)
+        {
+            if(pagedModelRequest == null)
+            {
+                return BadRequest();
+            }
+
+            var workerAbsences = await _entityWorkerAbsenceService.GetEntityWorkerAbsences(pagedModelRequest);
+
+            return Ok(workerAbsences);
+        }
+
+        #endregion
+
 
         #region Add Entity Worker Absence
 

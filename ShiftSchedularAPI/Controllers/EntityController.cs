@@ -108,7 +108,7 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entities-members-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntitiesMembersViewModel(MemberListModelRequest memberListModelRequest)
+        public async Task<IActionResult> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest)
         {
             if (memberListModelRequest.EntityId != Guid.Empty)
             {
@@ -129,7 +129,7 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entity-members-pagination")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityMembersPagination(MemberListModelRequest memberListModelRequest)
+        public async Task<IActionResult> GetEntityMembersPagination(PagedModelRequest memberListModelRequest)
         {
             if(memberListModelRequest == null)
             {

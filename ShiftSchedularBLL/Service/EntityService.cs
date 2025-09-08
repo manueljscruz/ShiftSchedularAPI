@@ -352,7 +352,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId">Entity identifier</param>
         /// <param name="lcode">Language code</param>
         /// <returns></returns>
-        public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(MemberListModelRequest memberListModelRequest)
+        public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest)
         {
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
@@ -605,7 +605,6 @@ namespace ShiftSchedularBLL.Service
         }
 
         #endregion
-
 
         #region Get Entity Skills
 

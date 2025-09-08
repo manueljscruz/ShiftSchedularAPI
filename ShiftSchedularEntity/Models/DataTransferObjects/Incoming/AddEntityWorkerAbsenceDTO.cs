@@ -8,6 +8,8 @@
         public string Observations { get; set; }
         public DateTime AbsenceStartDate { get; set; }
         public DateTime AbsenceEndDate { get; set; }
+        public int OffsetMinutes { get; set; }
+        public string TimezoneId { get; set; }
         public string LanguageCode { get; set; }
     }
 }

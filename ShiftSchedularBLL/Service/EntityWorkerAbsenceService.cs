@@ -50,10 +50,10 @@ namespace ShiftSchedularBLL.Service
             response.Success = false;
             response.Message = AbsenceRelatedMessages.AbsenceDecisionUnexpectedError;
 
-            if(absenceApprovalDecisionDTO != null)
+            if (absenceApprovalDecisionDTO != null)
             {
                 // Absence identifier is empty
-                if(absenceApprovalDecisionDTO.EntityWorkerAbsenceId == Guid.Empty)
+                if (absenceApprovalDecisionDTO.EntityWorkerAbsenceId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceIdIsNull;
                     return response;
@@ -61,7 +61,7 @@ namespace ShiftSchedularBLL.Service
 
                 // Get Absence instance
                 EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(absenceApprovalDecisionDTO.EntityWorkerAbsenceId);
-                if(entityWorkerAbsence == null)
+                if (entityWorkerAbsence == null)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceNotFound;
                     return response;
@@ -84,7 +84,7 @@ namespace ShiftSchedularBLL.Service
                 // Assign values and update absence entry
                 entityWorkerAbsence.AbsenceApproved = absenceApprovalDecisionDTO.AbsenceDecision;
                 entityWorkerAbsence.AbsenceDecisionOwner = absenceApprovalDecisionDTO.AbsenceDecisionSignature;
-                entityWorkerAbsence.AbsenceDateDecisionOffset = new DateTimeOffset(DateTime.Now).Offset;
+                entityWorkerAbsence.AbsenceDateDecisionOffset = GetTimeZoneOffsetMinutes(absenceApprovalDecisionDTO.DecisionTimezoneId);
                 entityWorkerAbsence.AbsenceDateDecision = DateTime.UtcNow;
 
                 await _unitOfWork.EntityWorkerAbsenceRepository.Update(entityWorkerAbsence);
@@ -112,22 +112,22 @@ namespace ShiftSchedularBLL.Service
             response.Success = false;
             response.Message = AbsenceRelatedMessages.AddEntityWorkerAbsenceUnexpectedError;
 
-            if(addEntityWorkerAbsence != null)
+            if (addEntityWorkerAbsence != null)
             {
                 // Validate
-                if(string.IsNullOrEmpty(addEntityWorkerAbsence.WorkerId))
+                if (string.IsNullOrEmpty(addEntityWorkerAbsence.WorkerId))
                 {
                     response.Message = AbsenceRelatedMessages.WorkerIdIsEmpty;
                     return response;
                 }
 
-                else if(await _userManager.FindByIdAsync(addEntityWorkerAbsence.WorkerId) == null)
+                else if (await _userManager.FindByIdAsync(addEntityWorkerAbsence.WorkerId) == null)
                 {
                     response.Message = AbsenceRelatedMessages.WorkerNotFound;
                     return response;
                 }
 
-                else if(addEntityWorkerAbsence.EntityId == Guid.Empty)
+                else if (addEntityWorkerAbsence.EntityId == Guid.Empty)
                 {
                     response.Message = AbsenceRelatedMessages.EntityIdIsEmpty;
                     return response;
@@ -139,43 +139,44 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                else if(addEntityWorkerAbsence.AbsenceTypeId == 0)
+                else if (addEntityWorkerAbsence.AbsenceTypeId == 0)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceTypeIsInvalid;
                     return response;
                 }
 
-                else if(addEntityWorkerAbsence.AbsenceStartDate == new DateTime())
+                else if (addEntityWorkerAbsence.AbsenceStartDate == new DateTime())
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceStartDateEmpty;
                     return response;
                 }
 
-                else if(addEntityWorkerAbsence.AbsenceEndDate == new DateTime())
+                else if (addEntityWorkerAbsence.AbsenceEndDate == new DateTime())
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceEndDateEmpty;
                     return response;
                 }
 
-                else if(addEntityWorkerAbsence.AbsenceEndDate < addEntityWorkerAbsence.AbsenceStartDate)
+                else if (addEntityWorkerAbsence.AbsenceEndDate < addEntityWorkerAbsence.AbsenceStartDate)
                 {
                     response.Message = AbsenceRelatedMessages.AbsenceDatesInvalidInterval;
                     return response;
                 }
 
+                EntityWorkerAbsence entityWorkerAbsence = null;
+
                 // Map add instance to entity instance
-                EntityWorkerAbsence entityWorkerAbsence = _mapper.Map<EntityWorkerAbsence>(addEntityWorkerAbsence);
+                entityWorkerAbsence = _mapper.Map<EntityWorkerAbsence>(addEntityWorkerAbsence);
 
                 // Add Id and Dates in Universal Time
                 entityWorkerAbsence.EntityWorkerAbsenceId = new Guid();
                 entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
                 entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
-                entityWorkerAbsence.DateOffset = new DateTimeOffset(entityWorkerAbsence.AbsenceStartDate).Offset;
                 entityWorkerAbsence.AbsenceDecisionOwner = string.Empty;
 
-                // Add Instance
                 try
                 {
+                    // Add Instance
                     entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.Add(entityWorkerAbsence);
                 }
                 catch (Exception ex)
@@ -183,13 +184,9 @@ namespace ShiftSchedularBLL.Service
                     string error = ex.Message;
                     return response;
                 }
-                
-
-                // Get Localized Absence types
-                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(addEntityWorkerAbsence.LanguageCode);
 
                 // Map added object to DTO instance
-                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
+                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, addEntityWorkerAbsence.LanguageCode);
 
                 response.Result = entityWorkerAbsenceDTO;
                 response.Success = true;
@@ -214,14 +211,14 @@ namespace ShiftSchedularBLL.Service
             response.Success = false;
             response.Message = AbsenceRelatedMessages.DeleteEntityWorkerAbsenceUnexpectedError;
 
-            if(absenceId == Guid.Empty)
+            if (absenceId == Guid.Empty)
             {
                 response.Message = AbsenceRelatedMessages.AbsenceIdIsNull;
                 return response;
             }
 
             EntityWorkerAbsence entityWorkerAbsence = await _unitOfWork.EntityWorkerAbsenceRepository.GetById(absenceId);
-            if(entityWorkerAbsence == null)
+            if (entityWorkerAbsence == null)
             {
                 response.Message = AbsenceRelatedMessages.AbsenceNotFound;
                 return response;
@@ -256,7 +253,7 @@ namespace ShiftSchedularBLL.Service
                 IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(lcode);
 
                 // Map added object to DTO instance
-                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds);
+                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, lcode);
 
                 return entityWorkerAbsenceDTO;
             }
@@ -273,9 +270,12 @@ namespace ShiftSchedularBLL.Service
         /// <param name="instance"></param>
         /// <param name="absenceTypeLocalizeds"></param>
         /// <returns></returns>
-        private async Task<EntityWorkerAbsenceDTO> HandleEntityWorkerAbsenceData(EntityWorkerAbsence instance, IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds)
+        private async Task<EntityWorkerAbsenceDTO> HandleEntityWorkerAbsenceData(EntityWorkerAbsence instance, string languageCode)
         {
             EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = _mapper.Map<EntityWorkerAbsenceDTO>(instance);
+            // Get Localized Absence types
+            IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(languageCode);
+
 
             AbsenceTypeLocalization absenceType = absenceTypeLocalizeds.Where(i => i.AbsenceTypeId.Equals(entityWorkerAbsenceDTO.AbsenceTypeId)).FirstOrDefault();
             if (absenceType != null)
@@ -299,31 +299,56 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="viewModelRequestDTO"></param>
         /// <returns></returns>
-        public async Task<EntityWorkerAbsenceViewModel> GetEntityWorkerAbsenceViewModel(BaseViewModelRequest viewModelRequestDTO)
+        public async Task<EntityWorkerAbsenceViewModel> GetEntityWorkerAbsenceViewModel(PagedModelRequest viewModelRequestDTO)
         {
             EntityWorkerAbsenceViewModel viewModel = new EntityWorkerAbsenceViewModel();
 
-            if(viewModelRequestDTO != null && viewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
+            if (viewModelRequestDTO != null && viewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
             {
                 // Check if its the owner
                 viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId);
 
                 // Retrieve all the absence types
                 IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(viewModelRequestDTO.LanguageCode);
-                foreach(AbsenceTypeLocalization absenceType in absenceTypeLocalizeds)
+                foreach (AbsenceTypeLocalization absenceType in absenceTypeLocalizeds)
                     viewModel.AbsenceTypeLocalizeds.Add(_mapper.Map<AbsenceTypeLocalizedDTO>(absenceType));
 
                 // Gets the entity worker absences of everyone if it is the owner, otherwise only of the user requesting it
-                IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId, viewModel.IsOwner);
-                foreach(EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
-                    viewModel.EntityWorkerAbsences.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, absenceTypeLocalizeds));
-                
+                viewModel.EntityWorkerAbsences = await GetEntityWorkerAbsences(viewModelRequestDTO);
             }
 
             return viewModel;
         }
 
         #endregion
+
+
+        public async Task<PagedList<EntityWorkerAbsenceDTO>> GetEntityWorkerAbsences(PagedModelRequest pagedModelRequest)
+        {
+            List<EntityWorkerAbsenceDTO> entityWorkerAbsencesList = new List<EntityWorkerAbsenceDTO>();
+
+            EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(pagedModelRequest.WorkerId, pagedModelRequest.EntityId);
+
+            IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(pagedModelRequest.EntityId, pagedModelRequest.WorkerId, entityWorkerInstance.IsOwner);
+            int totalCount = entityWorkerAbsences.Count();
+
+            entityWorkerAbsences = entityWorkerAbsences.OrderBy(i => i.AbsenceStartDate);
+
+            if(pagedModelRequest.NextPage != 0 && pagedModelRequest.ItemsPerPage != 0)
+            {
+                int skipRows = (pagedModelRequest.NextPage - 1) * pagedModelRequest.ItemsPerPage;
+
+                entityWorkerAbsences = entityWorkerAbsences.Skip(skipRows).Take(pagedModelRequest.ItemsPerPage);
+            }
+
+            foreach (EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
+                entityWorkerAbsencesList.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, pagedModelRequest.LanguageCode));
+
+            PagedList<EntityWorkerAbsenceDTO> pagedList = PagedList<EntityWorkerAbsenceDTO>.Create(entityWorkerAbsencesList.AsQueryable(), totalCount, pagedModelRequest.NextPage, pagedModelRequest.ItemsPerPage);
+
+            return pagedList;
+        }
+
 
         #region Update Entity Worker Absence
 
@@ -338,7 +363,7 @@ namespace ShiftSchedularBLL.Service
             response.Success = false;
             response.Message = AbsenceRelatedMessages.UpdateEntityWorkerAbsenceUnexpectedError;
 
-            if(entityWorkerAbsenceDTO != null)
+            if (entityWorkerAbsenceDTO != null)
             {
                 if (entityWorkerAbsenceDTO.EntityWorkerAbsenceId == Guid.Empty)
                 {
@@ -402,14 +427,14 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 _mapper.Map(entityWorkerAbsenceDTO, entityWorkerAbsence);
-                entityWorkerAbsence.DateOffset = new DateTimeOffset(entityWorkerAbsenceDTO.AbsenceStartDate).Offset;
+                entityWorkerAbsence.DateOffset = GetTimeZoneOffsetMinutes(entityWorkerAbsenceDTO.TimezoneId, entityWorkerAbsenceDTO.AbsenceStartDate);
 
                 // if there is an previous approval decision, reset it
                 if (entityWorkerAbsence.AbsenceDecisionOwner != null && entityWorkerAbsence.AbsenceDateDecision != new DateTime())
                 {
                     entityWorkerAbsence.AbsenceDecisionOwner = string.Empty;
                     entityWorkerAbsence.AbsenceDateDecision = new DateTime();
-                    entityWorkerAbsence.AbsenceDateDecisionOffset = new TimeSpan();
+                    entityWorkerAbsence.AbsenceDateDecisionOffset = 0;
                     entityWorkerAbsence.AbsenceApproved = false;
                 }
 
@@ -428,6 +453,26 @@ namespace ShiftSchedularBLL.Service
             }
 
             return response;
+        }
+
+        #endregion
+
+        #region AUX - Get Time Zone Offset Minutes
+
+        public static int GetTimeZoneOffsetMinutes(string timeZoneId, DateTime? dateTime = null)
+        {
+            if (string.IsNullOrWhiteSpace(timeZoneId))
+                throw new ArgumentException("Time zone ID cannot be null or empty.", nameof(timeZoneId));
+
+            // Default to now if no datetime is provided
+            DateTime targetDate = dateTime ?? DateTime.UtcNow;
+
+            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            // Get the offset considering DST
+            TimeSpan offset = tz.GetUtcOffset(targetDate);
+
+            return (int)offset.TotalMinutes;
         }
 
         #endregion

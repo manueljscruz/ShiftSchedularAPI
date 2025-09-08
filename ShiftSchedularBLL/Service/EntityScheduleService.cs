@@ -73,7 +73,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
-                    MemberListModelRequest baseRequest = new MemberListModelRequest
+                    PagedModelRequest baseRequest = new PagedModelRequest
                     {
                         EntityId = viewModelRequest.EntityId,
                         LanguageCode = viewModelRequest.LanguageCode
@@ -898,6 +898,7 @@ namespace ShiftSchedularBLL.Service
 
             DateTime trackingDay = scheduleEntryDTOs.Count != 0 ? scheduleEntryDTOs[0].ScheduleStartDate.Date : new DateTime();
             bool isFirstDay = true;
+
 
 
             // 2. Iterate over all schedule entries to assign workers
