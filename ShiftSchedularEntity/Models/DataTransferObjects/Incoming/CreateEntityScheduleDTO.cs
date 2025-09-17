@@ -10,5 +10,12 @@
         public List<string> FilteredMembers { get; set; }
         public List<string> FilteredShifts { get; set; }
         public List<string> FilteredRules { get; set; }
+
+        public CreateEntityScheduleDTO()
+        {
+            FilteredMembers = new List<string>();
+            FilteredShifts = new List<string>();
+            FilteredRules = new List<string>();
+        }
     }
 }

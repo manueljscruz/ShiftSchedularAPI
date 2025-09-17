@@ -142,11 +142,38 @@ namespace ShiftSchedularRL.Resources.ScheduleManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Schedule(s) participation(s) removed successfuly..
+        /// </summary>
+        public static string EntryParticipationRemoved {
+            get {
+                return ResourceManager.GetString("EntryParticipationRemoved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to End date cannot be smaller than the Start date..
         /// </summary>
         public static string InvalidDateInputOrder {
             get {
                 return ResourceManager.GetString("InvalidDateInputOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No schedule entries were not found. If this persists, contact support to resolve this issue..
+        /// </summary>
+        public static string ScheduleEntriesNotFound {
+            get {
+                return ResourceManager.GetString("ScheduleEntriesNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Schedule entries were removed successfuly..
+        /// </summary>
+        public static string ScheduleEntriesRemovedSuccess {
+            get {
+                return ResourceManager.GetString("ScheduleEntriesRemovedSuccess", resourceCulture);
             }
         }
         
@@ -174,6 +201,15 @@ namespace ShiftSchedularRL.Resources.ScheduleManagement {
         public static string ShiftNotFound {
             get {
                 return ResourceManager.GetString("ShiftNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The start date cannot be greater that the end date..
+        /// </summary>
+        public static string StartDateGreaterThanEndDateError {
+            get {
+                return ResourceManager.GetString("StartDateGreaterThanEndDateError", resourceCulture);
             }
         }
         

@@ -14,5 +14,6 @@ namespace ShiftSchedularBLL.IService
         Task<EntityWorkerAbsenceViewModel> GetEntityWorkerAbsenceViewModel(PagedModelRequest viewModelRequestDTO);
         Task<BaseResponse<EntityWorkerAbsenceDTO>> UpdateEntityWorkerAbsence(EntityWorkerAbsenceDTO entityWorkerAbsenceDTO);
         Task<PagedList<EntityWorkerAbsenceDTO>> GetEntityWorkerAbsences(PagedModelRequest pagedModelRequest);
+        Task<List<EntityWorkerAbsenceDTO>> GetSpecificWorkerAbsences(Guid entityId, List<string> workers, string languageCode, DateTime? startDate = null, DateTime? endDate = null);
     }
 }

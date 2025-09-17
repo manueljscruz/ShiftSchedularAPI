@@ -39,5 +39,31 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
+
+        #region Get Specific Worker Absences
+
+        public async Task<IEnumerable<EntityWorkerAbsence>> GetSpecificWorkerAbsences(Guid entityId, List<string> workers, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            if (entityId != Guid.Empty && workers.Count != 0)
+            {
+                var data = await _dbSet
+                    .Where(i => i.EntityId.Equals(entityId) && workers.Contains(i.ApplicationUserId))
+                    .ToListAsync();
+
+                if (startDate != null && endDate != null)
+                {
+                    data = data.Where(i =>
+                        i.AbsenceStartDate < endDate.Value &&
+                        i.AbsenceEndDate > startDate.Value
+                    ).ToList();
+                }
+
+                return data;
+            }
+
+            return Enumerable.Empty<EntityWorkerAbsence>();
+        }
+
+        #endregion
     }
 }

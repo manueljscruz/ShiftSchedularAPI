@@ -41,6 +41,39 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Participant Exist
+
+        public async Task<bool> ParticipantExist(Guid scheduleEntryId, string workerId)
+        {
+            if(scheduleEntryId != Guid.Empty)
+            {
+                return _dbSet.Any(i => i.ScheduleEntryId.Equals(scheduleEntryId) && i.ApplicationUserId.Equals(workerId));
+            }
+
+            return false;
+        }
+
+        #endregion
+
+
+        public async Task<bool> DeleteScheduleEntryWorker(Guid scheduleEntryId, string applicationUserId)
+        {
+            if(scheduleEntryId != Guid.Empty)
+            {
+                ScheduleEntryWorkers scheduleEntryWorkerInstance = await _dbSet.Where(i => i.ScheduleEntryId.Equals(scheduleEntryId) && i.ApplicationUserId.Equals(applicationUserId)).FirstOrDefaultAsync();
+            
+                if(scheduleEntryWorkerInstance != null)
+                {
+                    _dbSet.Remove(scheduleEntryWorkerInstance);
+                    await _unitOfWork.SaveChangesAsync();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
         #endregion
     }
 }

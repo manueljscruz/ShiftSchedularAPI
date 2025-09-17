@@ -51,6 +51,8 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public DateTime AbsenceEndDate { get; set; }
 
+        public bool IsFullDay { get; set; }
+
         /// <summary>
         /// Offset of the submission entry in minutes
         /// </summary>

@@ -196,7 +196,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.DateOffset, opt => opt.MapFrom(src => src.OffsetMinutes))
                 .ForMember(dest => dest.TimezoneId, opt => opt.MapFrom(src => src.TimezoneId))
                 .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
-                .ForMember(dest => dest.DecisionTimezoneId, opt => opt.MapFrom(src => string.Empty));
+                .ForMember(dest => dest.DecisionTimezoneId, opt => opt.MapFrom(src => string.Empty))
+                .ForMember(dest => dest.IsFullDay, opt => opt.MapFrom(src => src.IsFullDay));
 
             CreateMap<EntityWorkerAbsence, EntityWorkerAbsenceDTO>()
                 .ForMember(dest => dest.EntityWorkerAbsenceId, opt => opt.MapFrom(src => src.EntityWorkerAbsenceId))
@@ -212,7 +213,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.AbsenceDecisionOwner, opt => opt.MapFrom(src => src.AbsenceDecisionOwner))
                 .ForMember(dest => dest.AbsenceDateDecisionOffset, opt => opt.MapFrom(src => src.AbsenceDateDecisionOffset))
                 .ForMember(dest => dest.DecisionTimezoneId, opt => opt.MapFrom(src => src.DecisionTimezoneId))
-                .ForMember(dest => dest.AbsenceDateDecision, opt => opt.MapFrom(src => src.AbsenceDateDecision)).ReverseMap();
+                .ForMember(dest => dest.AbsenceDateDecision, opt => opt.MapFrom(src => src.AbsenceDateDecision))
+                .ForMember(dest => dest.IsFullDay, opt => opt.MapFrom(src => src.IsFullDay)).ReverseMap();
 
 
             CreateMap<AddScheduleEntryDTO, ScheduleEntry>()

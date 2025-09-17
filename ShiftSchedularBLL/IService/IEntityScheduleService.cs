@@ -13,7 +13,9 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO);
         Task<BaseResponse<ScheduleEntryDTO>> AddScheduleParticipant(ScheduleParticipantOpDTO scheduleParticipantOp);
         Task<ScheduleEntryDTO> GetScheduleEntryById(Guid scheduleEntryId, string languageCode);
-        Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO);
+        Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO, bool isOpRotation = false);
         Task<BaseResponse<List<ScheduleEntryDTO>>> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO);
+        Task<BaseResponse<bool>> DeleteWorkerScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO);
+        Task<BaseResponse<bool>> DeleteScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO);
     }
 }

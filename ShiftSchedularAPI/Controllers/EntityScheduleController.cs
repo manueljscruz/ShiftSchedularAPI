@@ -133,7 +133,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetEntitySchedules(ScheduleViewModelRequestDTO requestDTO)
         {
-            if(requestDTO == null)
+            if (requestDTO == null)
             {
                 return BadRequest("Object is null");
             }
@@ -149,13 +149,15 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Apply Rotation Cycle
+
         [HttpPost("apply-rotation-cycle")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO)
         {
-            if(rotationCycleDTO == null)
+            if (rotationCycleDTO == null)
             {
                 return BadRequest("Object is null");
             }
@@ -168,8 +170,55 @@ namespace ShiftSchedularAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
 
+        #endregion
 
+        #region Delete Interval Worker Entries
 
+        [HttpDelete("delete-worker-schedule-entries")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteWorkerScheduleEntries([FromBody] DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO)
+        {
+            if (intervalWorkerScheduleEntriesDTO == null)
+            {
+                return BadRequest();
+            }
+
+            var response = await _entityScheduleService.DeleteWorkerScheduleEntries(intervalWorkerScheduleEntriesDTO);
+
+            if (response.Success)
+                return Ok(response);
+
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
+
+        #endregion
+
+        #region Delete Schedule
+
+        [HttpDelete("delete-schedule-entries")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteScheduleEntries([FromBody] DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO)
+        {
+            if (intervalWorkerScheduleEntriesDTO == null)
+            {
+                return BadRequest();
+            }
+
+            var response = await _entityScheduleService.DeleteScheduleEntries(intervalWorkerScheduleEntriesDTO);
+
+            if (response.Success)
+                return Ok(response);
+
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
+
+        #endregion
 
         #region Get Schedule Entry By Id NOT USED 
 

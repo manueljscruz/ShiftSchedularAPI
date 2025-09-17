@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
@@ -28,6 +29,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IShiftService _shiftService;
         private readonly IEntityRuleService _entityRuleService;
         private readonly IEntityService _entityService;
+        private readonly IEntityWorkerAbsenceService _entityWorkerAbsenceService;
         private readonly IBaseEntityRuleService _baseEntityRuleService;
         private readonly IScheduleGeneratorService _scheduleGeneratorService;
 
@@ -41,6 +43,7 @@ namespace ShiftSchedularBLL.Service
             IShiftService shiftService,
             IEntityRuleService entityRuleService,
             IEntityService entityService,
+            IEntityWorkerAbsenceService entityWorkerAbsenceService,
             IScheduleGeneratorService scheduleGeneratorService)
         {
             _mapper = mapper;
@@ -49,6 +52,7 @@ namespace ShiftSchedularBLL.Service
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
             _entityService = entityService;
+            _entityWorkerAbsenceService = entityWorkerAbsenceService;
             _scheduleGeneratorService = scheduleGeneratorService;
         }
 
@@ -437,9 +441,188 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Delete Worker Schedule Entries
+
+        public async Task<BaseResponse<bool>> DeleteWorkerScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            if(intervalWorkerScheduleEntriesDTO.StartDate > intervalWorkerScheduleEntriesDTO.EndDate)
+            {
+                response.Message = ScheduleRelatedMessages.StartDateGreaterThanEndDateError;
+                return response;
+            }
+
+            // Check if entity exists
+            Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(intervalWorkerScheduleEntriesDTO.EntityId);
+
+            // Entity Not Found
+            if (entity == null)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNoIdentifierError;
+                return response;
+            }
+
+            // Get Worker data related to the entity
+            IEnumerable<EntityWorkerMemberDTO> entityWorkerMembers = await _entityService.GetEntityMembers(intervalWorkerScheduleEntriesDTO.EntityId, new List<string> { intervalWorkerScheduleEntriesDTO.WorkerId }, intervalWorkerScheduleEntriesDTO.LanguageCode);
+
+            // No records or more than 1
+            if (entityWorkerMembers.Count() == 0 || entityWorkerMembers.Count() > 1)
+            {
+                response.Message = SharedMessages.UnexpectedError;
+                return response;
+            }
+
+            EntityWorkerMemberDTO entityWorkerMemberDTO = entityWorkerMembers.First();
+
+            response = await this.DeleteParticipations(intervalWorkerScheduleEntriesDTO.EntityId, entityWorkerMemberDTO.WorkerId, entityWorkerMemberDTO.IsBot, intervalWorkerScheduleEntriesDTO.StartDate, intervalWorkerScheduleEntriesDTO.EndDate);
+
+            return response;
+        }
+
+        #endregion
+
+        #region Delete Schedule Entries
+
+        public async Task<BaseResponse<bool>> DeleteScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (intervalWorkerScheduleEntriesDTO.StartDate > intervalWorkerScheduleEntriesDTO.EndDate)
+            {
+                response.Message = ScheduleRelatedMessages.StartDateGreaterThanEndDateError;
+                return response;
+            }
+
+            // Check if entity exists
+            Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(intervalWorkerScheduleEntriesDTO.EntityId);
+
+            // Entity Not Found
+            if (entity == null)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNoIdentifierError;
+                return response;
+            }
+
+            List<ScheduleEntry> entries = await _unitOfWork.EntityScheduleRepository.GetEFScheduleEntries(intervalWorkerScheduleEntriesDTO.EntityId, intervalWorkerScheduleEntriesDTO.StartDate, intervalWorkerScheduleEntriesDTO.EndDate);
+
+            if (entries.Count == 0)
+            {
+                response.Message = ScheduleRelatedMessages.ScheduleEntriesNotFound;
+                return response;
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                foreach(ScheduleEntry entry in entries)
+                {
+                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteRange(entry.ScheduleEntryBots);
+                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(entry.ScheduleEntryWorkers);
+                }
+
+                await _unitOfWork.EntityScheduleRepository.DeleteRange(entries);
+
+                await _unitOfWork.CommitAsync();
+                response.Success = true;
+                response.Message = ScheduleRelatedMessages.ScheduleEntriesRemovedSuccess;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Delete Participations
+
+        private async Task<BaseResponse<bool>> DeleteParticipations(Guid entityId, string workerId, bool isBot, DateTime startDate, DateTime endDate)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            Guid memberGuid = _generalService.ParseStringToGuid(workerId);
+
+            List<ScheduleEntry> dayEntries = await _unitOfWork.EntityScheduleRepository.GetWorkerScheduleEntries(entityId, startDate, endDate, memberGuid, isBot);
+
+            if (dayEntries.Count == 0)
+            {
+                response.Message = ScheduleRelatedMessages.ScheduleEntriesNotFound;
+                return response;
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                foreach (ScheduleEntry scheduleEntry in dayEntries)
+                {
+                    if (isBot)
+                    {
+                        ScheduleEntryBots scheduleEntryBot = scheduleEntry.ScheduleEntryBots.First();
+
+                        // Delete entry
+                        bool result = await _unitOfWork.ScheduleEntryBotsRepository.DeleteScheduleEntryBot(scheduleEntryBot.ScheduleEntryId, scheduleEntryBot.UserBotId);
+                        if (result)
+                            continue;
+
+                        // If error occurs, rollback and return
+                        else
+                        {
+                            await _unitOfWork.RollbackAsync();
+                            _unitOfWork.Dispose();
+                            return response;
+                        }
+                    }
+
+                    else
+                    {
+                        ScheduleEntryWorkers scheduleEntryWorker = scheduleEntry.ScheduleEntryWorkers.First();
+
+                        bool result = await _unitOfWork.EntityScheduleWorkersRepository.DeleteScheduleEntryWorker(scheduleEntryWorker.ScheduleEntryId, scheduleEntryWorker.ApplicationUserId);
+                        if (result)
+                            continue;
+
+                        // If error occurs, rollback and return
+                        else
+                        {
+                            await _unitOfWork.RollbackAsync();
+                            _unitOfWork.Dispose();
+                            return response;
+                        }
+                    }
+                }
+
+                await _unitOfWork.CommitAsync();
+                response.Message = ScheduleRelatedMessages.EntryParticipationRemoved;
+                response.Success = true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
+        } 
+
+        #endregion
+
         #region Create Entity Schedule
 
-        public async Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO)
+        public async Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO, bool isOpRotation = false)
         {
             BaseResponse<List<ScheduleEntryDTO>> response = new BaseResponse<List<ScheduleEntryDTO>>();
             response.Message = "";
@@ -449,32 +632,15 @@ namespace ShiftSchedularBLL.Service
             {
                 bool isOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.WorkerId);
 
-                if (isOwner)
+                if (isOwner || isOpRotation)
                 {
                     await _unitOfWork.BeginTransactionAsync();
 
                     List<ScheduleEntryDTO> scheduleEntryDTOs = new List<ScheduleEntryDTO>();
+
                     try
                     {
-                        #region Delete Entries
-
-                        // Get Entity Schedules within a specific time period
-                        List<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetScheduleEntries(createEntityScheduleDTO.EntityId, string.Empty, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
-
-                        // Delete all of them
-                        foreach (ScheduleEntry scheduleEntry in scheduleEntries)
-                        {
-                            BaseResponse<bool> deleteScheduleResponse = await DeleteScheduleEntry(scheduleEntry.ScheduleEntryId);
-
-                            if (!deleteScheduleResponse.Success)
-                            {
-                                response.Message = deleteScheduleResponse.Message;
-                                await _unitOfWork.RollbackAsync();
-                                return response;
-                            }
-                        }
-
-                        #endregion
+                        scheduleEntryDTOs = await InitializeScheduleEntries(createEntityScheduleDTO);
 
                         #region Get Relevant Data
 
@@ -518,56 +684,6 @@ namespace ShiftSchedularBLL.Service
 
                         #region Create Shift Entries
 
-                        #region Get date differential between start and end date V1
-                        //TimeSpan dateDifference = createEntityScheduleDTO.EndDate - createEntityScheduleDTO.StartDate;
-                        //DateTime cycleDate = createEntityScheduleDTO.StartDate;
-
-                        //// For each day
-                        //for (int i = 0; i < dateDifference.Days; i++)
-                        //{
-                        //    // Check if its the weekend
-                        //    bool isWeekend = cycleDate.DayOfWeek == DayOfWeek.Saturday || cycleDate.DayOfWeek == DayOfWeek.Sunday;
-                        //    // For each shift
-                        //    foreach(ShiftDTO shift in shifts)
-                        //    {
-                        //        // If there isnt a rule to include this shift on the weekends
-                        //        if(isWeekend && !ruleDTOs.Any(i => i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) && i.EntityRuleSpecificationDTOs.Any(j => j.AspectReferenceId.Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
-                        //        {
-                        //            continue;
-                        //        }
-
-                        //        // Create Schedule Entry
-                        //        ScheduleEntry scheduleEntry = new ScheduleEntry
-                        //        {
-                        //            ScheduleEntryId = new Guid(),
-                        //            ShiftId = shift.ShiftId,
-                        //            ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
-                        //        };
-
-                        //        // Calculate and set schedule end date based on shift breaks
-                        //        TimeSpan totalBreakIncludedDuration = shift.ShiftBreakDTOs
-                        //            .Where(sb => sb.IncludedInShift)
-                        //            .Select(sb => sb.ShiftBreakDuration)
-                        //            .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
-
-                        //        scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate.Add(shift.ShiftDuration).Add(totalBreakIncludedDuration);
-
-                        //        // Add entry to the database
-                        //        scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
-
-                        //        // Map it, add shift info and include entry to the list
-                        //        ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
-                        //        scheduleEntryDTO.ShiftDTO = shift;
-                        //        scheduleEntryDTO.ScheduleParticipants = new List<EntityWorkerMemberDTO>();
-                        //        scheduleEntryDTOs.Add(scheduleEntryDTO);
-                        //    }
-
-                        //    // Increment to the next day
-                        //    cycleDate = cycleDate.AddDays(1);
-                        //}
-
-                        #endregion
-
                         DateTime cycleDate = createEntityScheduleDTO.StartDate;
 
                         while (cycleDate <= createEntityScheduleDTO.EndDate)
@@ -576,36 +692,30 @@ namespace ShiftSchedularBLL.Service
 
                             foreach (ShiftDTO shift in shifts)
                             {
+
+                                // If new entries are to be created
+                                if(createEntityScheduleDTO.ClearExistingSchedule)
+                                {
+                                    ScheduleEntryDTO existingEntry = scheduleEntryDTOs
+                                        .FirstOrDefault(i => i.ScheduleStartDate.Date.Equals(cycleDate.Date) && i.ShiftId.Equals(shift.ShiftId));
+
+                                    if (existingEntry != null)
+                                        continue;
+                                }
+
                                 if (isWeekend && !ruleDTOs.Any(i =>
-                                    i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) &&
-                                    i.EntityRuleSpecificationDTOs.Any(j =>
-                                        _generalService.ParseStringToGuid(j.AspectReferenceId).Equals(shift.ShiftId) && j.RuleSpecificationValue.Equals(1))))
+                                        i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) &&
+                                        i.EntityRuleSpecificationDTOs.Any(j =>
+                                            _generalService.ParseStringToGuid(j.AspectReferenceId).Equals(shift.ShiftId) &&
+                                            j.RuleSpecificationValue.Equals(1))))
                                 {
                                     continue;
                                 }
 
-                                var scheduleEntry = new ScheduleEntry
-                                {
-                                    ScheduleEntryId = Guid.NewGuid(),
-                                    ShiftId = shift.ShiftId,
-                                    ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
-                                };
+                                ScheduleEntryDTO scheduleEntryDTO = await CreateShiftEntry(shift, cycleDate);
 
-                                var totalBreakIncludedDuration = shift.ShiftBreakDTOs
-                                    .Where(sb => sb.IncludedInShift)
-                                    .Select(sb => sb.ShiftBreakDuration)
-                                    .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
-
-                                scheduleEntry.ScheduleEndDate = scheduleEntry.ScheduleStartDate
-                                    .Add(shift.ShiftDuration)
-                                    .Add(totalBreakIncludedDuration);
-
-                                scheduleEntry = await _unitOfWork.EntityScheduleRepository.Add(scheduleEntry);
-
-                                var scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(scheduleEntry);
-                                scheduleEntryDTO.ShiftDTO = shift;
-                                scheduleEntryDTO.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
                                 scheduleEntryDTOs.Add(scheduleEntryDTO);
+
 
                                 scheduleEntryDTOs = scheduleEntryDTOs.OrderBy(i => i.ScheduleStartDate).ToList();
                             }
@@ -626,36 +736,7 @@ namespace ShiftSchedularBLL.Service
 
                         foreach (ScheduleEntryDTO entry in scheduleEntryDTOs)
                         {
-                            // Add each participant to the entry
-                            foreach (ScheduleEntryParticipantDTO participantDTO in entry.ScheduleParticipants)
-                            {
-                                // If bot
-                                if (participantDTO.Worker.IsBot)
-                                {
-                                    ScheduleEntryBots scheduleEntryBot = new ScheduleEntryBots
-                                    {
-                                        ScheduleEntryId = entry.ScheduleEntryId,
-                                        UserBotId = _generalService.ParseStringToGuid(participantDTO.Worker.WorkerId),
-                                        SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
-                                    };
-
-                                    await _unitOfWork.ScheduleEntryBotsRepository.Add(scheduleEntryBot);
-                                }
-
-                                // Regular worker
-                                else
-                                {
-                                    ScheduleEntryWorkers scheduleEntryWorker = new ScheduleEntryWorkers
-                                    {
-                                        ScheduleEntryId = entry.ScheduleEntryId,
-                                        ApplicationUserId = participantDTO.Worker.WorkerId,
-                                        SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
-                                    };
-
-                                    await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorker);
-                                }
-                            }
-
+                            await PersistParticipants(entry);
                         }
 
                         #endregion
@@ -682,175 +763,166 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Initialize Schedule Entries
+
+        private async Task<List<ScheduleEntryDTO>> InitializeScheduleEntries(CreateEntityScheduleDTO dto)
+        {
+            if (dto.ClearExistingSchedule)
+            {
+                var scheduleEntries = await _unitOfWork.EntityScheduleRepository
+                    .GetScheduleEntries(dto.EntityId, string.Empty, dto.StartDate, dto.EndDate);
+
+                foreach (var entry in scheduleEntries)
+                {
+                    var deleteResponse = await DeleteScheduleEntry(entry.ScheduleEntryId);
+                    if (!deleteResponse.Success)
+                        throw new InvalidOperationException(deleteResponse.Message);
+                }
+
+                return new List<ScheduleEntryDTO>();
+            }
+            else
+            {
+                var request = new ScheduleViewModelRequestDTO
+                {
+                    WorkerId = string.Empty,
+                    EntityId = dto.EntityId,
+                    LanguageCode = dto.LanguageCode,
+                    StartDateSearch = dto.StartDate,
+                    EndDateSearch = dto.EndDate
+                };
+
+                return await GetScheduleEntries(request);
+            }
+        }
+
+        #endregion
+
+        #region Create Shift Entry
+
+        private async Task<ScheduleEntryDTO> CreateShiftEntry(ShiftDTO shift, DateTime cycleDate)
+        {
+            var entry = new ScheduleEntry
+            {
+                ScheduleEntryId = Guid.NewGuid(),
+                ShiftId = shift.ShiftId,
+                ScheduleStartDate = cycleDate.Add(shift.ShiftStartHour),
+            };
+
+            var breakDuration = shift.ShiftBreakDTOs
+                .Where(sb => sb.IncludedInShift)
+                .Select(sb => sb.ShiftBreakDuration)
+                .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
+
+            entry.ScheduleEndDate = entry.ScheduleStartDate
+                .Add(shift.ShiftDuration)
+                .Add(breakDuration);
+
+            entry = await _unitOfWork.EntityScheduleRepository.Add(entry);
+
+            var dto = _mapper.Map<ScheduleEntryDTO>(entry);
+            dto.ShiftDTO = shift;
+            dto.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
+
+            return dto;
+        }
+
+        #endregion
+
+        #region Persist Participants
+
+        private async Task PersistParticipants(ScheduleEntryDTO entry)
+        {
+            foreach (var participant in entry.ScheduleParticipants)
+            {
+                if (participant.Worker.IsBot)
+                {
+                    Guid botGuid = _generalService.ParseStringToGuid(participant.Worker.WorkerId);
+
+                    // If the participant 
+                    if (await _unitOfWork.ScheduleEntryBotsRepository.ParticipantExists(entry.ScheduleEntryId, botGuid))
+                        continue;
+
+                    await _unitOfWork.ScheduleEntryBotsRepository.Add(new ScheduleEntryBots
+                    {
+                        ScheduleEntryId = entry.ScheduleEntryId,
+                        UserBotId = botGuid,
+                        SpecificSkillAssignments = string.Join(",", participant.AssignedSkills.Select(s => s.SkillId))
+                    });
+                }
+                else
+                {
+                    if (await _unitOfWork.EntityScheduleWorkersRepository.ParticipantExist(entry.ScheduleEntryId, participant.Worker.WorkerId))
+                        continue;
+
+                    await _unitOfWork.EntityScheduleWorkersRepository.Add(new ScheduleEntryWorkers
+                    {
+                        ScheduleEntryId = entry.ScheduleEntryId,
+                        ApplicationUserId = participant.Worker.WorkerId,
+                        SpecificSkillAssignments = string.Join(",", participant.AssignedSkills.Select(s => s.SkillId))
+                    });
+                }
+            }
+        }
+
+        #endregion
+
         #region Apply Rotation Cycle
 
 
         public async Task<BaseResponse<List<ScheduleEntryDTO>>> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO)
         {
-            BaseResponse<List<ScheduleEntryDTO>> response = new BaseResponse<List<ScheduleEntryDTO>>();
-            response.Message = SharedMessages.UnexpectedError;
+            // Validate worker exists
+            var worker = (await _entityService.GetEntityMembers(
+                rotationCycleDTO.EntityId,
+                new List<string> { rotationCycleDTO.WorkerId },
+                rotationCycleDTO.LanguageCode
+            )).FirstOrDefault();
 
-            List<EntityWorkerMemberDTO> entityWorkerMembersFound = await _entityService.GetEntityMembers(rotationCycleDTO.EntityId, new List<string> { rotationCycleDTO.WorkerId }, rotationCycleDTO.LanguageCode);
-
-            // Worker Not found
-            if (entityWorkerMembersFound.Count == 0)
+            if (worker == null)
             {
-                response.Message = EntityWorkerRelatedMessages.MemberNotFound;
-                return response;
+                return new BaseResponse<List<ScheduleEntryDTO>>
+                {
+                    Message = EntityWorkerRelatedMessages.MemberNotFound,
+                    Success = false
+                };
             }
 
-            // Invalid date selection
             if (rotationCycleDTO.CycleStartDate > rotationCycleDTO.CycleEndDate)
             {
-                response.Message = ScheduleRelatedMessages.InvalidDateInputOrder;
-                return response;
+                return new BaseResponse<List<ScheduleEntryDTO>>
+                {
+                    Message = ScheduleRelatedMessages.InvalidDateInputOrder,
+                    Success = false
+                };
             }
 
-            // Store Worker
-            EntityWorkerMemberDTO worker = entityWorkerMembersFound[0];
-
-            // Get Relevant data
-            List<EntityShiftRotationDTO> entityShiftRotationDTOs = await _shiftService.GetEntityShiftRotations(rotationCycleDTO.EntityId);
-            List<EntityRuleDTO> entityRules = await _entityRuleService.GetEntityRules(rotationCycleDTO.EntityId, rotationCycleDTO.LanguageCode);
-            IEnumerable<ShiftDTO> shiftDTOs = await _shiftService.GetEntityShifts(rotationCycleDTO.EntityId);
-            List<SkillLocalizedDTO> entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
-            {
-                EntityId = rotationCycleDTO.EntityId,
-                LanguageCode = rotationCycleDTO.LanguageCode
-            });
-
-            // Check and Get Schedule Entries between the requested dates
-            ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO
-            {
-                WorkerId = rotationCycleDTO.WorkerId,
-                EntityId = rotationCycleDTO.EntityId,
-                LanguageCode = rotationCycleDTO.LanguageCode,
-                StartDateSearch = rotationCycleDTO.CycleStartDate,
-                EndDateSearch = rotationCycleDTO.CycleEndDate
-            };
-
-            List<ScheduleEntryDTO> scheduleEntries = await GetScheduleEntries(scheduleViewModelRequest);
-            DateTime dateToTrack = rotationCycleDTO.CycleStartDate;
-
-            CreateEntityScheduleDTO createEntityScheduleDTO = new CreateEntityScheduleDTO
+            // Reuse CreateEntitySchedule
+            var createDto = new CreateEntityScheduleDTO
             {
                 EntityId = rotationCycleDTO.EntityId,
                 LanguageCode = rotationCycleDTO.LanguageCode,
                 WorkerId = rotationCycleDTO.WorkerId,
                 StartDate = rotationCycleDTO.CycleStartDate,
                 EndDate = rotationCycleDTO.CycleEndDate,
+                FilteredMembers = new List<string> { rotationCycleDTO.WorkerId },
                 SingleRoleResponsibility = false,
                 ClearExistingSchedule = false,
                 ForceNoSkill = true
             };
 
-            try
+            var response = await CreateEntitySchedule(createDto, true);
+
+            // Filter down to only entries involving this worker
+            if (response.Success)
             {
-                await _unitOfWork.BeginTransactionAsync();
-
-                while (dateToTrack <= rotationCycleDTO.CycleEndDate)
-                {
-                    foreach (ShiftDTO shift in shiftDTOs)
-                    {
-                        ScheduleEntryDTO scheduleEntry = scheduleEntries
-                            .FirstOrDefault(i => i.ScheduleStartDate.Date.Equals(dateToTrack.Date) && i.ShiftId.Equals(shift.ShiftId));
-
-                        if (scheduleEntry != null)
-                            continue;
-
-                        // If no entry exists, create a new one
-                        ScheduleEntry newEntry = new ScheduleEntry
-                        {
-                            ShiftId = shift.ShiftId,
-                            ScheduleStartDate = dateToTrack.Add(shift.ShiftStartHour),
-                            ScheduleEndDate = dateToTrack.Add(shift.ShiftStartHour).Add(shift.ShiftDuration)
-                        };
-
-                        var totalBreakIncludedDuration = shift.ShiftBreakDTOs
-                            .Where(sb => sb.IncludedInShift)
-                            .Select(sb => sb.ShiftBreakDuration)
-                            .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
-
-                        newEntry.ScheduleEndDate = newEntry.ScheduleStartDate
-                            .Add(shift.ShiftDuration)
-                            .Add(totalBreakIncludedDuration);
-
-                        // Add the new entry to the schedule entries list
-                        newEntry = await _unitOfWork.EntityScheduleRepository.Add(newEntry);
-
-                        var scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(newEntry);
-                        scheduleEntryDTO.ShiftDTO = shift;
-                        scheduleEntryDTO.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
-                        scheduleEntries.Add(scheduleEntryDTO);
-
-                        scheduleEntries = scheduleEntries.OrderBy(i => i.ScheduleStartDate).ToList();
-                    }
-
-                    dateToTrack = dateToTrack.AddDays(1);
-                }
-
-                scheduleEntries = await FillOutSchedule(scheduleEntries, shiftDTOs.ToList(), entityRules, new List<EntityWorkerMemberDTO> { worker }, entityShiftRotationDTOs, entitySkills, createEntityScheduleDTO);
-
-                #region Add To Db
-
-                // Go for each entry and check where the worker was added
-                foreach (ScheduleEntryDTO entry in scheduleEntries)
-                {
-                    if(entry.ScheduleParticipants.Any(i => i.Worker.Equals(worker)))
-                    {
-                        ScheduleEntryParticipantDTO participantDTO = entry.ScheduleParticipants.Where(i => i.Worker.Equals(worker)).FirstOrDefault(); 
-                        
-                        if(participantDTO != null)
-                        {
-                            // If bot
-                            if (participantDTO.Worker.IsBot)
-                            {
-                                ScheduleEntryBots scheduleEntryBot = new ScheduleEntryBots
-                                {
-                                    ScheduleEntryId = entry.ScheduleEntryId,
-                                    UserBotId = _generalService.ParseStringToGuid(participantDTO.Worker.WorkerId),
-                                    SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
-                                };
-
-                                await _unitOfWork.ScheduleEntryBotsRepository.Add(scheduleEntryBot);
-                            }
-
-                            // Regular worker
-                            else
-                            {
-                                ScheduleEntryWorkers scheduleEntryWorker = new ScheduleEntryWorkers
-                                {
-                                    ScheduleEntryId = entry.ScheduleEntryId,
-                                    ApplicationUserId = participantDTO.Worker.WorkerId,
-                                    SpecificSkillAssignments = string.Join(",", participantDTO.AssignedSkills.Select(s => s.SkillId))
-                                };
-
-                                await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorker);
-                            }
-                        }
-                    }
-                }
-
-                #endregion
-
-                await _unitOfWork.CommitAsync();
-
-                response.Success = true;
-                response.Result = scheduleEntries;
-            }
-            catch (Exception ex)
-            {
-                await _unitOfWork.RollbackAsync();
-            }
-            finally
-            {
-                _unitOfWork.Dispose();
+                response.Result = response.Result
+                    .Where(e => e.ScheduleParticipants.Any(p => p.Worker.WorkerId == rotationCycleDTO.WorkerId))
+                    .ToList();
             }
 
             return response;
         }
-
-
 
         #endregion
 
@@ -869,6 +941,9 @@ namespace ShiftSchedularBLL.Service
 
                 if (scheduleEntryWorkers.Count() != 0)
                     await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(scheduleEntryWorkers);
+
+                if (scheduleEntryBots.Count() != 0)
+                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteRange(scheduleEntryBots);
 
                 await _unitOfWork.EntityScheduleRepository.Delete(scheduleEntryId);
                 response.Success = true;
@@ -894,12 +969,11 @@ namespace ShiftSchedularBLL.Service
             // 1. Preprocess ineligible workers (e.g., based on weekends off rule)
             List<ScheduleEntryIneligibility> scheduleEntryIneligibilities = new List<ScheduleEntryIneligibility>();
 
-            // scheduleEntryIneligibilities = ApplyMonthlyWeekends(scheduleEntryDTOs, entityWorkerMemberDTOs, entityRules);
-
             DateTime trackingDay = scheduleEntryDTOs.Count != 0 ? scheduleEntryDTOs[0].ScheduleStartDate.Date : new DateTime();
             bool isFirstDay = true;
 
-
+            // Use Absences to apply Entry Ineligibilities
+            scheduleEntryIneligibilities = await GetIneligibilitiesByAbsences(createEntityScheduleDTO, scheduleEntryDTOs, entityWorkerMemberDTOs);
 
             // 2. Iterate over all schedule entries to assign workers
             for (int i = 0; i < scheduleEntryDTOs.Count; i++)
@@ -1023,6 +1097,40 @@ namespace ShiftSchedularBLL.Service
             }
 
             return scheduleEntryDTOs;
+        }
+
+        #endregion
+
+        #region Get Ineligibilities By Absences
+
+        private async Task<List<ScheduleEntryIneligibility>> GetIneligibilitiesByAbsences(CreateEntityScheduleDTO createEntityScheduleDTO, List<ScheduleEntryDTO> scheduleEntryDTOs, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs)
+        {
+            List<ScheduleEntryIneligibility> scheduleEntryIneligibilities = new List<ScheduleEntryIneligibility>();
+
+            // Get Absences that interfere with current schedule planning
+            List<EntityWorkerAbsenceDTO> entityWorkerAbsenceDTOs = await _entityWorkerAbsenceService.GetSpecificWorkerAbsences(createEntityScheduleDTO.EntityId, entityWorkerMemberDTOs.Where(i => i.IsBot == false).Select(i => i.WorkerId).ToList(), createEntityScheduleDTO.LanguageCode, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
+
+            // For each absence
+            foreach (EntityWorkerAbsenceDTO entityWorkerAbsence in entityWorkerAbsenceDTOs)
+            {
+                // Get Ineligible Entries where the dates match
+                var ineligibleEntries = scheduleEntryDTOs
+                    .Where(i =>
+                        i.ScheduleStartDate < entityWorkerAbsence.AbsenceEndDate &&
+                        i.ScheduleEndDate > entityWorkerAbsence.AbsenceStartDate);
+
+                // For each entry, get the member associated to the absence and apply inegibility
+                foreach (ScheduleEntryDTO ineligibleEntry in ineligibleEntries)
+                {
+                    EntityWorkerMemberDTO entityWorkerMember = entityWorkerMemberDTOs.Where(i => i.WorkerId.Equals(entityWorkerAbsence.WorkerId)).FirstOrDefault();
+
+                    scheduleEntryIneligibilities = ApplySpecificInegibilities(new List<ScheduleEntryDTO> { ineligibleEntry }, entityWorkerMember, scheduleEntryIneligibilities);
+                }
+
+            }
+
+
+            return scheduleEntryIneligibilities;
         }
 
         #endregion
@@ -1813,7 +1921,7 @@ namespace ShiftSchedularBLL.Service
                 // List<Tuple<int, int>> minSkillsetPerShift = GetMinimumSkilletSetPerShift(entityRulesDTO, scheduleEntryDTO);
 
                 // Filter list of workers valid for this entry
-                if(!forceNoSkill)
+                if (!forceNoSkill)
                     filteredWorkers = filteredWorkers
                         .Where(worker => worker.SkillSet.Any(skill => wantedSkillset.Contains(skill.SkillId)))
                         .ToList();

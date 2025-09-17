@@ -18,5 +18,6 @@
         public DateTime AbsenceDateDecision { get; set; }
         public int AbsenceDateDecisionOffset { get; set; }
         public string DecisionTimezoneId { get; set; }
+        public bool IsFullDay { get; set; }
     }
 }

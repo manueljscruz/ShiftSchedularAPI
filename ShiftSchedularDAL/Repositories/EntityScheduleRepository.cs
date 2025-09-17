@@ -4,7 +4,6 @@ using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Queries;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -58,6 +57,65 @@ namespace ShiftSchedularDAL.Repositories
 
                 IEnumerable<ScheduleEntry> scheduleEntries = await _sqlRawRepository.ExecuteQuery<ScheduleEntry>(ScheduleEntrySQL.GetWorkerScheduleEntries, parameters);
                 return scheduleEntries.ToList();
+            }
+            else
+                return null;
+        }
+
+        public async Task<List<ScheduleEntry>> GetEFScheduleEntries(Guid entityId, DateTime startDateSearch, DateTime endDateSearch)
+        {
+            if (entityId != Guid.Empty)
+            {
+                var query = _scheduleEntriesDbSet.Where
+                    (i => i.Shift.EntityId.Equals(entityId)
+                    && i.ScheduleStartDate >= startDateSearch
+                    && i.ScheduleEndDate <= endDateSearch)
+                    .Include(i => i.ScheduleEntryWorkers)
+                    .Include(i => i.ScheduleEntryBots);
+
+                List<ScheduleEntry> scheduleEntries = await query.ToListAsync();
+                return scheduleEntries;
+            }
+            else
+                return null;
+        }
+
+        public async Task<List<ScheduleEntry>> GetWorkerScheduleEntries(Guid entityId, DateTime startDateSearch, DateTime endDateSearch, Guid workerId, bool isBot)
+        {
+            if (entityId != Guid.Empty)
+            {
+                List<ScheduleEntry> scheduleEntries = await this.GetEFScheduleEntries(entityId, startDateSearch, endDateSearch);
+
+
+                if (isBot)
+                {
+                    scheduleEntries = scheduleEntries
+                        .Where(i => i.ScheduleEntryBots.Any(j => j.UserBotId.Equals(workerId)))
+                        .Select(i =>
+                        {
+                            i.ScheduleEntryBots = i.ScheduleEntryBots
+                                .Where(j => j.UserBotId.Equals(workerId))
+                                .ToList();
+                            return i;
+                        })
+                        .ToList();
+                }
+                else
+                {
+                    scheduleEntries = scheduleEntries
+                        .Where(i => i.ScheduleEntryWorkers.Any(j => j.ApplicationUserId.Equals(workerId.ToString())))
+                        .Select(i =>
+                        {
+                            i.ScheduleEntryWorkers = i.ScheduleEntryWorkers
+                                .Where(j => j.ApplicationUserId.Equals(workerId.ToString()))
+                                .ToList();
+                            return i;
+                        })
+                        .ToList();
+                }
+
+
+                return scheduleEntries;
             }
             else
                 return null;

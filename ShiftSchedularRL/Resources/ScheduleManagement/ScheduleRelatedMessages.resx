@@ -138,11 +138,17 @@
   <data name="DateInvalidError" xml:space="preserve">
     <value>Invalid date inputted for this operation.</value>
   </data>
+  <data name="ScheduleEntriesNotFound" xml:space="preserve">
+    <value>No schedule entries were not found. If this persists, contact support to resolve this issue.</value>
+  </data>
   <data name="DeleteScheduleEntrySuccess" xml:space="preserve">
     <value>Schedule entry was removed successfuly.</value>
   </data>
   <data name="DeleteScheduleEntryUnexpectedError" xml:space="preserve">
     <value>An expected error occured while removing a schedule entry. Please try again later.</value>
+  </data>
+  <data name="EntryParticipationRemoved" xml:space="preserve">
+    <value>Schedule(s) participation(s) removed successfuly.</value>
   </data>
   <data name="InvalidDateInputOrder" xml:space="preserve">
     <value>End date cannot be smaller than the Start date.</value>
@@ -156,7 +162,13 @@
   <data name="ShiftNotFound" xml:space="preserve">
     <value>Shift not found. If this persists, contact support to resolve this issue.</value>
   </data>
+  <data name="StartDateGreaterThanEndDateError" xml:space="preserve">
+    <value>The start date cannot be greater that the end date.</value>
+  </data>
   <data name="WorkerIdIsNull" xml:space="preserve">
     <value>Worker identifier is required to perform this operation.</value>
+  </data>
+  <data name="ScheduleEntriesRemovedSuccess" xml:space="preserve">
+    <value>Schedule entries were removed successfuly.</value>
   </data>
 </root>

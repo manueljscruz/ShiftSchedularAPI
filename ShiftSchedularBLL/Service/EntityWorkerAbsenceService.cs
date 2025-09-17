@@ -170,8 +170,11 @@ namespace ShiftSchedularBLL.Service
 
                 // Add Id and Dates in Universal Time
                 entityWorkerAbsence.EntityWorkerAbsenceId = new Guid();
-                entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
-                entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
+                if (!entityWorkerAbsence.IsFullDay)
+                {
+                    entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
+                    entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
+                }
                 entityWorkerAbsence.AbsenceDecisionOwner = string.Empty;
 
                 try
@@ -322,6 +325,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Entity Worker Absences
 
         public async Task<PagedList<EntityWorkerAbsenceDTO>> GetEntityWorkerAbsences(PagedModelRequest pagedModelRequest)
         {
@@ -349,6 +353,26 @@ namespace ShiftSchedularBLL.Service
             return pagedList;
         }
 
+        #endregion
+
+        #region Get Specific Worker Absences
+
+        public async Task<List<EntityWorkerAbsenceDTO>> GetSpecificWorkerAbsences(Guid entityId, List<string> workers, string languageCode, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            List<EntityWorkerAbsenceDTO> entityWorkerAbsenceDTOs = new List<EntityWorkerAbsenceDTO>();
+
+            if(workers.Count != 0)
+            {
+                IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetSpecificWorkerAbsences(entityId, workers, startDate, endDate);
+
+                foreach (EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
+                    entityWorkerAbsenceDTOs.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, languageCode));
+            }
+
+            return entityWorkerAbsenceDTOs;
+        }
+
+        #endregion
 
         #region Update Entity Worker Absence
 
@@ -428,6 +452,12 @@ namespace ShiftSchedularBLL.Service
 
                 _mapper.Map(entityWorkerAbsenceDTO, entityWorkerAbsence);
                 entityWorkerAbsence.DateOffset = GetTimeZoneOffsetMinutes(entityWorkerAbsenceDTO.TimezoneId, entityWorkerAbsenceDTO.AbsenceStartDate);
+                if (!entityWorkerAbsence.IsFullDay)
+                {
+                    entityWorkerAbsence.AbsenceStartDate = entityWorkerAbsence.AbsenceStartDate.ToUniversalTime();
+                    entityWorkerAbsence.AbsenceEndDate = entityWorkerAbsence.AbsenceEndDate.ToUniversalTime();
+                }
+
 
                 // if there is an previous approval decision, reset it
                 if (entityWorkerAbsence.AbsenceDecisionOwner != null && entityWorkerAbsence.AbsenceDateDecision != new DateTime())
