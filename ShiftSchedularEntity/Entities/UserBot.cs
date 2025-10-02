@@ -25,6 +25,7 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityUserBotSkill> EntityUserBotSkills { get; set; }
         public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
         public virtual ICollection<ScheduleEntryBots> ScheduleEntryBots { get; set; }
+        public virtual ICollection<ScheduleEntryBotIneligibility> ScheduleEntryBotIneligibilities { get; set; }
         #endregion
     }
 }

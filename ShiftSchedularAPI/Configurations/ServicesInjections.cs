@@ -61,6 +61,8 @@ namespace ShiftSchedularAPI.Configurations
             // Repositories - Schedule
             services.AddScoped<IEntityScheduleRepository, EntityScheduleRepository>();
             services.AddScoped<IEntityScheduleWorkersRepository, EntityScheduleWorkersRepository>();
+            services.AddScoped<IScheduleEntryBotIneligibilityRepository, ScheduleEntryBotIneligibilityRepository>();
+            services.AddScoped<IScheduleEntryWorkerIneligibilityRepository, ScheduleEntryWorkerIneligibilityRepository>();
             // Repositories - Base Entity Rule
             services.AddScoped<IBaseEntityRuleRepository, BaseEntityRuleRepository>();
             services.AddScoped<IBaseEntityRuleSpecificationRepository, BaseEntityRuleSpecificationRepository>();

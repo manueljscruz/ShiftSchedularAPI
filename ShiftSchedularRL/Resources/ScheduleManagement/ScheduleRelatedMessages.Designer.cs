@@ -178,6 +178,24 @@ namespace ShiftSchedularRL.Resources.ScheduleManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Schedule(s) entry(ies) updated successfuly..
+        /// </summary>
+        public static string ScheduleEntriesUpdatedSuccessfuly {
+            get {
+                return ResourceManager.GetString("ScheduleEntriesUpdatedSuccessfuly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A schedule entry already exists for this shift..
+        /// </summary>
+        public static string ScheduleEntryAlreadyExistsError {
+            get {
+                return ResourceManager.GetString("ScheduleEntryAlreadyExistsError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Schedule entry not found. If this persists, contact support to resolve this issue..
         /// </summary>
         public static string ScheduleEntryNotFound {

@@ -1,16 +1,14 @@
-﻿using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
-using ShiftSchedularEntity.Models.DataTransferObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 
 namespace ShiftSchedularBLL.IService
 {
     public interface IScheduleGeneratorService
     {
-        // Task<List<ScheduleEntryDTO>> FillOutSchedule(List<ScheduleEntryDTO> scheduleEntryDTOs, List<ShiftDTO> shifts, List<EntityRuleDTO> entityRules, List<EntityWorkerMemberDTO> entityWorkerMemberDTOs, CreateEntityScheduleDTO createEntityScheduleDTO);
+
+        Task<BaseResponse<List<ScheduleEntryDTO>>> CreateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO, bool isOpRotation = false);
+        Task<BaseResponse<List<ScheduleEntryDTO>>> ApplyRotationCycle(ApplyRotationCycleDTO rotationCycleDTO);
+
     }
 }

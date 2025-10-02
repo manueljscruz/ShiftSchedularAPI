@@ -66,12 +66,16 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (entityId != Guid.Empty)
             {
-                var query = _scheduleEntriesDbSet.Where
-                    (i => i.Shift.EntityId.Equals(entityId)
-                    && i.ScheduleStartDate >= startDateSearch
-                    && i.ScheduleEndDate <= endDateSearch)
-                    .Include(i => i.ScheduleEntryWorkers)
-                    .Include(i => i.ScheduleEntryBots);
+                var query = _scheduleEntriesDbSet
+                .Where(i => i.Shift.EntityId.Equals(entityId)
+                    && i.ScheduleStartDate <= endDateSearch
+                    && i.ScheduleEndDate >= startDateSearch)
+                .Include(i => i.ScheduleEntryWorkers)
+                .Include(i => i.ScheduleEntryBots)
+                .Include(i => i.ScheduleEntryWorkerIneligibilities)
+                .Include(i => i.ScheduleEntryBotIneligibilities)
+                .OrderBy(i => i.ScheduleStartDate);
+
 
                 List<ScheduleEntry> scheduleEntries = await query.ToListAsync();
                 return scheduleEntries;

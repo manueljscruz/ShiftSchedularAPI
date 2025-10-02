@@ -64,6 +64,8 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
         public DbSet<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
         public DbSet<ScheduleEntryBots> ScheduleEntryBots { get; set; }
+        public DbSet<ScheduleEntryWorkerIneligibility> ScheduleEntryWorkerIneligibilities { get; set; }
+        public DbSet<ScheduleEntryBotIneligibility> scheduleEntryBotIneligibilities { get; set; }
 
         #endregion
 
@@ -624,6 +626,40 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(seb => seb.UserBot)
                 .WithMany(ub => ub.ScheduleEntryBots)
                 .HasForeignKey(seb => seb.UserBotId);
+
+            #endregion
+
+            #region Schedule Entry Bot Ineligibility
+
+            modelBuilder.Entity<ScheduleEntryBotIneligibility>()
+                .HasKey(sebi => new { sebi.ScheduleEntryId, sebi.UserBotId });
+
+            modelBuilder.Entity<ScheduleEntryBotIneligibility>()
+                .HasOne(se => se.ScheduleEntry)
+                .WithMany(sebi => sebi.ScheduleEntryBotIneligibilities)
+                .HasForeignKey(se => se.ScheduleEntryId);
+
+            modelBuilder.Entity<ScheduleEntryBotIneligibility>()
+                .HasOne(sebi => sebi.UserBot)
+                .WithMany(ub => ub.ScheduleEntryBotIneligibilities)
+                .HasForeignKey(sebi => sebi.UserBotId);
+
+            #endregion
+
+            #region Schedule Entry Worker Ineligibility
+
+            modelBuilder.Entity<ScheduleEntryWorkerIneligibility>()
+                .HasKey(sewi => new { sewi.ScheduleEntryId, sewi.ApplicationUserId });
+
+            modelBuilder.Entity<ScheduleEntryWorkerIneligibility>()
+                .HasOne(se => se.ScheduleEntry)
+                .WithMany(sewi => sewi.ScheduleEntryWorkerIneligibilities)
+                .HasForeignKey(se => se.ScheduleEntryId);
+
+            modelBuilder.Entity<ScheduleEntryWorkerIneligibility>()
+                .HasOne(sewi => sewi.ApplicationUser)
+                .WithMany(au => au.ScheduleEntryWorkerIneligibilities)
+                .HasForeignKey(sewi => sewi.ApplicationUserId);
 
             #endregion
         }

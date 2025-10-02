@@ -32,6 +32,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>EntityWorkerRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\ScheduleManagement\ScheduleGeneratorRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ScheduleGeneratorRelatedMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\ScheduleManagement\ScheduleRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -74,6 +79,10 @@
     <EmbeddedResource Update="Resources\MemberManagement\EntityWorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>EntityWorkerRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ScheduleManagement\ScheduleGeneratorRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ScheduleGeneratorRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\ScheduleManagement\ScheduleRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

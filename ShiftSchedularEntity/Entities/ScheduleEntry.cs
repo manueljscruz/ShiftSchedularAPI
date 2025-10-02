@@ -25,6 +25,8 @@ namespace ShiftSchedularEntity.Entities
         public virtual Shift Shift { get; set; }
         public virtual IEnumerable<ScheduleEntryWorkers> ScheduleEntryWorkers { get; set; }
         public virtual IEnumerable<ScheduleEntryBots> ScheduleEntryBots { get; set; }
+        public virtual IEnumerable<ScheduleEntryBotIneligibility> ScheduleEntryBotIneligibilities { get; set; }
+        public virtual IEnumerable<ScheduleEntryWorkerIneligibility> ScheduleEntryWorkerIneligibilities { get; set; }
 
         #endregion
     }

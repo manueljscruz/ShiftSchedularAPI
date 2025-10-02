@@ -117,64 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddNewScheduleEntryInvalidStartDateError" xml:space="preserve">
-    <value>Invalid start date inserted.</value>
+  <data name="AbsenceObs" xml:space="preserve">
+    <value>Worker has a scheduled absence of type {0}.</value>
   </data>
-  <data name="AddNewScheduleEntryShiftEmptyError" xml:space="preserve">
-    <value>Shift identifier cannot be empty.</value>
+  <data name="CannotDoNextRotationObs" xml:space="preserve">
+    <value>Cannot perform next rotation entry due to scheduling times.</value>
   </data>
-  <data name="AddNewScheduleEntrySuccess" xml:space="preserve">
-    <value>Schedule entry was added successfuly.</value>
+  <data name="ExcludedForNotMatchingNextRotationObs" xml:space="preserve">
+    <value>Entry excluded due to not matching the next rotation entry.</value>
   </data>
-  <data name="AddNewScheduleEntryUnexpectedError" xml:space="preserve">
-    <value>An expected error occured while adding a new schedule entry. Please try again later.</value>
+  <data name="MandatoryRestDaysObs" xml:space="preserve">
+    <value>Cannot assign due to consecutive entries without rest for a non rotation worker.</value>
   </data>
-  <data name="AddScheduleParticipantSuccess" xml:space="preserve">
-    <value>Schedule participant added successfuly.</value>
+  <data name="MandatoryRotationLeaveObs" xml:space="preserve">
+    <value>Worker has mandatory rotation leave from {0} until {1}.</value>
   </data>
-  <data name="AddScheduleParticipantUnexpectedError" xml:space="preserve">
-    <value>An expected error occured while adding a schedule participant. Please try again later.</value>
+  <data name="MaxDailyHoursObs" xml:space="preserve">
+    <value>Max daily hours exceeded for this worker.</value>
   </data>
-  <data name="DateInvalidError" xml:space="preserve">
-    <value>Invalid date inputted for this operation.</value>
+  <data name="OneShiftPerDayObs" xml:space="preserve">
+    <value>Worker can only be assigned for one shift a day.</value>
   </data>
-  <data name="ScheduleEntriesNotFound" xml:space="preserve">
-    <value>No schedule entries were not found. If this persists, contact support to resolve this issue.</value>
-  </data>
-  <data name="DeleteScheduleEntrySuccess" xml:space="preserve">
-    <value>Schedule entry was removed successfuly.</value>
-  </data>
-  <data name="DeleteScheduleEntryUnexpectedError" xml:space="preserve">
-    <value>An expected error occured while removing a schedule entry. Please try again later.</value>
-  </data>
-  <data name="EntryParticipationRemoved" xml:space="preserve">
-    <value>Schedule(s) participation(s) removed successfuly.</value>
-  </data>
-  <data name="InvalidDateInputOrder" xml:space="preserve">
-    <value>End date cannot be smaller than the Start date.</value>
-  </data>
-  <data name="ScheduleEntryNotFound" xml:space="preserve">
-    <value>Schedule entry not found. If this persists, contact support to resolve this issue.</value>
-  </data>
-  <data name="ScheduleIdIsNull" xml:space="preserve">
-    <value>Schedule identifier is required to perform this operation.</value>
-  </data>
-  <data name="ShiftNotFound" xml:space="preserve">
-    <value>Shift not found. If this persists, contact support to resolve this issue.</value>
-  </data>
-  <data name="StartDateGreaterThanEndDateError" xml:space="preserve">
-    <value>The start date cannot be greater that the end date.</value>
-  </data>
-  <data name="WorkerIdIsNull" xml:space="preserve">
-    <value>Worker identifier is required to perform this operation.</value>
-  </data>
-  <data name="ScheduleEntriesRemovedSuccess" xml:space="preserve">
-    <value>Schedule entries were removed successfuly.</value>
-  </data>
-  <data name="ScheduleEntryAlreadyExistsError" xml:space="preserve">
-    <value>A schedule entry already exists for this shift.</value>
-  </data>
-  <data name="ScheduleEntriesUpdatedSuccessfuly" xml:space="preserve">
-    <value>Schedule(s) entry(ies) updated successfuly.</value>
+  <data name="WorkerAssignedToThisEntry" xml:space="preserve">
+    <value>Worker is already assigned.</value>
   </data>
 </root>

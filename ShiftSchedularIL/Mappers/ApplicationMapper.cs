@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.APIManagement;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
@@ -263,6 +264,33 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.OrderNo, opt => opt.MapFrom(src => src.OrderNo))
                 .ForMember(dest => dest.IsLeave, opt => opt.MapFrom(src => src.IsLeave))
                 .ForMember(dest => dest.ShiftId, opt => opt.MapFrom(src => src.ShiftId)).ReverseMap();
+
+
+
+            CreateMap<ScheduleEntryIneligibilityModel, ScheduleEntryBotIneligibility>()
+                .ForMember(dest => dest.ScheduleEntryId, opt => opt.MapFrom(src => src.ScheduleEntryId))
+                .ForMember(dest => dest.IneligibilityObservations, opt => opt.MapFrom(src => src.IneligibilityObservations))
+                .ForMember(dest => dest.DateOfAssessement, opt => opt.MapFrom(src => src.DateOfAssessment));
+
+            CreateMap<ScheduleEntryIneligibilityModel, ScheduleEntryWorkerIneligibility>()
+                .ForMember(dest => dest.ScheduleEntryId, opt => opt.MapFrom(src => src.ScheduleEntryId))
+                .ForMember(dest => dest.IneligibilityObservations, opt => opt.MapFrom(src => src.IneligibilityObservations))
+                .ForMember(dest => dest.DateOfAssessement, opt => opt.MapFrom(src => src.DateOfAssessment))
+                .ForMember(dest => dest.ApplicationUserId, opt => opt.MapFrom(src => src.WorkerId));
+
+            CreateMap<ScheduleEntryBotIneligibility, ScheduleEntryIneligibilityModel>()
+                .ForMember(dest => dest.ScheduleEntryId, opt => opt.MapFrom(src => src.ScheduleEntryId))
+                .ForMember(dest => dest.IneligibilityObservations, opt => opt.MapFrom(src => src.IneligibilityObservations))
+                .ForMember(dest => dest.DateOfAssessment, opt => opt.MapFrom(src => src.DateOfAssessement))
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.UserBotId.ToString()))
+                .ForMember(dest => dest.IsBot, opt => opt.MapFrom(src => true));
+
+            CreateMap<ScheduleEntryWorkerIneligibility, ScheduleEntryIneligibilityModel>()
+                .ForMember(dest => dest.ScheduleEntryId, opt => opt.MapFrom(src => src.ScheduleEntryId))
+                .ForMember(dest => dest.IneligibilityObservations, opt => opt.MapFrom(src => src.IneligibilityObservations))
+                .ForMember(dest => dest.DateOfAssessment, opt => opt.MapFrom(src => src.DateOfAssessement))
+                .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.ApplicationUserId))
+                .ForMember(dest => dest.IsBot, opt => opt.MapFrom(src => false));
         }
     }
 }

@@ -106,6 +106,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPut("update-entity-rule")]
         [ProducesResponseType(204)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateEntityShift([FromBody] EntityRuleDTO entityRule)
         {
             if(entityRule == null)

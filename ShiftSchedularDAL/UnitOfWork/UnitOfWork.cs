@@ -338,6 +338,21 @@ namespace ShiftSchedularDAL.UnitOfWork
             }
         }
 
+        private IScheduleEntryBotIneligibilityRepository _scheduleEntryBotIneligibilityRepository;
+
+        public IScheduleEntryBotIneligibilityRepository ScheduleEntryBotIneligibilityRepository
+        {
+            get { return _scheduleEntryBotIneligibilityRepository = _scheduleEntryBotIneligibilityRepository ?? new ScheduleEntryBotIneligibilityRepository(_context, this); }
+        }
+
+        private IScheduleEntryWorkerIneligibilityRepository _scheduleEntryWorkerIneligibilityRepository;
+
+        public IScheduleEntryWorkerIneligibilityRepository ScheduleEntryWorkerIneligibilityRepository
+        {
+            get { return _scheduleEntryWorkerIneligibilityRepository = _scheduleEntryWorkerIneligibilityRepository ?? new ScheduleEntryWorkerIneligibilityRepository(_context, this); }
+        }
+
+
         #endregion
 
         #region Constructor

@@ -14,15 +14,17 @@ namespace ShiftSchedularAPI.Controllers
         #region Properties
 
         private readonly IEntityScheduleService _entityScheduleService;
+        private readonly IScheduleGeneratorService _scheduleGeneratorService;
         private readonly IGeneralService _generalService;
 
         #endregion
 
         #region Constructor
 
-        public EntityScheduleController(IEntityScheduleService entityScheduleService, IGeneralService generalService)
+        public EntityScheduleController(IEntityScheduleService entityScheduleService, IScheduleGeneratorService scheduleGeneratorService, IGeneralService generalService)
         {
             _entityScheduleService = entityScheduleService;
+            _scheduleGeneratorService = scheduleGeneratorService;
             _generalService = generalService;
         }
 
@@ -59,7 +61,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GenerateEntitySchedule(CreateEntityScheduleDTO createEntityScheduleDTO)
         {
-            var scheduleEntryResult = await _entityScheduleService.CreateEntitySchedule(createEntityScheduleDTO);
+            var scheduleEntryResult = await _scheduleGeneratorService.CreateEntitySchedule(createEntityScheduleDTO);
 
             return Ok(scheduleEntryResult);
         }
@@ -95,10 +97,22 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPost("add-schedule-entry")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddScheduleEntry(AddScheduleEntryDTO addScheduleEntryDTO)
         {
+            if(addScheduleEntryDTO == null)
+            {
+                return BadRequest();
+            }
+
             var scheduleEntryResult = await _entityScheduleService.AddScheduleEntry(addScheduleEntryDTO);
-            return Ok(scheduleEntryResult);
+
+            if (scheduleEntryResult.Success)
+                return Ok(scheduleEntryResult);
+
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, scheduleEntryResult.Message);
         }
 
         #endregion
@@ -149,6 +163,29 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Save Schedules
+
+        [HttpPut("save-schedule-entries")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> SaveScheduleEntries(ScheduleEntryDTO[] scheduleEntryDTOs)
+        {
+            if(scheduleEntryDTOs == null)
+            {
+                return BadRequest();
+            }
+
+            BaseResponse<bool> response = await _entityScheduleService.SaveScheduleEntries(scheduleEntryDTOs);
+
+            if (response.Success)
+                return NoContent();
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
+
+        #endregion
+
         #region Apply Rotation Cycle
 
         [HttpPost("apply-rotation-cycle")]
@@ -162,7 +199,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest("Object is null");
             }
 
-            var response = await _entityScheduleService.ApplyRotationCycle(rotationCycleDTO);
+            var response = await _scheduleGeneratorService.ApplyRotationCycle(rotationCycleDTO);
 
             if (response.Success)
                 return Ok(response);
