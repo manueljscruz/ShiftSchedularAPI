@@ -6,6 +6,7 @@
 
         public Guid EntityRuleId { get; set; }
         public int RuleTypeId { get; set; }
+        public bool IsSpecValueBoolean { get; set; }
         public string RuleTypeDisplayValue { get; set; }
         public string RuleTypeDescription { get; set; }
         public Guid EntityId { get; set; }
