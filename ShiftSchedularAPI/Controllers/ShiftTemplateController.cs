@@ -99,10 +99,21 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Shift Template Pop Count
 
         [HttpPut("update-shift-template-pop-count/{shiftTemplateId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateShiftTemplatePopCount(int shiftTemplateId)
         {
+            if (shiftTemplateId == 0)
+                return BadRequest();
+
+
             BaseResponse<bool> response = await _shiftTemplateService.UpdateShiftTemplatePopCount(shiftTemplateId);
-            return Ok(response);
+
+            if (response.Success)
+                return NoContent();
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
 
         #endregion
@@ -110,10 +121,20 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Shift Break Template Pop Count
 
         [HttpPut("update-shift-break-template-pop-count/{shiftBreakTemplateId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateShiftBreakTemplatePopCount(int shiftBreakTemplateId)
         {
+            if (shiftBreakTemplateId == 0)
+                return BadRequest();
+
             BaseResponse<bool> response = await _shiftTemplateService.UpdateShiftBreakTemplatePopCount(shiftBreakTemplateId);
-            return Ok(response);
+
+            if (response.Success)
+                return NoContent();
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
 
         #endregion
