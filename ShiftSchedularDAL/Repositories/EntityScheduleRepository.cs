@@ -32,14 +32,14 @@ namespace ShiftSchedularDAL.Repositories
                     IEnumerable<ScheduleEntry> scheduleEntries = _scheduleEntriesDbSet.Where(i => i.Shift.EntityId.Equals(entityId)
                         && i.ScheduleStartDate.Date >= startDateSearch.Date
                         && i.ScheduleEndDate.Date <= endDateSearch.Date).OrderBy(i => i.ScheduleStartDate);
-                    
+
                     return scheduleEntries.ToList();
                 }
                 catch (Exception ex)
                 {
                     return null;
                 }
-                
+
             }
             else
                 return null;
@@ -138,8 +138,12 @@ namespace ShiftSchedularDAL.Repositories
             }
             else
                 return null;
-            
+
         }
+
+        #endregion
+
+        #region Get By Id
 
         public async Task<ScheduleEntry> GetById(Guid id)
         {
@@ -155,5 +159,57 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get Shift Forward Entries Count
+
+        public async Task<int> GetShiftForwardEntriesCount(Guid entityId, Guid shiftId, DateTime now)
+        {
+            int count = 0;
+
+            if (entityId != Guid.Empty && shiftId != Guid.Empty)
+            {
+                count = await _scheduleEntriesDbSet.Where(i => i.ShiftId.Equals(shiftId)
+                    && i.Shift.EntityId.Equals(entityId)
+                    && i.ScheduleStartDate.Date >= now.Date).CountAsync();
+            }
+            else
+                count = -1;
+
+
+            return count;
+        }
+
+        #endregion
+
+        #region Delete Previous Shift Entries
+
+        public async Task<bool> DeletePreviousShiftEntries(Guid entityId, Guid shiftId, DateTime dateOfTermination)
+        {
+            if (entityId == Guid.Empty && shiftId == Guid.Empty)
+                return false;
+
+            IEnumerable<ScheduleEntry> scheduleEntries = await _scheduleEntriesDbSet
+                .Include(i => i.ScheduleEntryWorkers)
+                .Include(i => i.ScheduleEntryBots)
+                .Include(i => i.ScheduleEntryBotIneligibilities)
+                .Include(i => i.ScheduleEntryWorkerIneligibilities)
+                .Where(i => i.ShiftId.Equals(shiftId)
+                && i.Shift.EntityId.Equals(entityId)
+                && i.ScheduleStartDate.Date <= dateOfTermination.Date)
+                .ToListAsync();
+
+            if (scheduleEntries.Count() == 0)
+                return true; // ✅ Nothing to delete, still a successful outcome
+
+            await _unitOfWork.ScheduleEntryBotsRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryBots));
+            await _unitOfWork.ScheduleEntryBotIneligibilityRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryBotIneligibilities));
+            await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryWorkers));
+            await _unitOfWork.ScheduleEntryWorkerIneligibilityRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryWorkerIneligibilities));
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return true;
+        }
+
+        #endregion
     }
 }

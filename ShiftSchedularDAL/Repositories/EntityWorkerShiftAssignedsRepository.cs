@@ -39,5 +39,15 @@ namespace ShiftSchedularDAL.Repositories
             else
                 return null;
         }
+
+        public async Task<IEnumerable<EntityWorkerShiftAssigned>> GetByEntityIdAndShiftId(Guid entityId, Guid shiftId)
+        {
+            if (entityId != Guid.Empty && shiftId != Guid.Empty)
+            {
+                return await _entityWorkerShiftAssignedDbSet.Where(i => i.EntityId.Equals(entityId) && i.ShiftId.Equals(shiftId)).ToListAsync();
+            }
+            else
+                return null;
+        }
     }
 }

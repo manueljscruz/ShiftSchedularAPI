@@ -10,6 +10,7 @@ namespace ShiftSchedularDAL.IRepositories
         Task<ScheduleEntry> GetByShiftAndDateEntry(Guid shiftId, DateTime date);
         Task<List<ScheduleEntry>> GetEFScheduleEntries(Guid entityId, DateTime startDateSearch, DateTime endDateSearch);
         Task<List<ScheduleEntry>> GetWorkerScheduleEntries(Guid entityId, DateTime startDateSearch, DateTime endDateSearch, Guid workerId, bool isBot);
-
+        Task<int> GetShiftForwardEntriesCount(Guid entityId, Guid shiftId, DateTime now);
+        Task<bool> DeletePreviousShiftEntries(Guid entityId, Guid shiftId, DateTime now);
     }
 }

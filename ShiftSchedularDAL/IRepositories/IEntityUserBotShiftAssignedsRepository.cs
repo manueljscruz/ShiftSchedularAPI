@@ -6,5 +6,6 @@ namespace ShiftSchedularDAL.IRepositories
     {
         Task<IEnumerable<EntityUserBotShiftAssigned>> GetAllByEntityIdAndUserBotId(Guid entityId, Guid userBotId);
         Task<bool> DeleteAllByEntityIdAndUserBotId(Guid entityId, Guid userBotId);
+        Task<IEnumerable<EntityUserBotShiftAssigned>> GetByEntityIdAndShiftId(Guid entityId, Guid shiftId);
     }
 }

@@ -219,4 +219,7 @@
   <data name="ShiftRotationDataNull" xml:space="preserve">
     <value>Shift rotation data is required.</value>
   </data>
+  <data name="DeleteShiftExistingScheduleEntries" xml:space="preserve">
+    <value>Cannot delete the shift with existing future schedule entries associated to it.</value>
+  </data>
 </root>

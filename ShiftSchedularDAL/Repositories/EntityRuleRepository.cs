@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
@@ -41,6 +42,34 @@ namespace ShiftSchedularDAL.Repositories
                     .FirstOrDefaultAsync();
             }
             else return null;
+        }
+
+        public async Task<List<EntityRule>> GetEntityRulesRelatedToShifts(Guid entityId)
+        {
+            if (entityId != Guid.Empty)
+            {
+                IEnumerable<EntityRule> entityRules = await this.GetEntityRules(entityId);
+
+                List<int> ruleTypeFilterIdentifiers = new List<int> {
+                    RuleTypeConstants.MIN_WORKERS_SHIFT_ID,
+                    RuleTypeConstants.MAX_WORKERS_SHIFT_ID,
+                    RuleTypeConstants.REQ_SKILLSET_SHIFT_ID,
+                    RuleTypeConstants.REQ_QTY_SKILL_SHIFT_ID,
+                    RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID,
+                    RuleTypeConstants.POST_SHIFT_REST_HOURS_ID,
+                    RuleTypeConstants.REQ_QTY_SKILL_SHIFT_WEEKDAYS_ID,
+                    RuleTypeConstants.REQ_QTY_SKILL_SHIFT_WEEKENDS_ID
+                };
+
+                // Filter the entityRules based on RuleTypeId
+                List<EntityRule> filteredRules = entityRules
+                    .Where(rule => ruleTypeFilterIdentifiers.Contains(rule.RuleTypeId))
+                    .ToList();
+
+                return filteredRules;
+            }
+
+            return new List<EntityRule>();
         }
     }
 }

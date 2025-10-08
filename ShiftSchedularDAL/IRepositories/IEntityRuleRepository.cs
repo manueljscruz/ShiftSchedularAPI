@@ -6,5 +6,6 @@ namespace ShiftSchedularDAL.IRepositories
     {
         Task<EntityRule> GetById(Guid entityRuleId);
         Task<IEnumerable<EntityRule>> GetEntityRules(Guid entityId);
+        Task<List<EntityRule>> GetEntityRulesRelatedToShifts(Guid entityId);
     }
 }

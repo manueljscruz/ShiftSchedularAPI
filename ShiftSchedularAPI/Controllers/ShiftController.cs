@@ -152,6 +152,8 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Entity Shift Rotations
+
         [HttpPost("get-shift-rotations")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -166,6 +168,10 @@ namespace ShiftSchedularAPI.Controllers
 
             return Ok(rotations);
         }
+
+        #endregion
+
+        #region Add Shift Rotation
 
         [HttpPost("add-shift-rotation")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -189,6 +195,10 @@ namespace ShiftSchedularAPI.Controllers
             }
         }
 
+        #endregion
+
+        #region Update Shift Rotation Order
+
         [HttpPut("update-shift-rotation-order")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -210,6 +220,10 @@ namespace ShiftSchedularAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
             }
         }
+
+        #endregion
+
+        #region Update Shift Rotation
 
         [HttpPut("update-shift-rotation")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -234,6 +248,10 @@ namespace ShiftSchedularAPI.Controllers
 
         }
 
+        #endregion
+
+        #region Delete Shift Rotation
+
         [HttpDelete("delete-shift-rotation")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -255,5 +273,7 @@ namespace ShiftSchedularAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
             }
         }
+
+        #endregion
     }
 }

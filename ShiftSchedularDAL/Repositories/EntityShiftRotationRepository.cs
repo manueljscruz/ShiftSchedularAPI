@@ -53,5 +53,13 @@ namespace ShiftSchedularDAL.Repositories
             return true;
         }
 
+        public async Task<EntityShiftRotation> GetEntityShiftRotation(Guid entityId, Guid shiftId)
+        {
+            if (entityId != Guid.Empty && shiftId != Guid.Empty)
+            {
+                return await _dbSet.Where(i => i.EntityId.Equals(entityId) && i.ShiftId.Equals(shiftId)).FirstOrDefaultAsync();
+            }
+            return null;
+        }
     }
 }

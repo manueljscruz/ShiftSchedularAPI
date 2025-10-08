@@ -81,6 +81,24 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Delete Range
+
+        public async Task<bool> DeleteRange(IEnumerable<EntityRuleSpecification> entityRuleSpecifications)
+        {
+            bool result = false;
+
+            if(entityRuleSpecifications.Count() != 0)
+            {
+                _entityRuleSpecificationsDbSet.RemoveRange(entityRuleSpecifications);
+                await _unitOfWork.SaveChangesAsync();
+                result = true;
+            }
+
+            return result;
+        }
+
+        #endregion
+
         #region Get Entity Rule Specification
 
         public async Task<EntityRuleSpecification> GetEntityRuleSpecification(Guid entityRuleId, int specificationId)

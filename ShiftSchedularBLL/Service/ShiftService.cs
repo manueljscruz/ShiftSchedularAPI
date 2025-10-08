@@ -209,7 +209,7 @@ namespace ShiftSchedularBLL.Service
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
             response.Success = false;
-            response.Message = "";
+            response.Message = SharedMessages.UnexpectedError;
 
             if (entityId == Guid.Empty)
             {
@@ -236,6 +236,22 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
+            // Get related schedule entries
+            int count = await _unitOfWork.EntityScheduleRepository.GetShiftForwardEntriesCount(entityId, shiftId, DateTime.Now);
+
+            // Error occurred
+            if (count == -1)
+            {
+                return response;
+            }
+
+            // Existing scheduling shift entries
+            else if (count > 0)
+            {
+                response.Message = ShiftRelatedMessages.DeleteShiftExistingScheduleEntries;
+                return response;
+            }
+
             try
             {
                 await _unitOfWork.BeginTransactionAsync();
@@ -243,6 +259,43 @@ namespace ShiftSchedularBLL.Service
                 // If there are shift breaks related, remove them
                 if (shiftBreaks.Count() != 0)
                     await _unitOfWork.ShiftBreakRepository.DeleteRange(shiftBreaks);
+
+                EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(entityId, shiftId);
+                if (entityShiftRotation != null)
+                    await _unitOfWork.EntityShiftRotationRepository.DeleteEntityShiftRotation(entityShiftRotation);
+
+                // Get related rules
+                List<EntityRule> shiftRelatedRules = await _unitOfWork.EntityRuleRepository.GetEntityRulesRelatedToShifts(entityId);
+                if (shiftRelatedRules.Count != 0)
+                {
+                    // For each rule
+                    foreach (EntityRule rule in shiftRelatedRules)
+                    {
+                        // Get related specifications where the shift is referenced
+                        IEnumerable<EntityRuleSpecification> entityRuleSpecifications = rule.EntityRuleSpecifications.Where(i => i.AspectReferenceId.Equals(shiftId.ToString()) || i.AspectReferenceId2.Equals(shiftId.ToString()));
+                        bool result = await _unitOfWork.EntityRuleSpecificationRepository.DeleteRange(entityRuleSpecifications);
+
+                        // If minus these references, the rule as no more specifications, remove rule all together
+                        if (rule.EntityRuleSpecifications.Count - entityRuleSpecifications.Count() == 0)
+                        {
+                            await _unitOfWork.EntityRuleRepository.Delete(rule.EntityRuleId);
+                        }
+                    }
+                }
+
+                // Delete previous entries
+                bool scheduleEntriesOp = await _unitOfWork.EntityScheduleRepository.DeletePreviousShiftEntries(entityId, shiftId, DateTime.Now);
+
+
+                // Get Specific Worker & Bot Shift Assignments
+                IEnumerable<EntityUserBotShiftAssigned> entityUserBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetByEntityIdAndShiftId(entityId, shiftId);
+                IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetByEntityIdAndShiftId(entityId, shiftId);
+
+                if (entityUserBotShiftAssigneds.Count() != 0)
+                    await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteRange(entityUserBotShiftAssigneds);
+
+                if (entityWorkerShiftAssigneds.Count() != 0)
+                    await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteRange(entityWorkerShiftAssigneds);
 
                 await _unitOfWork.ShiftRepository.Delete(shiftInstance.ShiftId);
 
@@ -397,10 +450,10 @@ namespace ShiftSchedularBLL.Service
             if (entityId != Guid.Empty)
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
-                if(entity != null)
+                if (entity != null)
                 {
                     IEnumerable<Shift> shifts = await _unitOfWork.ShiftRepository.GetEntityShifts(entityId);
-                    foreach(Shift shift in shifts)
+                    foreach (Shift shift in shifts)
                     {
                         ShiftDTO shiftDTO = _mapper.Map<ShiftDTO>(shift);
                         shiftsDTO.Add(shiftDTO);
@@ -582,9 +635,9 @@ namespace ShiftSchedularBLL.Service
         {
             List<ShiftDTO> shiftDTOs = new List<ShiftDTO>();
 
-            if(shiftIdentifiers.Count != 0)
+            if (shiftIdentifiers.Count != 0)
             {
-                List<Shift> shifts = (List<Shift>) await _unitOfWork.ShiftRepository.GetEntityShifts(shiftIdentifiers);
+                List<Shift> shifts = (List<Shift>)await _unitOfWork.ShiftRepository.GetEntityShifts(shiftIdentifiers);
 
                 foreach (Shift shift in shifts)
                 {
@@ -624,7 +677,7 @@ namespace ShiftSchedularBLL.Service
                     else
                     {
                         Shift shift = await _unitOfWork.ShiftRepository.GetShiftById((Guid)entityShiftRotation.ShiftId);
-                        if(shift != null)
+                        if (shift != null)
                         {
                             entityShiftRotationDTO.DisplayName = shift.ShiftName;
                             entityShiftRotationDTO.Alias = shift.ShiftAlias;
@@ -661,13 +714,13 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Shift identifier required when not leave rotation 
-                else if(!rotationDTO.IsLeave && rotationDTO.ShiftId == Guid.Empty)
+                else if (!rotationDTO.IsLeave && rotationDTO.ShiftId == Guid.Empty)
                 {
                     response.Message = ShiftRelatedMessages.ShiftIdIsNull;
                     return response;
                 }
 
-                else if(rotationDTO.IsLeave && string.IsNullOrEmpty(rotationDTO.LeaveDuration))
+                else if (rotationDTO.IsLeave && string.IsNullOrEmpty(rotationDTO.LeaveDuration))
                 {
                     response.Message = ShiftRelatedMessages.LeaveDurationIsZero;
                     return response;
@@ -675,7 +728,7 @@ namespace ShiftSchedularBLL.Service
 
                 // Check if entity exists
                 Entity assignedEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(rotationDTO.EntityId);
-                if(assignedEntity == null)
+                if (assignedEntity == null)
                 {
                     response.Message = ShiftRelatedMessages.EntityNotFound;
                     return response;
@@ -704,7 +757,7 @@ namespace ShiftSchedularBLL.Service
                     entityShiftRotation.OrderNo = assignedOrders.Max() + 1;
 
                 entityShiftRotation.LeaveDuration = ReturnDuration(rotationDTO.LeaveDuration).Ticks;
-                
+
                 // Add rotation
                 entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.Add(entityShiftRotation);
 
@@ -744,20 +797,20 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            else if(shiftRotationDTO.EntityId == Guid.Empty)
+            else if (shiftRotationDTO.EntityId == Guid.Empty)
             {
                 response.Message = ShiftRelatedMessages.ShiftEntityIdIsNull;
                 return response;
             }
 
-            else if(shiftRotationDTO.OrderNo == 0)
+            else if (shiftRotationDTO.OrderNo == 0)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
                 return response;
             }
 
             List<EntityShiftRotation> entityShiftRotations = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftsRotation(shiftRotationDTO.EntityId);
-            EntityShiftRotation entityShiftRotation = entityShiftRotations.Where(i => i.ShiftId.Equals(shiftRotationDTO.ShiftId) && i.OrderNo.Equals(shiftRotationDTO.OrderNo)).FirstOrDefault();            
+            EntityShiftRotation entityShiftRotation = entityShiftRotations.Where(i => i.ShiftId.Equals(shiftRotationDTO.ShiftId) && i.OrderNo.Equals(shiftRotationDTO.OrderNo)).FirstOrDefault();
             if (entityShiftRotation == null)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
@@ -777,7 +830,7 @@ namespace ShiftSchedularBLL.Service
 
                     int order = 1;
 
-                    foreach(EntityShiftRotation shiftRotation in entityShiftRotations)
+                    foreach (EntityShiftRotation shiftRotation in entityShiftRotations)
                     {
                         if (shiftRotation.OrderNo != order)
                         {
@@ -822,20 +875,20 @@ namespace ShiftSchedularBLL.Service
             }
 
             EntityShiftRotation entityShiftRotation = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftRotation(shiftRotationDTO.EntityId, shiftRotationDTO.OrderNo);
-            if(entityShiftRotation == null)
+            if (entityShiftRotation == null)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationNotFound;
                 return response;
             }
 
-            if(shiftRotationDTO.OrderNo == 0 || shiftRotationDTO.NewOrderNo == 0)
+            if (shiftRotationDTO.OrderNo == 0 || shiftRotationDTO.NewOrderNo == 0)
             {
                 response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
                 return response;
             }
 
             // Change in Order number
-            if(shiftRotationDTO.OrderNo != shiftRotationDTO.NewOrderNo)
+            if (shiftRotationDTO.OrderNo != shiftRotationDTO.NewOrderNo)
             {
                 try
                 {
@@ -846,7 +899,7 @@ namespace ShiftSchedularBLL.Service
                     EntityShiftRotation destinationShiftRotation = entityShiftRotations.Where(i => i.OrderNo.Equals(shiftRotationDTO.NewOrderNo)).FirstOrDefault();
                     EntityShiftRotation sourceShiftRotation = entityShiftRotations.Where(i => i.OrderNo.Equals(shiftRotationDTO.OrderNo)).FirstOrDefault();
 
-                    if(sourceShiftRotation == null || destinationShiftRotation == null)
+                    if (sourceShiftRotation == null || destinationShiftRotation == null)
                     {
                         response.Message = ShiftRelatedMessages.ShiftRotationBadOrderNumber;
                         return response;
@@ -932,9 +985,9 @@ namespace ShiftSchedularBLL.Service
                 if (dateString.Contains('.'))
                     daySplit = dateString.Split('.');
 
-                else 
+                else
                     daySplit = dateString.Split(' ');
-                
+
 
                 if (daySplit.Length == 2)
                 {

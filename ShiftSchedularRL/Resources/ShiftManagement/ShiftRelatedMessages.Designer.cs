@@ -187,6 +187,15 @@ namespace ShiftSchedularRL.Resources.ShiftManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot delete the shift with existing future schedule entries associated to it..
+        /// </summary>
+        public static string DeleteShiftExistingScheduleEntries {
+            get {
+                return ResourceManager.GetString("DeleteShiftExistingScheduleEntries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An unexpected error occurred while deleting the shift. Please try again later..
         /// </summary>
         public static string DeleteShiftUnexpectedError {
