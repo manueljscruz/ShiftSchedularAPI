@@ -358,6 +358,8 @@ namespace ShiftSchedularBLL.Service
 
             viewModel.Skills = await _skillService.GetAllSkillsByLocalization(memberListModelRequest.LanguageCode);
 
+            viewModel.EntityUsedSkills = await GetEntitySkills(memberListModelRequest);
+
             viewModel.Shifts = await _shiftService.GetEntityShifts(memberListModelRequest.EntityId);
 
             viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.LanguageCode, memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);

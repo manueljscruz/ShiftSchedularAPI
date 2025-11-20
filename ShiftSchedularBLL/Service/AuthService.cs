@@ -77,52 +77,58 @@ namespace ShiftSchedularBLL.Service
         public async Task<BaseResponse<LoginResponseDTO>> Login(LoginDTO loginDTO)
         {
             BaseResponse<LoginResponseDTO> loginResponseDTO = new BaseResponse<LoginResponseDTO>();
-
-            ApplicationUser user = await _userManager.FindByEmailAsync(loginDTO.Email);
-            if(user == null)
+            try
             {
-                loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
-            }
+                ApplicationUser user = await _userManager.FindByEmailAsync(loginDTO.Email);
+                if (user == null)
+                {
+                    loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
+                }
 
-            bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
-            if (validLogin)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
+                bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
+                if (validLogin)
+                {
+                    var userRoles = await _userManager.GetRolesAsync(user);
 
-                var authClaims = new List<Claim>
+                    var authClaims = new List<Claim>
                 {
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
 
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                    foreach (var userRole in userRoles)
+                    {
+                        authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                    }
+
+                    var token = _tokenService.GenerateAccessToken(authClaims, _configuration);
+
+                    var refreshToken = _tokenService.GenerateRefreshToken();
+
+                    _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInMinutes"], out int refreshTokenValidityInMinutes);
+
+                    user.RefreshToken = refreshToken;
+
+                    user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(refreshTokenValidityInMinutes);
+
+                    await _userManager.UpdateAsync(user);
+
+                    loginResponseDTO.Result = new LoginResponseDTO
+                    {
+                        User = _mapper.Map<UserDTO>(user),
+                        TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo)
+                    };
+                    loginResponseDTO.Success = true;
                 }
-
-                var token = _tokenService.GenerateAccessToken(authClaims, _configuration);
-
-                var refreshToken = _tokenService.GenerateRefreshToken();
-
-                _ = int.TryParse(_configuration["Jwt:RefreshTokenValidityInMinutes"], out int refreshTokenValidityInMinutes);
-
-                user.RefreshToken = refreshToken;
-
-                user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(refreshTokenValidityInMinutes);
-
-                await _userManager.UpdateAsync(user);
-
-                loginResponseDTO.Result = new LoginResponseDTO
+                else
                 {
-                    User = _mapper.Map<UserDTO>(user),
-                    TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo)
-                };
-                loginResponseDTO.Success = true;
+                    loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginPasswordIncorrect;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginPasswordIncorrect;
+                loginResponseDTO.Message = ex.Message;
             }
-
+            
             return loginResponseDTO;
         }
 
