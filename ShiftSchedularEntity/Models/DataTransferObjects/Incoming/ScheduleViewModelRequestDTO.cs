@@ -20,6 +20,15 @@
             EndDateSearch = DateTime.Now.AddMonths(3);
         }
 
+        public ScheduleViewModelRequestDTO(Guid entityId, string workerId, string languageCode, DateTime startDateSearch, DateTime endDateSearch)
+        {
+            EntityId = entityId;
+            WorkerId = workerId;
+            LanguageCode = languageCode;
+            StartDateSearch = startDateSearch;
+            EndDateSearch = endDateSearch;
+        }
+
         #endregion
     }
 }

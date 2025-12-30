@@ -637,6 +637,10 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Get Specific Rules
+
         public async Task<List<EntityRuleDTO>> GetSpecificRules(Guid entityId, List<string> filteredRules, string languageCode)
         {
             if(filteredRules.Count != 0)
@@ -652,6 +656,23 @@ namespace ShiftSchedularBLL.Service
 
             return new List<EntityRuleDTO>();
             
+        }
+
+        #endregion
+
+        #region Get Total Entity Rules
+
+        public async Task<int> GetTotalEntityRules(Guid entityId)
+        {
+            int count = 0;
+
+            if (entityId != Guid.Empty)
+            {
+                IEnumerable<EntityRule> entityRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(entityId);
+                count = entityRules.Count();
+            }
+
+            return count;
         }
 
         #endregion

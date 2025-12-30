@@ -247,11 +247,24 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
-        public async Task<Entity> GetEntityById(Guid entityId)
+        public async Task<EntityDTO> GetEntityById(Guid entityId, string languageCode)
         {
             if (entityId != Guid.Empty)
             {
-                return await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
+                EntityType entityType = await _unitOfWork.GetGenericRepository<EntityType>().GetById(entity.EntityTypeId);
+                EntityTypeLocalization entityTypeLocalization = await _unitOfWork.EntityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, languageCode);
+
+                int botsCount = await _unitOfWork.EntityUserBotRepository.GetUserBotsByEntityCount(entity.EntityId);
+                int workersCount = await _unitOfWork.EntityWorkerRepository.GetTotalCountByEntity(entity.EntityId);
+
+                EntityDTO entityDTO = new EntityDTO(entityId: entity.EntityId,
+                                                                    entityName: entity.EntityName,
+                                                                    entityDescription: entity.EntityDescription,
+                                                                    entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
+                                                                    botsCount + workersCount);
+
+                return entityDTO;
             }
             else
                 return null;
@@ -663,7 +676,11 @@ namespace ShiftSchedularBLL.Service
                     int botsCount = await _unitOfWork.EntityUserBotRepository.GetUserBotsByEntityCount(entity.EntityId);
                     int workersCount = await _unitOfWork.EntityWorkerRepository.GetTotalCountByEntity(entity.EntityId);
 
-                    entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, entityName: entity.EntityName, entityDescription: entity.EntityDescription, entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, botsCount + workersCount);
+                    entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, 
+                                                                    entityName: entity.EntityName, 
+                                                                    entityDescription: entity.EntityDescription, 
+                                                                    entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, 
+                                                                    botsCount + workersCount);
                     entityProfileViewModel.AllowEdit = entityWorkerInstance.IsOwner;
 
                     if (entityProfileViewModel.AllowEdit)

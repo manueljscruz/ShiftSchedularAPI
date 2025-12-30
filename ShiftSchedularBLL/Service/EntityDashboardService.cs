@@ -1,0 +1,89 @@
+﻿using ShiftSchedularBLL.IService;
+using ShiftSchedularEntity.Models.DataTransferObjects;
+using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularEntity.Models.ViewModels;
+using ShiftSchedularIL.IServices;
+
+namespace ShiftSchedularBLL.Service
+{
+    public class EntityDashboardService : IEntityDashboardService
+    {
+        private readonly IGeneralService _generalService;
+        private readonly IEntityService _entityService;
+        private readonly IEntityScheduleService _entityScheduleService;
+        private readonly IEntityWorkerAbsenceService _entityWorkerAbsenceService;
+        private readonly IShiftService _shiftService;
+        private readonly IEntityRuleService _entityRuleService;
+
+        #region Constructor
+
+        public EntityDashboardService(IGeneralService generalService,
+            IEntityService entityService,
+            IEntityScheduleService entityScheduleService,
+            IEntityWorkerAbsenceService entityWorkerAbsenceService,
+            IShiftService shiftService,
+            IEntityRuleService entityRuleService)
+        {
+            _generalService = generalService;
+            _entityService = entityService;
+            _entityScheduleService = entityScheduleService;
+            _entityWorkerAbsenceService = entityWorkerAbsenceService;
+            _shiftService = shiftService;
+            _entityRuleService = entityRuleService;
+        }
+
+        #endregion
+
+        #region Get Entity Dashboard View Model
+
+        public async Task<DashboardEntityViewModel> GetEntityDashboardViewModel(BaseViewModelRequest request)
+        {
+            DashboardEntityViewModel dashboardEntityViewModel = new DashboardEntityViewModel();
+            bool isOwner = false;
+
+            Guid entityId = _generalService.ParseStringToGuid(request.EntityId.ToString());
+
+            // Get entity data
+            dashboardEntityViewModel.EntityDTO = await _entityService.GetEntityById(entityId, request.LanguageCode);
+
+            // Get entity member data that is requesting data
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOLst = await _entityService.GetEntityMembers(entityId, new List<string> { request.WorkerId }, request.LanguageCode);
+            EntityWorkerMemberDTO entityWorkerMemberDTO = entityWorkerMemberDTOLst.First();
+
+            // Set Owner flag
+            isOwner = entityWorkerMemberDTO.IsOwner;
+
+            // Set skillset
+            dashboardEntityViewModel.AssignedEntitySkills = entityWorkerMemberDTO.SkillSet;
+
+            // Get schedule entries
+            ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO(entityId, request.WorkerId, request.LanguageCode, DateTime.UtcNow, DateTime.UtcNow.AddDays(7));
+            List<ScheduleEntryDTO> scheduleEntryDTOs = await _entityScheduleService.GetScheduleEntries(scheduleViewModelRequest);
+
+            // Show all schedules entries if owner, filter by user if not
+            if (isOwner)
+                dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs;
+            else
+                dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.Worker.Equals(entityWorkerMemberDTO))).ToList();
+
+            // Get Absences
+            PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, request.LanguageCode, 0, 1, 20);
+            dashboardEntityViewModel.EntityWorkerAbsenceEntries = await _entityWorkerAbsenceService.GetEntityWorkerAbsences(absencesRequest);
+
+            // Get Statistics
+            if (isOwner)
+            {
+                int totalShifts = await _shiftService.GetTotalEntityShifts(entityId);
+                int totalRules = await _entityRuleService.GetTotalEntityRules(entityId);
+                dashboardEntityViewModel.EntityStatistics = new EntityStatisticsDTO(dashboardEntityViewModel.EntityDTO.EntityWorkersCount, totalRules, totalShifts);
+            }
+            else
+                dashboardEntityViewModel.EntityStatistics = new EntityStatisticsDTO(0, 0, 0);
+
+            return dashboardEntityViewModel;
+        }
+
+        #endregion
+    }
+}

@@ -9,7 +9,7 @@ namespace ShiftSchedularBLL.IService
 {
     public interface IEntityService
     {
-        Task<Entity> GetEntityById(Guid entityId);
+        Task<EntityDTO> GetEntityById(Guid entityId, string languageCode);
         Task<IEnumerable<Entity>> GetAllEntities();
         Task<BaseResponse<Entity>> AddEntity(FormEntityDTO newEntity);
         Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity);
@@ -24,6 +24,5 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteEntityMember(DeleteMemberDTO workerMemberDTO);
         Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode);
         Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode, int nextPage = 0, int itemsPerPage = 0);
-        // Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(MemberListModelRequest memberListModelRequest);
     }
 }

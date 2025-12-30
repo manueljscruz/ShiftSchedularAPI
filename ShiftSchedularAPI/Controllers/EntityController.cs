@@ -15,12 +15,15 @@ namespace ShiftSchedularAPI.Controllers
     public class EntityController : ControllerBase
     {
         private readonly IEntityService _entityService;
+        private readonly IEntityDashboardService _entityDashboardService;
 
         #region Constructor
 
-        public EntityController(IEntityService entityService)
+        public EntityController(IEntityService entityService,
+            IEntityDashboardService entityDashboardService)
         {
             _entityService = entityService;
+            _entityDashboardService = entityDashboardService;
         }
 
         #endregion
@@ -34,16 +37,16 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("get-by-id/{id}")]
+        [HttpGet("get-by-id/{id}/{languageCode}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityById(Guid id)
+        public async Task<IActionResult> GetEntityById(Guid id, string languageCode)
         {
             if (id != Guid.Empty)
             {
                 // id = HttpUtility.UrlDecode(id);
-                var entity = await _entityService.GetEntityById(id);
+                var entity = await _entityService.GetEntityById(id, languageCode);
                 if (entity == null)
                 {
                     return NotFound(EntitiesRelatedMessages.EntityNotFound);
@@ -93,6 +96,24 @@ namespace ShiftSchedularAPI.Controllers
             }
             var entities = await _entityService.GetEntitiesByWorkerId(workerId);
             return Ok(entities);
+        }
+
+        #endregion
+
+        #region Get Entity Dashboard View Model
+
+        [HttpPost("get-entity-dashboard-view-model")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetEntityDashboardViewModel(BaseViewModelRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var entityDashboardViewModel = await _entityDashboardService.GetEntityDashboardViewModel(request);
+            return Ok(entityDashboardViewModel);
         }
 
         #endregion

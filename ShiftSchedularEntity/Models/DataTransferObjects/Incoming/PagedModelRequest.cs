@@ -12,5 +12,15 @@
             NextPage = 1;
             ItemsPerPage = 0;
         }
+
+        public PagedModelRequest(Guid entityId, string workerId, string languageCode, int currentPage, int nextPage, int itemsPerPage)
+        {
+            EntityId = entityId;
+            WorkerId = workerId;
+            LanguageCode = languageCode;
+            CurrentPage = currentPage;
+            NextPage = nextPage;
+            ItemsPerPage = itemsPerPage;
+        }
     }
 }

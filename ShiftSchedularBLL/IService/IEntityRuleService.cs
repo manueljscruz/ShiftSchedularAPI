@@ -18,5 +18,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> UpdateEntityRuleSpecification(EntityRuleSpecificationDTO entityRuleSpecification);
         Task<BaseResponse<bool>> DeleteEntityRuleSpecifications(Guid entityRuleId);
         Task<List<EntityRuleDTO>> GetSpecificRules(Guid entityId, List<string> filteredRules, string languageCode);
+        Task<int> GetTotalEntityRules(Guid entityId);
     }
 }

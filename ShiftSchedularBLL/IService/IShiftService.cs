@@ -23,5 +23,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteShiftRotation(EntityShiftRotationDTO shiftRotationDTO);
         Task<BaseResponse<bool>> UpdateEntityShiftRotationOrder(UpdateShiftRotationDTO shiftRotationDTO);
         Task<BaseResponse<bool>> UpdateEntityShiftRotation(EntityShiftRotationDTO shiftRotationDTO);
+        Task<int> GetTotalEntityShifts(Guid entityId);
     }
 }

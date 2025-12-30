@@ -1005,6 +1005,23 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Total Entity Shifts
+
+        public async Task<int> GetTotalEntityShifts(Guid entityId)
+        {
+            int count = 0;
+
+            if(entityId != Guid.Empty)
+            {
+                IEnumerable<Shift> entityShifts = await _unitOfWork.ShiftRepository.GetEntityShifts(entityId);
+                count = entityShifts.Count();
+            }
+
+            return count;
+        }
+
+        #endregion
+
         #endregion
     }
 }
