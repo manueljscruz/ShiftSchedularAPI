@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -126,6 +127,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityId">Identifier of the entity</param>
         /// <param name="lcode">Language Code</param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("get-entities-members-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

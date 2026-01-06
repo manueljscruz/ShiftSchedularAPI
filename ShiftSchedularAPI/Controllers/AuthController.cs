@@ -44,7 +44,27 @@ namespace ShiftSchedularAPI.Controllers
                 return Unauthorized();
             }
 
-            return Ok(response);
+            // Write cookies here
+            Response.Cookies.Append("access_token", response.Result.TokenResponseDTO.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+            });
+
+            Response.Cookies.Append("refresh_token", response.Result.TokenResponseDTO.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
+            return Ok(new LoginResponseDTO
+            {
+                User = response.Result.User
+            });
         }
 
         #endregion
