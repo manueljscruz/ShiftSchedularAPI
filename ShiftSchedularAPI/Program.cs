@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularEntity.Converters;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -26,6 +27,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:4200", "http://192.168.0.9:4200", "https://81a1-188-81-53-74.ngrok-free.app/") // Allow specific origin
               .AllowAnyHeader()                    // Allow all headers
+              .AllowCredentials()                   // Required for cookies only token
               .AllowAnyMethod();                   // Allow all HTTP methods
     });
 });
@@ -105,6 +107,7 @@ string logDirectory = builder.Configuration.GetValue<string>("LogDirectory");
 string baseUrl = builder.Configuration.GetValue<string>("BaseUrl");
 EmailSettings emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>();
 builder.Services.AddServicesInjections(logDirectory, emailSettings, baseUrl);
+builder.Services.AddCustomRateLimiting(builder.Configuration);
 
 // 6. Configure JWT Authentication and Authorization
 builder.Services.AddAuthentication(options =>
@@ -113,6 +116,15 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["access_token"];
+                return Task.CompletedTask;
+            }
+        };
+
         options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -143,7 +155,13 @@ if (app.Environment.IsDevelopment())
 // 3. Enable HTTPS redirection
 app.UseHttpsRedirection();
 
-// 4. Enable Authentication and Authorization
+using(var scope = app.Services.CreateScope())
+{
+    await SeedRolesAndAdmin(scope.ServiceProvider);
+}
+
+// 4. Enable Rate Limiter Authentication and Authorization
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -152,3 +170,41 @@ app.MapControllers();
 
 // Run the application
 app.Run();
+
+
+
+// Seed method
+static async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // Create roles
+    string[] roleNames = { "Admin", "User" };
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    // Create admin user
+    var adminEmail = "admin@example.com";
+    var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+    if (adminUser == null)
+    {
+        adminUser = new ApplicationUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            EmailConfirmed = true,
+            DisplayName = "System Administrator",
+            GenderId = 3
+        };
+
+        await userManager.CreateAsync(adminUser, "Admin@123");
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+}

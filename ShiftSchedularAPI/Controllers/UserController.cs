@@ -1,4 +1,6 @@
-﻿ using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
@@ -31,6 +33,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="newUserDTO"></param>
         /// <returns></returns>
         [HttpPost("register")]
+        [EnableRateLimiting("auth")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]    
@@ -55,6 +58,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Update User
 
+        [Authorize]
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

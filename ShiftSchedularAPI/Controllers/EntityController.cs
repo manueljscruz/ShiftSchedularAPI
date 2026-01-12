@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -13,6 +14,7 @@ namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("general")]
     public class EntityController : ControllerBase
     {
         private readonly IEntityService _entityService;
@@ -38,6 +40,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-by-id/{id}/{languageCode}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -68,6 +71,7 @@ namespace ShiftSchedularAPI.Controllers
         /// Gets all the work entities
         /// </summary>
         /// <returns></returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllEntities()
@@ -86,6 +90,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="workerId">Identifier of the worker</param>
         /// <returns></returns>
+        [Authorize]
         [HttpGet("get-entities-by-worker-id/{workerId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -103,6 +108,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Dashboard View Model
 
+        [Authorize]
         [HttpPost("get-entity-dashboard-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -149,6 +155,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Members Pagination
 
+        [Authorize]
         [HttpPost("get-entity-members-pagination")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -174,6 +181,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityId"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("get-entity-skills")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -200,6 +208,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="profileViewModelRequest"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("get-entity-profile-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -225,6 +234,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="newEntity"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("add")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -250,6 +260,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Update Entity
 
+        [Authorize]
         [HttpPut("update")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -276,6 +287,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Entity by Id
 
+        [Authorize]
         [HttpDelete("delete-by-id")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -303,6 +315,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Add New Entity Member
 
+        [Authorize]
         [HttpPost("add-new-entity-member")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -328,6 +341,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Update Entity Member
 
+        [Authorize]
         [HttpPut("update-entity-member")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -353,6 +367,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Delete Entity Member
 
+        [Authorize]
         [HttpDelete("delete-entity-member")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

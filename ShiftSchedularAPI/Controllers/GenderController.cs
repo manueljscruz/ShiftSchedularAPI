@@ -1,15 +1,15 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using ShiftSchedularEntity.Models.Responses;
 
 namespace ShiftSchedularAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("general")]
     public class GenderController : ControllerBase
     {
         public readonly IGenderService _genderService;
@@ -32,6 +32,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="id">Identifier</param>
         /// <returns></returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-by-id/{id}")]
         [ProducesResponseType(200, Type = typeof(Gender))]
         public async Task<IActionResult> GetGenderById(int id)
@@ -55,6 +56,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("get-all")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllGenders()
         {
@@ -71,6 +73,7 @@ namespace ShiftSchedularAPI.Controllers
         /// Get all genders records by localization code
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpGet("get-all-genders-by-localization/{lcode}")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllGendersByLocalization(string lcode)
@@ -90,6 +93,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="strNewGenderValue"></param>
         /// <returns></returns>
         [HttpPost("add")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201)]
         public async Task<IActionResult> AddGender(string strNewGenderValue)
         {
@@ -108,6 +112,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="genderLocalizationSubmission"></param>
         /// <returns></returns>
         [HttpPost("add-gender-localization")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201)]
         public async Task<IActionResult> AddGenderLocalization(GenderLocalizationSubmissionModel genderLocalizationSubmission)
         {
@@ -129,6 +134,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="genderInstance"></param>
         /// <returns></returns>
         [HttpPut("update")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> UpdateGender(Gender genderInstance)
         {
@@ -147,6 +153,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id">Identifier</param>
         /// <returns></returns>
         [HttpDelete("delete-by-id/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteGenderById(int id)
         {

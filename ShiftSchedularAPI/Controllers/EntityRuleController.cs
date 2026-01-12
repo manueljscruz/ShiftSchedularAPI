@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
-using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
-using System.Web;
 
 namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [EnableRateLimiting("general")]
     public class EntityRuleController : ControllerBase
     {
         private readonly IEntityRuleService _entityRuleService;
@@ -26,6 +28,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Entity Rule By Id
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-by-id/{id}/{lcode}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

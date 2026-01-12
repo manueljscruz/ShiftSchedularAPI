@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
@@ -27,6 +29,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="loginDTO"></param>
         /// <returns></returns>
         [HttpPost("login")]
+        [EnableRateLimiting("auth")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -75,6 +78,8 @@ namespace ShiftSchedularAPI.Controllers
         /// Refresh a user's token
         /// </summary>
         /// <returns></returns>
+        [Authorize]
+        [EnableRateLimiting("refresh")]
         [HttpPost("refresh-token")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -91,9 +96,40 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest(response.Message);
             }
 
+            Response.Cookies.Append("access_token", response.Result.AccessToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddMinutes(15)
+            });
+
+            Response.Cookies.Append("refresh_token", response.Result.RefreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddDays(7)
+            });
+
             return Ok(response);
         }
 
         #endregion
+
+        [Authorize]
+        [EnableRateLimiting("logout")]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete("access_token");
+            Response.Cookies.Delete("refresh_token");
+
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Success = true;
+            response.Message = "Logged out successfuly";
+
+            return Ok(response);
+        }
     }
 }

@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -11,6 +12,7 @@ namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("general")]
     public class ShiftTemplateController : ControllerBase
     {
         private readonly IShiftTemplateService _shiftTemplateService;
@@ -27,6 +29,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Shift Template By Id
 
         [HttpGet("get-by-id/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200, Type = typeof(ShiftTemplate))]
         public async Task<IActionResult> GetShiftTemplateById(int id)
         {
@@ -39,6 +42,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Get Shift Templates
 
         [HttpGet("get-shift-templates/{lcode}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetEntityShiftTemplatesViewModel(string lcode)
         {
@@ -51,6 +55,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Add Entity Shift Template
 
         [HttpPost("add-shift-template")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> AddShiftTemplate(ShiftTemplateSubmissionModel submissionModel)
         {
@@ -63,6 +68,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Add Entity Shift Template Break
 
         [HttpPost("add-shift-break-template")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201)]
         public async Task<IActionResult> AddShiftBreakTemplate([FromBody] ShiftBreakTemplateSubmissionModel submissionModel)
         {
@@ -75,6 +81,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Shift Template
 
         [HttpPut("update-shift-template")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> UpdateEntityShiftTemplate(ShiftTemplateUpdateDTO shiftTemplateUpdateDTO)
         {
@@ -87,6 +94,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Update Shift Break Template 
 
         [HttpPut("update-shift-break-template")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> UpdateShiftBreakTemplate(ShiftBreakTemplateDTO shiftBreakTemplateDTO)
         {
@@ -97,7 +105,9 @@ namespace ShiftSchedularAPI.Controllers
         #endregion
 
         #region Update Shift Template Pop Count
-
+        
+        [Authorize]
+        [EnableRateLimiting("write")]
         [HttpPut("update-shift-template-pop-count/{shiftTemplateId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -120,6 +130,8 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Update Shift Break Template Pop Count
 
+        [Authorize]
+        [EnableRateLimiting("write")]
         [HttpPut("update-shift-break-template-pop-count/{shiftBreakTemplateId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -142,6 +154,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Delete Shift Template
 
         [HttpDelete("delete-shift-template/{shiftTemplateId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteShiftTemplate(int shiftTemplateId)
         {
             BaseResponse<bool> response = await _shiftTemplateService.DeleteShiftTemplate(shiftTemplateId);
@@ -153,6 +166,7 @@ namespace ShiftSchedularAPI.Controllers
         #region Delete Shift Break Template
 
         [HttpDelete("delete-shift-break-template/{shiftBreakTemplateId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteShiftBreakTemplate(int shiftBreakTemplateId)
         {
             BaseResponse<bool> response = await _shiftTemplateService.DeleteShiftBreakTemplate(shiftBreakTemplateId);

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
@@ -9,6 +11,8 @@ namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [EnableRateLimiting("general")]
     public class EntityScheduleController : ControllerBase
     {
         #region Properties
@@ -253,23 +257,6 @@ namespace ShiftSchedularAPI.Controllers
 
             else
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
-        }
-
-        #endregion
-
-        #region Get Schedule Entry By Id NOT USED 
-
-        [HttpGet("get-schedule-entry-by-id")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetScheduleEntryById(string scheduleEntryId, string languageCode)
-        {
-            if (string.IsNullOrEmpty(scheduleEntryId))
-            {
-                return BadRequest();
-            }
-
-            var scheduleEntry = await _entityScheduleService.GetScheduleEntryById(_generalService.ParseStringToGuid(scheduleEntryId), languageCode);
-            return Ok(scheduleEntry);
         }
 
         #endregion

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
@@ -7,6 +9,8 @@ namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
+    [EnableRateLimiting("general")]
     public class EntityWorkerAbsenceController : ControllerBase
     {
         private readonly IEntityWorkerAbsenceService _entityWorkerAbsenceService;
@@ -30,6 +34,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <param name="lcode"></param>
         /// <returns></returns>
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-by-id")]
         [ProducesResponseType(200, Type = typeof(EntityWorkerAbsenceDTO))]
         public async Task<IActionResult> GetEntityWorkerAbsenceById(Guid id, string lcode)
@@ -57,7 +62,7 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-        #region Get Entity Worker Absences
+        #region Get Entity Worker Absence Pagination
 
         [HttpPost("get-entity-worker-absence-pagination")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -76,7 +81,6 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
-
 
         #region Add Entity Worker Absence
 

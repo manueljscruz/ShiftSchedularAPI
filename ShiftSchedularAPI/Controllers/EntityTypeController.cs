@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 
@@ -6,6 +8,7 @@ namespace ShiftSchedularAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("general")]
     public class EntityTypeController : ControllerBase
     {
         private readonly IEntityTypeService _entityTypeService;
@@ -29,6 +32,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("get-by-id/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200, Type = typeof(EntityType))]
         public async Task<IActionResult> GetEntityTypeById(int id)
         {
@@ -51,6 +55,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("get-all")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllEntityTypes()
         {
@@ -68,6 +73,7 @@ namespace ShiftSchedularAPI.Controllers
         /// </summary>
         /// <param name="lcode"></param>
         /// <returns></returns>
+        [Authorize(Roles = "User")]
         [HttpGet("get-all-entity-types-by-localization/{lcode}")]
         [ProducesResponseType(200)]
         public async Task<IActionResult> GetAllEntityTypesByLocalization(string lcode)
@@ -87,6 +93,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityType"></param>
         /// <returns></returns>
         [HttpPost("add")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(201)]
         public async Task<IActionResult> AddEntityType(string strNewEntityType)
         {
@@ -105,6 +112,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="entityType"></param>
         /// <returns></returns>
         [HttpPut("update")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> UpdateEntityType(EntityType entityType)
         {
@@ -123,6 +131,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpDelete("delete-by-id/{id}")]
+        [Authorize(Roles = "Admin")]
         [ProducesResponseType(204)]
         public async Task<IActionResult> DeleteEntityTypeById(int id)
         {

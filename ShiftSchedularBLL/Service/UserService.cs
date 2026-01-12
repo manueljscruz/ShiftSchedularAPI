@@ -55,9 +55,13 @@ namespace ShiftSchedularBLL.Service
             ApplicationUser newUser = _mapper.Map<ApplicationUser>(newUserDTO);
             newUser.UserName = newUserDTO.Email.Split("@")[0];
 
+
+
             IdentityResult result = await _userManager.CreateAsync(newUser, newUserDTO.Password);
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(newUser, "User");
+
                 response.Result = true;
                 response.Message = WorkerRelatedMessages.WorkerRegistrationSuccess;
                 response.Success = true;

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models.ViewModels;
 
@@ -21,6 +23,7 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="lcode">Language code</param>
         /// <returns>Genders and subscription plans in localized format</returns>
         [HttpGet("get-home-view-model/{lcode}")]
+        [EnableRateLimiting("public")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -37,6 +40,7 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         [HttpPost("send-email-test")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> SendEmailTest(string email)
         {
             await _homeService.SendEmailTest(email);
