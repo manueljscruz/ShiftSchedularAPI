@@ -98,8 +98,11 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddDbContext<DataContext>(options =>
 {
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+    // ADD THIS TO SEE WHAT IT'S READING
+    // Console.WriteLine($"Connection String: {connectionString}");
+
     options.UseSqlServer(connectionString, b => b.MigrationsAssembly("ShiftSchedularDAL"));
-    
 }, ServiceLifetime.Scoped);
 
 // 5. Add custom services (assumed implemented elsewhere)
