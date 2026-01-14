@@ -149,7 +149,7 @@ var app = builder.Build();
 app.UseCors(MyAllowSpecificOrigins);
 
 // 2. Enable Swagger only in development environment
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
