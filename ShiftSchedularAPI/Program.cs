@@ -25,12 +25,27 @@ builder.Services.AddCors(options =>
 {
     var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 
+    // Log the allowed origins for debugging
+    Console.WriteLine($"Configuring CORS with {allowedOrigins.Length} allowed origins:");
+    foreach (var origin in allowedOrigins)
+    {
+        Console.WriteLine($"  - {origin}");
+    }
+
     options.AddPolicy(MyAllowSpecificOrigins, policy =>
     {
-        policy.WithOrigins(allowedOrigins) // Allow specific origin
-              .AllowAnyHeader()                    // Allow all headers
-              .AllowCredentials()                   // Required for cookies only token
-              .AllowAnyMethod();                   // Allow all HTTP methods
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins) // Allow specific origin
+                  .AllowAnyHeader()                    // Allow all headers
+                  .AllowCredentials()                   // Required for cookies only token
+                  .AllowAnyMethod()                    // Allow all HTTP methods
+                  .SetIsOriginAllowedToAllowWildcardSubdomains(); // Allow wildcard subdomains if needed
+        }
+        else
+        {
+            Console.WriteLine("WARNING: No allowed origins configured! CORS will block all requests.");
+        }
     });
 });
 
