@@ -83,6 +83,7 @@ namespace ShiftSchedularBLL.Service
                 if (user == null)
                 {
                     loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
+                    return loginResponseDTO;
                 }
 
                 bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
@@ -108,7 +109,7 @@ namespace ShiftSchedularBLL.Service
 
                     user.RefreshToken = refreshToken;
 
-                    user.RefreshTokenExpiryTime = DateTime.Now.AddMinutes(refreshTokenValidityInMinutes);
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddMinutes(refreshTokenValidityInMinutes);
 
                     await _userManager.UpdateAsync(user);
 
@@ -170,7 +171,7 @@ namespace ShiftSchedularBLL.Service
 
             var user = await _userManager.FindByNameAsync(userName!);
 
-            if (user == null || user.RefreshToken != tokenModelDTO.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            if (user == null || user.RefreshToken != tokenModelDTO.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 response.Message = WorkerRelatedMessages.InvalidTokens;
                 return response;
