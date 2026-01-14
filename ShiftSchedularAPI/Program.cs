@@ -153,11 +153,6 @@ if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    // Simple health check endpoint
-    app.MapGet("/", () => "API is running!");
-    app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
-
 }
 
 // 3. Enable HTTPS redirection
@@ -175,6 +170,10 @@ app.UseAuthorization();
 
 // 5. Map controllers
 app.MapControllers();
+
+// Simple health check endpoint
+app.MapGet("/", () => "API is running!");
+app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 
 // Run the application
 app.Run();
