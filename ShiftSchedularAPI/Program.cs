@@ -149,10 +149,15 @@ var app = builder.Build();
 app.UseCors(MyAllowSpecificOrigins);
 
 // 2. Enable Swagger only in development environment
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Simple health check endpoint
+    app.MapGet("/", () => "API is running!");
+    app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
+
 }
 
 // 3. Enable HTTPS redirection
