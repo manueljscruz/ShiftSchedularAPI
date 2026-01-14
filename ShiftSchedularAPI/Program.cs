@@ -147,15 +147,15 @@ var app = builder.Build();
 
 // Configure the middleware pipeline
 
-// 1. Use CORS to allow cross-origin requests
-app.UseCors(MyAllowSpecificOrigins);
-
-// 2. Enable Swagger only in development environment
+// 1. Enable Swagger only in development environment
 if (!app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// 2. Use CORS to allow cross-origin requests (must come before auth/authorization)
+app.UseCors(MyAllowSpecificOrigins);
 
 // 3. Enable HTTPS redirection
 app.UseHttpsRedirection();
@@ -165,10 +165,12 @@ using(var scope = app.Services.CreateScope())
     await SeedRolesAndAdmin(scope.ServiceProvider);
 }
 
-// 4. Enable Rate Limiter Authentication and Authorization
-app.UseRateLimiter();
+// 4. Enable Authentication and Authorization (must come before rate limiter)
 app.UseAuthentication();
 app.UseAuthorization();
+
+// 5. Enable Rate Limiter
+app.UseRateLimiter();
 
 // 5. Map controllers
 app.MapControllers();
