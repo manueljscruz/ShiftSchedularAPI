@@ -23,9 +23,11 @@ var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 // 1. Enable CORS for specific origins (allow Angular app on localhost:4200)
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
     options.AddPolicy(MyAllowSpecificOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://192.168.0.9:4200", "https://81a1-188-81-53-74.ngrok-free.app/") // Allow specific origin
+        policy.WithOrigins(allowedOrigins) // Allow specific origin
               .AllowAnyHeader()                    // Allow all headers
               .AllowCredentials()                   // Required for cookies only token
               .AllowAnyMethod();                   // Allow all HTTP methods
