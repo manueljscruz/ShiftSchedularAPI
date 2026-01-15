@@ -662,6 +662,125 @@ namespace ShiftSchedularDAL.Data
                 .HasForeignKey(sewi => sewi.ApplicationUserId);
 
             #endregion
+
+            #region Database Indexes for Performance
+
+            // EntityWorker indexes - highly queried table
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => ew.EntityId)
+                .HasDatabaseName("IX_EntityWorkers_EntityId");
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => ew.ApplicationUserId)
+                .HasDatabaseName("IX_EntityWorkers_ApplicationUserId");
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => new { ew.EntityId, ew.ApplicationUserId })
+                .HasDatabaseName("IX_EntityWorkers_EntityId_ApplicationUserId");
+
+            // EntityWorkerSkill indexes
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasIndex(ews => ews.EntityId)
+                .HasDatabaseName("IX_EntityWorkerSkills_EntityId");
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasIndex(ews => ews.ApplicationUserId)
+                .HasDatabaseName("IX_EntityWorkerSkills_ApplicationUserId");
+
+            modelBuilder.Entity<EntityWorkerSkill>()
+                .HasIndex(ews => ews.SkillId)
+                .HasDatabaseName("IX_EntityWorkerSkills_SkillId");
+
+            // Shift indexes
+            modelBuilder.Entity<Shift>()
+                .HasIndex(s => s.EntityId)
+                .HasDatabaseName("IX_Shifts_EntityId");
+
+            // ScheduleEntry indexes - critical for date range queries
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasIndex(se => se.ShiftId)
+                .HasDatabaseName("IX_ScheduleEntries_ShiftId");
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasIndex(se => new { se.ScheduleStartDate, se.ScheduleEndDate })
+                .HasDatabaseName("IX_ScheduleEntries_DateRange");
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasIndex(se => new { se.ShiftId, se.ScheduleStartDate, se.ScheduleEndDate })
+                .HasDatabaseName("IX_ScheduleEntries_ShiftId_DateRange");
+
+            // EntityWorkerAbsence indexes
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasIndex(ewa => ewa.EntityId)
+                .HasDatabaseName("IX_EntityWorkerAbsences_EntityId");
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasIndex(ewa => ewa.ApplicationUserId)
+                .HasDatabaseName("IX_EntityWorkerAbsences_ApplicationUserId");
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasIndex(ewa => new { ewa.AbsenceStartDate, ewa.AbsenceEndDate })
+                .HasDatabaseName("IX_EntityWorkerAbsences_DateRange");
+
+            // EntityWorkerInvitation indexes
+            modelBuilder.Entity<EntityWorkerInvitation>()
+                .HasIndex(ewi => ewi.Email)
+                .HasDatabaseName("IX_EntityWorkerInvitations_Email");
+
+            modelBuilder.Entity<EntityWorkerInvitation>()
+                .HasIndex(ewi => ewi.EntityId)
+                .HasDatabaseName("IX_EntityWorkerInvitations_EntityId");
+
+            // ScheduleEntryWorkers indexes
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasIndex(sew => sew.ScheduleEntryId)
+                .HasDatabaseName("IX_ScheduleEntryWorkers_ScheduleEntryId");
+
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasIndex(sew => sew.ApplicationUserId)
+                .HasDatabaseName("IX_ScheduleEntryWorkers_ApplicationUserId");
+
+            // EntityUserBot indexes (bot equivalent of worker indexes)
+            modelBuilder.Entity<EntityUserBot>()
+                .HasIndex(eub => eub.EntityId)
+                .HasDatabaseName("IX_EntityUserBots_EntityId");
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasIndex(eub => eub.UserBotId)
+                .HasDatabaseName("IX_EntityUserBots_UserBotId");
+
+            // EntityUserBotSkill indexes
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasIndex(eubs => eubs.EntityId)
+                .HasDatabaseName("IX_EntityUserBotSkills_EntityId");
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasIndex(eubs => eubs.UserBotId)
+                .HasDatabaseName("IX_EntityUserBotSkills_UserBotId");
+
+            modelBuilder.Entity<EntityUserBotSkill>()
+                .HasIndex(eubs => eubs.SkillId)
+                .HasDatabaseName("IX_EntityUserBotSkills_SkillId");
+
+            // EntityShiftRotation indexes
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasIndex(esr => esr.EntityId)
+                .HasDatabaseName("IX_EntityShiftRotations_EntityId");
+
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasIndex(esr => esr.ShiftId)
+                .HasDatabaseName("IX_EntityShiftRotations_ShiftId");
+
+            // EntityRule indexes
+            modelBuilder.Entity<EntityRule>()
+                .HasIndex(er => er.EntityId)
+                .HasDatabaseName("IX_EntityRules_EntityId");
+
+            modelBuilder.Entity<EntityRule>()
+                .HasIndex(er => er.RuleTypeId)
+                .HasDatabaseName("IX_EntityRules_RuleTypeId");
+
+            #endregion
         }
 
         #endregion

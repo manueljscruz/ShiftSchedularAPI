@@ -16,7 +16,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteEntityById(Guid entityId);
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
         Task<EntityMembersViewModel> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest);
-        Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(Guid entityId, List<string> workers, string lcode);
         Task<List<SkillLocalizedDTO>> GetEntitySkills(BaseViewModelRequest baseViewModelRequest);
         Task<EntityProfileViewModel> GetEntityProfileViewModel(BaseViewModelRequest entityProfileViewModelRequest);
         Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO);
