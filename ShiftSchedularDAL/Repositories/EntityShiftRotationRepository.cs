@@ -41,7 +41,11 @@ namespace ShiftSchedularDAL.Repositories
         {
             if(entityId != Guid.Empty)
             {
-                return _dbSet.Where(i => i.EntityId.Equals(entityId)).OrderBy(i => i.OrderNo).ToListAsync();
+                return _dbSet
+                    .Include(i => i.Shift)  // Eager load Shift to prevent N+1
+                    .Where(i => i.EntityId.Equals(entityId))
+                    .OrderBy(i => i.OrderNo)
+                    .ToListAsync();
             }
             else return null;
         }

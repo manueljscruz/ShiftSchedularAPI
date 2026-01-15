@@ -70,6 +70,7 @@ namespace ShiftSchedularDAL.Repositories
                 .Where(i => i.Shift.EntityId.Equals(entityId)
                     && i.ScheduleStartDate <= endDateSearch
                     && i.ScheduleEndDate >= startDateSearch)
+                .Include(i => i.Shift)  // Eager load Shift to prevent N+1
                 .Include(i => i.ScheduleEntryWorkers)
                 .Include(i => i.ScheduleEntryBots)
                 .Include(i => i.ScheduleEntryWorkerIneligibilities)
@@ -149,7 +150,9 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (id != Guid.Empty)
             {
-                return await _scheduleEntriesDbSet.Include(i => i.ScheduleEntryBots)
+                return await _scheduleEntriesDbSet
+                    .Include(i => i.Shift)  // Eager load Shift to prevent N+1
+                    .Include(i => i.ScheduleEntryBots)
                     .Include(i => i.ScheduleEntryWorkers)
                     .Where(i => i.ScheduleEntryId.Equals(id)).FirstOrDefaultAsync();
             }
