@@ -175,7 +175,7 @@ app.UseCors(MyAllowSpecificOrigins);
 // 3. Enable HTTPS redirection
 app.UseHttpsRedirection();
 
-using(var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     await SeedRolesAndAdmin(scope.ServiceProvider);
 }

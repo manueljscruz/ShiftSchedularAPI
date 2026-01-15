@@ -677,11 +677,11 @@ namespace ShiftSchedularBLL.Service
                     else
                     {
                         // Use navigation property instead of querying - Shift is already loaded via Include
-                        if (entityShiftRotation.Shift != null)
-                        {
-                            entityShiftRotationDTO.DisplayName = entityShiftRotation.Shift.ShiftName;
-                            entityShiftRotationDTO.Alias = entityShiftRotation.Shift.ShiftAlias;
-                        }
+                        //if (entityShiftRotation.Shift != null)
+                        //{
+                        //    entityShiftRotationDTO.DisplayName = entityShiftRotation.Shift.ShiftName;
+                        //    entityShiftRotationDTO.Alias = entityShiftRotation.Shift.ShiftAlias;
+                        //}
                     }
                     entityShiftRotationDTOs.Add(entityShiftRotationDTO);
                 }
