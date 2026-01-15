@@ -130,17 +130,28 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(entityId.ToString()))
             {
-                byte[] entityIdBytes = entityId.ToByteArray();
+                // Use LINQ with Contains to prevent SQL injection
+                var query = from ew in _context.EntityWorkers
+                           join w in _context.ApplicationUsers on ew.ApplicationUserId equals w.Id
+                           where ew.EntityId == entityId && workers.Contains(w.Id)
+                           select new EntityWorkerMemberModel
+                           {
+                               WorkerId = ew.ApplicationUserId,
+                               WorkerName = w.DisplayName,
+                               CanCreateSchedules = ew.CanCreateSchedules,
+                               IsBot = false,
+                               IsOwner = ew.IsOwner,
+                               DateOfJoin = ew.DateOfJoin,
+                               PartOfRotation = ew.PartOfRotation,
+                               WorksWeekDays = ew.WorksWeekDays,
+                               WorksWeekends = ew.WorksWeekends,
+                               MultipleShiftAssignments = ew.MultipleShiftAssignments,
+                               SkillIds = string.Join(",", _context.EntityWorkerSkills
+                                   .Where(ews => ews.ApplicationUserId == ew.ApplicationUserId)
+                                   .Select(ews => ews.SkillId))
+                           };
 
-                string listInString = string.Join(",", workers.Select(v => $"'{v}'"));
-                string filterFormat = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersListFilter, listInString);
-
-                string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, filterFormat);
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@EntityId", entityIdBytes);
-
-                var result = await _sqlRawRepository.ExecuteQuery<EntityWorkerMemberModel>(query, parameters);
-
+                var result = await query.ToListAsync();
                 return result;
             }
             else

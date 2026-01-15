@@ -393,9 +393,11 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityRuleId");
 
-                    b.HasIndex("EntityId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityRules_EntityId");
 
-                    b.HasIndex("RuleTypeId");
+                    b.HasIndex("RuleTypeId")
+                        .HasDatabaseName("IX_EntityRules_RuleTypeId");
 
                     b.ToTable("EntityRules");
                 });
@@ -448,6 +450,12 @@ namespace ShiftSchedularDAL.Migrations
                         .HasColumnType("BINARY(16)");
 
                     b.HasKey("EntityId", "OrderNo", "IsLeave");
+
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityShiftRotations_EntityId");
+
+                    b.HasIndex("ShiftId")
+                        .HasDatabaseName("IX_EntityShiftRotations_ShiftId");
 
                     b.ToTable("EntityShiftRotations");
                 });
@@ -519,7 +527,11 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityId", "UserBotId");
 
-                    b.HasIndex("UserBotId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityUserBots_EntityId");
+
+                    b.HasIndex("UserBotId")
+                        .HasDatabaseName("IX_EntityUserBots_UserBotId");
 
                     b.ToTable("EntityUserBots");
                 });
@@ -557,9 +569,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityId", "UserBotId", "SkillId");
 
-                    b.HasIndex("SkillId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityUserBotSkills_EntityId");
 
-                    b.HasIndex("UserBotId");
+                    b.HasIndex("SkillId")
+                        .HasDatabaseName("IX_EntityUserBotSkills_SkillId");
+
+                    b.HasIndex("UserBotId")
+                        .HasDatabaseName("IX_EntityUserBotSkills_UserBotId");
 
                     b.ToTable("EntityUserBotSkills");
                 });
@@ -601,7 +618,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("EntityId", "ApplicationUserId");
 
-                    b.HasIndex("ApplicationUserId");
+                    b.HasIndex("ApplicationUserId")
+                        .HasDatabaseName("IX_EntityWorkers_ApplicationUserId");
+
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityWorkers_EntityId");
+
+                    b.HasIndex("EntityId", "ApplicationUserId")
+                        .HasDatabaseName("IX_EntityWorkers_EntityId_ApplicationUserId");
 
                     b.ToTable("EntityWorkers");
                 });
@@ -665,9 +689,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("AbsenceTypeId");
 
-                    b.HasIndex("ApplicationUserId");
+                    b.HasIndex("ApplicationUserId")
+                        .HasDatabaseName("IX_EntityWorkerAbsences_ApplicationUserId");
 
-                    b.HasIndex("EntityId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityWorkerAbsences_EntityId");
+
+                    b.HasIndex("AbsenceStartDate", "AbsenceEndDate")
+                        .HasDatabaseName("IX_EntityWorkerAbsences_DateRange");
 
                     b.ToTable("WorkerEntityAbsences");
                 });
@@ -707,6 +736,12 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
+                    b.HasIndex("Email")
+                        .HasDatabaseName("IX_EntityWorkerInvitations_Email");
+
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityWorkerInvitations_EntityId");
+
                     b.ToTable("EntityWorkerInvitations");
                 });
 
@@ -743,9 +778,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ApplicationUserId", "EntityId", "SkillId");
 
-                    b.HasIndex("EntityId");
+                    b.HasIndex("ApplicationUserId")
+                        .HasDatabaseName("IX_EntityWorkerSkills_ApplicationUserId");
 
-                    b.HasIndex("SkillId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_EntityWorkerSkills_EntityId");
+
+                    b.HasIndex("SkillId")
+                        .HasDatabaseName("IX_EntityWorkerSkills_SkillId");
 
                     b.ToTable("EntityWorkerSkills");
                 });
@@ -893,7 +933,14 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ScheduleEntryId");
 
-                    b.HasIndex("ShiftId");
+                    b.HasIndex("ShiftId")
+                        .HasDatabaseName("IX_ScheduleEntries_ShiftId");
+
+                    b.HasIndex("ScheduleStartDate", "ScheduleEndDate")
+                        .HasDatabaseName("IX_ScheduleEntries_DateRange");
+
+                    b.HasIndex("ShiftId", "ScheduleStartDate", "ScheduleEndDate")
+                        .HasDatabaseName("IX_ScheduleEntries_ShiftId_DateRange");
 
                     b.ToTable("ScheduleEntry", (string)null);
                 });
@@ -975,7 +1022,11 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ScheduleEntryId", "ApplicationUserId");
 
-                    b.HasIndex("ApplicationUserId");
+                    b.HasIndex("ApplicationUserId")
+                        .HasDatabaseName("IX_ScheduleEntryWorkers_ApplicationUserId");
+
+                    b.HasIndex("ScheduleEntryId")
+                        .HasDatabaseName("IX_ScheduleEntryWorkers_ScheduleEntryId");
 
                     b.ToTable("ScheduleEntryWorkers");
                 });
@@ -1017,7 +1068,8 @@ namespace ShiftSchedularDAL.Migrations
 
                     b.HasKey("ShiftId");
 
-                    b.HasIndex("EntityId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("IX_Shifts_EntityId");
 
                     b.ToTable("Shifts");
                 });

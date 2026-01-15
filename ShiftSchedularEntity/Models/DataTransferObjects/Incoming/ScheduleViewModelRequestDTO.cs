@@ -16,8 +16,8 @@
         /// </summary>
         public ScheduleViewModelRequestDTO()
         {
-            StartDateSearch = DateTime.Now.AddMonths(-3);
-            EndDateSearch = DateTime.Now.AddMonths(3);
+            StartDateSearch = DateTime.UtcNow.AddMonths(-3);
+            EndDateSearch = DateTime.UtcNow.AddMonths(3);
         }
 
         public ScheduleViewModelRequestDTO(Guid entityId, string workerId, string languageCode, DateTime startDateSearch, DateTime endDateSearch)

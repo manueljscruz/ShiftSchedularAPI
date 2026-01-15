@@ -237,7 +237,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             // Get related schedule entries
-            int count = await _unitOfWork.EntityScheduleRepository.GetShiftForwardEntriesCount(entityId, shiftId, DateTime.Now);
+            int count = await _unitOfWork.EntityScheduleRepository.GetShiftForwardEntriesCount(entityId, shiftId, DateTime.UtcNow);
 
             // Error occurred
             if (count == -1)
@@ -284,7 +284,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Delete previous entries
-                bool scheduleEntriesOp = await _unitOfWork.EntityScheduleRepository.DeletePreviousShiftEntries(entityId, shiftId, DateTime.Now);
+                bool scheduleEntriesOp = await _unitOfWork.EntityScheduleRepository.DeletePreviousShiftEntries(entityId, shiftId, DateTime.UtcNow);
 
 
                 // Get Specific Worker & Bot Shift Assignments
