@@ -432,51 +432,6 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Get Entity Members By List
-
-        /// <summary>
-        /// Get Entity Member By Id
-        /// </summary>
-        /// <param name="entityId">Entity identifier</param>
-        /// <param name="workers">List of worker ids</param>
-        /// <param name="lcode">Language Code</param>
-        /// <returns></returns>
-        public async Task<List<EntityWorkerMemberDTO>> GetEntityMembersByList(Guid entityId, List<string> workers, string lcode)
-        {
-            List<EntityWorkerMemberDTO> entityWorkerMembers = new List<EntityWorkerMemberDTO>();
-            if (entityId != Guid.Empty && workers.Count != 0 && !string.IsNullOrEmpty(lcode))
-            {
-                List<SkillLocalizedDTO> skillLocalizeds = await _skillService.GetAllSkillsByLocalization(lcode);
-                IEnumerable<EntityWorkerMemberModel> entityWorkerMemberModels = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId, workers);
-
-                foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkerMemberModels)
-                {
-                    EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
-                    entityWorkerMemberDTO = _mapper.Map(entityWorkerMember, entityWorkerMemberDTO);
-
-                    int[] skillIds = entityWorkerMember.SkillIds.Split(',').Select(int.Parse).ToArray();
-
-                    entityWorkerMemberDTO.SkillSet = skillLocalizeds.Where(i => skillIds.Contains(i.SkillId))
-                                                .Select(s => new SkillLocalizedDTO
-                                                {
-                                                    SkillId = s.SkillId,
-                                                    SkillLocalizedName = s.SkillLocalizedName,
-                                                    SkillHexBGColor = s.SkillHexBGColor,
-                                                    SkillHexFontColor = s.SkillHexFontColor
-                                                }).ToList();
-
-                    entityWorkerMemberDTO.AssignedShifts = (List<ShiftDTO>)await GetAssignedWorkerOrBotShifts(entityWorkerMember.IsBot, entityId, entityWorkerMember.WorkerId, lcode, null);
-
-                    entityWorkerMembers.Add(entityWorkerMemberDTO);
-
-                }
-            }
-
-            return entityWorkerMembers;
-        }
-
-        #endregion
-
         #region Get Entity Members
 
         public async Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode)
@@ -528,6 +483,12 @@ namespace ShiftSchedularBLL.Service
 
         #region Get All Members
 
+        /// <summary>
+        /// Gets all members (workers and bots) for an entity.
+        /// </summary>
+        /// <param name="entityId">The entity identifier</param>
+        /// <param name="workers">Optional list of worker IDs to filter by. If empty, returns all members.</param>
+        /// <returns>List of entity members (workers and bots)</returns>
         private async Task<List<EntityWorkerMemberModel>> GetAllMembers(Guid entityId, List<string> workers)
         {
             // Get regular members
@@ -538,6 +499,7 @@ namespace ShiftSchedularBLL.Service
 
             List<EntityWorkerMemberModel> members = new();
 
+            // Filter by specific workers/bots if list is provided, otherwise return all
             if (workers.Count > 0)
             {
                 foreach (string workerId in workers)
