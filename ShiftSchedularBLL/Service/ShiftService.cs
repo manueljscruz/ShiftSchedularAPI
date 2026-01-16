@@ -481,8 +481,8 @@ namespace ShiftSchedularBLL.Service
             // Map it to DTO object
             shiftDTO = _mapper.Map<ShiftDTO>(shift);
 
-            // Get Shift breaks related to the shift
-            IEnumerable<ShiftBreak> shiftBreaks = await _unitOfWork.ShiftBreakRepository.GetBreaksByShiftId(shift.ShiftId);
+            // Use navigation property instead of querying - ShiftBreaks already loaded via Include
+            IEnumerable<ShiftBreak> shiftBreaks = shift.ShiftBreaks ?? Enumerable.Empty<ShiftBreak>();
 
             // If any, map them to the 
             if (shiftBreaks.Count() != 0 && shiftBreakTypeLocalizations.Count() != 0)
@@ -676,11 +676,11 @@ namespace ShiftSchedularBLL.Service
                     }
                     else
                     {
-                        Shift shift = await _unitOfWork.ShiftRepository.GetShiftById((Guid)entityShiftRotation.ShiftId);
-                        if (shift != null)
+                        // Use navigation property instead of querying - Shift is already loaded via Include
+                        if (entityShiftRotation.Shift != null)
                         {
-                            entityShiftRotationDTO.DisplayName = shift.ShiftName;
-                            entityShiftRotationDTO.Alias = shift.ShiftAlias;
+                            entityShiftRotationDTO.DisplayName = entityShiftRotation.Shift.ShiftName;
+                            entityShiftRotationDTO.Alias = entityShiftRotation.Shift.ShiftAlias;
                         }
                     }
                     entityShiftRotationDTOs.Add(entityShiftRotationDTO);

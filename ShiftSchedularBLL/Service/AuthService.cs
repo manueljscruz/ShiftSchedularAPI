@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -19,13 +20,15 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, ITokenService tokenService)
+        public AuthService(UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, ITokenService tokenService, ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _mapper = mapper;
             _configuration = configuration;
             _tokenService = tokenService;
+            _logger = logger;
         }
 
         #region Register
@@ -76,12 +79,14 @@ namespace ShiftSchedularBLL.Service
         /// <returns></returns>
         public async Task<BaseResponse<LoginResponseDTO>> Login(LoginDTO loginDTO)
         {
+            _logger.LogInformation("Login attempt for email: {Email}", loginDTO.Email);
             BaseResponse<LoginResponseDTO> loginResponseDTO = new BaseResponse<LoginResponseDTO>();
             try
             {
                 ApplicationUser user = await _userManager.FindByEmailAsync(loginDTO.Email);
                 if (user == null)
                 {
+                    _logger.LogWarning("Login failed: User not found for email: {Email}", loginDTO.Email);
                     loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
                     return loginResponseDTO;
                 }
@@ -89,6 +94,7 @@ namespace ShiftSchedularBLL.Service
                 bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
                 if (validLogin)
                 {
+                    _logger.LogInformation("Successful login for user: {UserId} ({Email})", user.Id, loginDTO.Email);
                     var userRoles = await _userManager.GetRolesAsync(user);
 
                     var authClaims = new List<Claim>
@@ -122,14 +128,16 @@ namespace ShiftSchedularBLL.Service
                 }
                 else
                 {
+                    _logger.LogWarning("Login failed: Invalid password for email: {Email}", loginDTO.Email);
                     loginResponseDTO.Message = WorkerRelatedMessages.WorkerLoginPasswordIncorrect;
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Login error for email: {Email}", loginDTO.Email);
                 loginResponseDTO.Message = ex.Message;
             }
-            
+
             return loginResponseDTO;
         }
 

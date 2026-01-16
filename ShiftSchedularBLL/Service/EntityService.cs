@@ -545,10 +545,50 @@ namespace ShiftSchedularBLL.Service
         {
             List<EntityWorkerMemberDTO> entityMembers = new List<EntityWorkerMemberDTO>();
 
+            // Load skills and shifts once
             List<SkillLocalizedDTO> skills = await _skillService.GetAllSkillsByLocalization(lcode);
-
             IEnumerable<ShiftDTO> shifts = await _shiftService.GetEntityShifts(entityId);
 
+            // Batch load ALL shift assignments for workers and bots in TWO queries
+            var workerIds = entityWorkers
+                .Where(w => !w.IsBot && !w.PartOfRotation)
+                .Select(w => w.WorkerId)  // ApplicationUserId is string, not GUID
+                .Distinct()
+                .ToList();
+
+            var botIds = entityWorkers
+                .Where(w => w.IsBot && !w.PartOfRotation)
+                .Select(w => _generalService.ParseStringToGuid(w.WorkerId))
+                .Distinct()
+                .ToList();
+
+            // Batch load worker shift assignments (string-based ApplicationUserId)
+            var workerShiftAssignments = new Dictionary<string, List<Guid>>();
+            if (workerIds.Any())
+            {
+                var allWorkerAssignments = await _unitOfWork.EntityWorkerShiftAssignedsRepository
+                    .GetAllByEntityId(entityId);
+
+                workerShiftAssignments = allWorkerAssignments
+                    .Where(a => workerIds.Contains(a.ApplicationUserId))
+                    .GroupBy(a => a.ApplicationUserId)
+                    .ToDictionary(g => g.Key, g => g.Select(a => a.ShiftId).ToList());
+            }
+
+            // Batch load bot shift assignments
+            var botShiftAssignments = new Dictionary<Guid, List<Guid>>();
+            if (botIds.Any())
+            {
+                var allBotAssignments = await _unitOfWork.EntityUserBotShiftAssignedsRepository
+                    .GetAllByEntityId(entityId);
+
+                botShiftAssignments = allBotAssignments
+                    .Where(a => botIds.Contains(a.UserBotId))
+                    .GroupBy(a => a.UserBotId)
+                    .ToDictionary(g => g.Key, g => g.Select(a => a.ShiftId).ToList());
+            }
+
+            // Process each member using pre-loaded data
             foreach (EntityWorkerMemberModel entityWorkerMember in entityWorkers)
             {
                 EntityWorkerMemberDTO entityWorkerMemberDTO = new EntityWorkerMemberDTO();
@@ -567,13 +607,36 @@ namespace ShiftSchedularBLL.Service
 
                 if (!entityWorkerMemberDTO.PartOfRotation)
                 {
-                    var data = await GetAssignedWorkerOrBotShifts(entityWorkerMemberDTO.IsBot, entityId, entityWorkerMemberDTO.WorkerId, lcode, shifts);
-                    if (data != null)
-                        entityWorkerMemberDTO.AssignedShifts = data.ToList();
-                }
+                    List<Guid> assignedShiftIds = null;
 
+                    // Lookup shift assignments from pre-loaded dictionaries
+                    if (entityWorkerMemberDTO.IsBot)
+                    {
+                        Guid workerGuid = _generalService.ParseStringToGuid(entityWorkerMemberDTO.WorkerId);
+                        botShiftAssignments.TryGetValue(workerGuid, out assignedShiftIds);
+                    }
+                    else
+                    {
+                        // Workers use string-based ApplicationUserId
+                        workerShiftAssignments.TryGetValue(entityWorkerMemberDTO.WorkerId, out assignedShiftIds);
+                    }
+
+                    // Filter shifts based on assignments
+                    if (assignedShiftIds != null && assignedShiftIds.Any())
+                    {
+                        entityWorkerMemberDTO.AssignedShifts = shifts
+                            .Where(shift => assignedShiftIds.Contains(shift.ShiftId))
+                            .ToList();
+                    }
+                    else
+                    {
+                        entityWorkerMemberDTO.AssignedShifts = new List<ShiftDTO>();
+                    }
+                }
                 else
+                {
                     entityWorkerMemberDTO.AssignedShifts = new List<ShiftDTO>();
+                }
 
                 entityMembers.Add(entityWorkerMemberDTO);
             }

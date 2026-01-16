@@ -290,13 +290,102 @@ namespace ShiftSchedularBLL.Service
         {
             List<ScheduleEntryDTO> scheduleEntryDTOs = new List<ScheduleEntryDTO>();
 
-            IEnumerable<ShiftDTO> shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
-            IEnumerable<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetEFScheduleEntries(viewModelRequest.EntityId, viewModelRequest.StartDateSearch, viewModelRequest.EndDateSearch);
+            // Load schedule entries with all related data (Shift, Workers, Bots) in ONE query
+            IEnumerable<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetEFScheduleEntries(
+                viewModelRequest.EntityId,
+                viewModelRequest.StartDateSearch,
+                viewModelRequest.EndDateSearch);
 
-            // For each schedule entry
+            if (!scheduleEntries.Any())
+                return scheduleEntryDTOs;
+
+            // Batch load entity skills ONCE for all entries
+            List<SkillLocalizedDTO> entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
+            {
+                EntityId = viewModelRequest.EntityId,
+                LanguageCode = viewModelRequest.LanguageCode
+            });
+
+            // Extract ALL unique participant IDs across all schedule entries
+            var allParticipantIds = scheduleEntries
+                .SelectMany(entry => entry.ScheduleEntryWorkers.Select(w => w.ApplicationUserId))
+                .Concat(scheduleEntries.SelectMany(entry => entry.ScheduleEntryBots.Select(b => b.UserBotId.ToString())))
+                .Distinct()
+                .ToList();
+
+            // Batch load ALL participants in ONE query
+            List<EntityWorkerMemberDTO> allParticipants = new List<EntityWorkerMemberDTO>();
+            if (allParticipantIds.Any())
+            {
+                allParticipants = await _entityService.GetEntityMembers(
+                    viewModelRequest.EntityId,
+                    allParticipantIds,
+                    viewModelRequest.LanguageCode);
+            }
+
+            // Create a lookup dictionary for fast participant access
+            var participantLookup = allParticipants.ToDictionary(p => p.WorkerId, p => p);
+
+            // Process each schedule entry using pre-loaded data
             foreach (ScheduleEntry entry in scheduleEntries)
             {
-                scheduleEntryDTOs.Add(await GetScheduleEntryById(entry.ScheduleEntryId, viewModelRequest.LanguageCode));
+                ScheduleEntryDTO scheduleEntryDTO = _mapper.Map<ScheduleEntryDTO>(entry);
+
+                // Map shift data (already loaded via Include)
+                if (entry.Shift != null)
+                {
+                    scheduleEntryDTO.ShiftDTO = _mapper.Map<ShiftDTO>(entry.Shift);
+                }
+
+                // Process workers
+                foreach (ScheduleEntryWorkers entryWorker in entry.ScheduleEntryWorkers)
+                {
+                    if (participantLookup.TryGetValue(entryWorker.ApplicationUserId, out var worker))
+                    {
+                        string[] skills = entryWorker.SpecificSkillAssignments?.Split(',') ?? Array.Empty<string>();
+
+                        List<SkillLocalizedDTO> assignedSkills = entitySkills
+                            .Where(s => skills.Contains(s.SkillId.ToString()))
+                            .ToList();
+
+                        if (assignedSkills.Count == 0)
+                            assignedSkills = worker.SkillSet;
+
+                        scheduleEntryDTO.ScheduleParticipants.Add(new ScheduleEntryParticipantDTO
+                        {
+                            Worker = worker,
+                            AssignedSkills = assignedSkills
+                        });
+                    }
+                }
+
+                // Process bots
+                foreach (ScheduleEntryBots entryBot in entry.ScheduleEntryBots)
+                {
+                    // Find bot by parsing WorkerId to Guid and comparing with UserBotId (binary comparison)
+                    EntityWorkerMemberDTO worker = allParticipants.FirstOrDefault(p =>
+                        _generalService.ParseStringToGuid(p.WorkerId).Equals(entryBot.UserBotId));
+
+                    if (worker != null)
+                    {
+                        string[] skills = entryBot.SpecificSkillAssignments?.Split(',') ?? Array.Empty<string>();
+
+                        List<SkillLocalizedDTO> assignedSkills = entitySkills
+                            .Where(s => skills.Contains(s.SkillId.ToString()))
+                            .ToList();
+
+                        if (assignedSkills.Count == 0)
+                            assignedSkills = worker.SkillSet;
+
+                        scheduleEntryDTO.ScheduleParticipants.Add(new ScheduleEntryParticipantDTO
+                        {
+                            Worker = worker,
+                            AssignedSkills = assignedSkills
+                        });
+                    }
+                }
+
+                scheduleEntryDTOs.Add(scheduleEntryDTO);
             }
 
             return scheduleEntryDTOs;

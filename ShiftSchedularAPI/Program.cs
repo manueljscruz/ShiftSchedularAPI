@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using ShiftSchedularAPI.Configurations;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.DbConstants;
@@ -13,7 +15,33 @@ using ShiftSchedularEntity.Models;
 using System.Text;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure Serilog early in the application startup
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    .MinimumLevel.Override("System", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .Enrich.WithEnvironmentName()
+    .WriteTo.Console(
+        outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
+    .WriteTo.File(
+        path: "Logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{SourceContext}] {Message:lj} {Properties:j}{NewLine}{Exception}",
+        retainedFileCountLimit: 30)
+    .CreateLogger();
+
+try
+{
+    Log.Information("Starting ShiftSchedular API");
+
+    var builder = WebApplication.CreateBuilder(args);
+
+    // Use Serilog for logging
+    builder.Host.UseSerilog();
 
 // Define a CORS policy name
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -175,7 +203,7 @@ app.UseCors(MyAllowSpecificOrigins);
 // 3. Enable HTTPS redirection
 app.UseHttpsRedirection();
 
-using(var scope = app.Services.CreateScope())
+using (var scope = app.Services.CreateScope())
 {
     await SeedRolesAndAdmin(scope.ServiceProvider);
 }
@@ -195,9 +223,9 @@ app.MapGet("/", () => "API is running!");
 app.MapGet("/health", () => new { status = "healthy", timestamp = DateTime.UtcNow });
 
 // Run the application
+Log.Information("Application configured successfully, starting web host");
 app.Run();
-
-
+Log.Information("Application stopped");
 
 // Seed method
 static async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
@@ -233,4 +261,15 @@ static async Task SeedRolesAndAdmin(IServiceProvider serviceProvider)
         await userManager.CreateAsync(adminUser, "Admin@123");
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
+}
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.Information("Shutting down ShiftSchedular API");
+    Log.CloseAndFlush();
 }

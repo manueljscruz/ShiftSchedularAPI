@@ -8,7 +8,22 @@
       "Bash(xargs cat:*)",
       "Bash(git -C /e/Repositories/ShiftSchedularAPI log --oneline)",
       "Bash(git commit:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(dotnet user-secrets:*)",
+      "Bash(powershell -Command \"Get-Service | Where-Object {$_Name -like ''*SQL*''} | Select-Object Name, Status, DisplayName\")",
+      "Bash(Get-Service -Name *SQL*)",
+      "Bash(Select-Object Name, Status, DisplayName)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(cmd /c \"sc query | findstr /i sql\")",
+      "Bash(sqlcmd:*)",
+      "Bash(sqllocaldb info:*)",
+      "Bash(git grep:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(dotnet list:*)",
+      "Bash(dotnet add:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ]
   }
 }

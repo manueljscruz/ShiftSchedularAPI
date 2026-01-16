@@ -563,6 +563,13 @@ namespace ShiftSchedularDAL.Data
                 .WithMany(e => e.EntityShiftRotations)
                 .HasForeignKey(esr => esr.EntityId);
 
+            modelBuilder.Entity<EntityShiftRotation>()
+                .HasOne(esr => esr.Shift)
+                .WithMany()
+                .HasForeignKey(esr => esr.ShiftId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
             #endregion
 
             #region Entity User Bot Shift Assigned Configuration
