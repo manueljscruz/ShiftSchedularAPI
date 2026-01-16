@@ -21,6 +21,7 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet ef:*)",
       "Bash(dotnet list:*)",
+      "Bash(dotnet add:*)",
       "Bash(ls:*)",
       "Bash(grep:*)"
     ]
