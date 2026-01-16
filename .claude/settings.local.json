@@ -16,7 +16,13 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(cmd /c \"sc query | findstr /i sql\")",
       "Bash(sqlcmd:*)",
-      "Bash(sqllocaldb info:*)"
+      "Bash(sqllocaldb info:*)",
+      "Bash(git grep:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(dotnet list:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)"
     ]
   }
 }
