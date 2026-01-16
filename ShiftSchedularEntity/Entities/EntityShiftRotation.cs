@@ -44,7 +44,7 @@ namespace ShiftSchedularEntity.Entities
         #region Navigation Properties
 
         public virtual Entity Entity { get; set; }
-
+        public virtual Shift Shift { get; set; }
         #endregion
     }
 }
