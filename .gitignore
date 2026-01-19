@@ -405,3 +405,4 @@ tmpclaude-*
 # Serilog log files
 Logs/
 *.log
+/.claude/settings.local.json
