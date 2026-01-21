@@ -105,7 +105,8 @@ namespace ShiftSchedularAPI.Configurations
             });
             services.AddScoped<IEmailService>(provider =>
             {
-                return new EmailService(emailSettings);
+                var logger = provider.GetRequiredService<ILogger<EmailService>>();
+                return new EmailService(emailSettings, logger);
             });
 
 
