@@ -132,13 +132,27 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// 4. Configure database context using SQL Server
+// 4. Configure database context using SQL Server and Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;
+
+    // Password complexity requirements
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+    options.Password.RequiredUniqueChars = 1;
 })
 .AddEntityFrameworkStores<DataContext>()
 .AddDefaultTokenProviders();
+
+// Configure password reset token lifetime (1 hour)
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(1);
+});
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -152,9 +166,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 // 5. Add custom services (assumed implemented elsewhere)
 string logDirectory = builder.Configuration.GetValue<string>("LogDirectory");
-string baseUrl = builder.Configuration.GetValue<string>("BaseUrl");
 EmailSettings emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>();
-builder.Services.AddServicesInjections(logDirectory, emailSettings, baseUrl);
+builder.Services.AddServicesInjections(logDirectory, emailSettings);
 builder.Services.AddCustomRateLimiting(builder.Configuration);
 
 // 6. Configure JWT Authentication and Authorization

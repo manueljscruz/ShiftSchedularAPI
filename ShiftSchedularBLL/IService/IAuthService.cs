@@ -9,5 +9,7 @@ namespace ShiftSchedularBLL.IService
     {
         Task<BaseResponse<LoginResponseDTO>> Login(LoginDTO loginDTO);
         Task<BaseResponse<TokenModelDTO>> RefreshToken(TokenModelDTO tokenModelDTO);
+        Task<BaseResponse<bool>> ForgotPassword(ForgotPasswordRequestDTO request, string originRequest);
+        Task<BaseResponse<bool>> ResetPassword(ResetPasswordRequestDTO request);
     }
 }

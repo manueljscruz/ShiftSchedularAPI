@@ -8,43 +8,53 @@ namespace ShiftSchedularIL.Services
 {
     public class EmailService : IEmailService
     {
-        private readonly EmailSettings _emailSettings = new EmailSettings
-        {
-            SmtpServer = "pro.eu.turbo-smtp.com",
-            Port = 587,
-            SenderEmail = "manueljscruz93@gmail.com",
-            SenderUser = "manueljscruz93@gmail.com",
-            SenderPassword = "Hi8Fb8zX"
-        };
-        private readonly string _baseUrl = "http://localhost:4200/";
+        private readonly EmailSettings _emailSettings;
 
-        //public EmailService(EmailSettings emailSettings, string baseUrl)
-        //{
-        //    _emailSettings = emailSettings;
-        //    _baseUrl = baseUrl;
-        //}
-        public EmailService()
+        public EmailService(EmailSettings emailSettings)
         {
-            
+            _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
         }
 
-        public async Task SendConfirmEmail(Worker worker)
-        {
-            string body = EmailMessages.POST_REGISTRATION_EMAIL;
-            body = body.Replace("[Name]", worker.WorkerName)
-                       .Replace("[Url]", _baseUrl)
-                       .Replace("[WorkerId]", worker.WorkerId);
+        #region Send Confirm Email
 
-            await SendEmail(new List<string> { worker.Email }, new List<string>(), "", body);
+        public async Task SendConfirmEmail(string subject, ApplicationUser user, string strLink)
+        {
+            string body = EmailMessages.CONFIRM_EMAIL_EMAIL;
+
+            body = body.Replace("[UserName]", user.DisplayName)
+                       .Replace("[ConfirmationLink]", strLink)
+                       .Replace("[Year]", DateTime.UtcNow.Year.ToString());
+
+            await SendEmail(new List<string> { user.Email }, new List<string>(), subject, body);
         }
+
+        #endregion
+
+        #region Send Forgot Password Email
+
+        public async Task SendForgotPasswordEmail(string subject, ApplicationUser user, string strLink)
+        {
+            string body = EmailMessages.POST_FORGOT_PASSWORD_EMAIL;
+
+            body = body.Replace("[UserName]", user.DisplayName)
+                .Replace("[ResetPasswordLink]", strLink)
+                .Replace("[Year]", DateTime.UtcNow.Year.ToString());
+
+
+            await SendEmail(new List<string> { user.Email }, new List<string>(), subject, body);
+
+        }
+
+        #endregion
+
+        #region Send Email
 
         private async Task SendEmail(List<string> to, List<string> cc, string subject, string body)
         {
             try
             {
                 var email = new MimeMessage();
-                email.From.Add(new MailboxAddress("Shift Schedular - Support", _emailSettings.SenderEmail));
-                email.Subject = "Confirm Email Address";
+                email.From.Add(new MailboxAddress("Shift Scheduler - Support", _emailSettings.SenderEmail));
                 foreach (string strEmail in to)
                     email.To.Add(MailboxAddress.Parse(strEmail));
                 foreach (string strEmail in cc)
@@ -63,7 +73,8 @@ namespace ShiftSchedularIL.Services
             {
                 string strError = ex.Message;
             }
-            
         }
+
+        #endregion
     }
 }

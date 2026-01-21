@@ -14,6 +14,7 @@ namespace ShiftSchedularBLL.Service
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
         private readonly ICryptographyService _cryptographyService;
         private readonly IGeneralService _generalService;
         private readonly IMapper _mapper;
@@ -21,9 +22,10 @@ namespace ShiftSchedularBLL.Service
 
         #region Constructor
 
-        public UserService(UserManager<ApplicationUser> userManager, ICryptographyService cryptographyService, IGeneralService generalService, IMapper mapper, IUnitOfWork unitOfWork)
+        public UserService(UserManager<ApplicationUser> userManager, IEmailService emailService, ICryptographyService cryptographyService, IGeneralService generalService, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
+            _emailService = emailService;
             _cryptographyService = cryptographyService;
             _generalService = generalService;
             _mapper = mapper;
@@ -41,7 +43,7 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="newUserDTO"></param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> CreateUser(NewUserDTO newUserDTO)
+        public async Task<BaseResponse<bool>> CreateUser(NewUserDTO newUserDTO, string originLink)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
 
@@ -55,9 +57,9 @@ namespace ShiftSchedularBLL.Service
             ApplicationUser newUser = _mapper.Map<ApplicationUser>(newUserDTO);
             newUser.UserName = newUserDTO.Email.Split("@")[0];
 
-
-
             IdentityResult result = await _userManager.CreateAsync(newUser, newUserDTO.Password);
+            
+
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(newUser, "User");

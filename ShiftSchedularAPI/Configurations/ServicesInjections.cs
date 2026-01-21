@@ -15,10 +15,9 @@ namespace ShiftSchedularAPI.Configurations
     public static class ServicesInjections
     {
         public static void AddServicesInjections(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             string logDirectory,
-            EmailSettings emailSettings,
-            string baseUrl)
+            EmailSettings emailSettings)
         {
             #region Repositories
 
@@ -104,12 +103,10 @@ namespace ShiftSchedularAPI.Configurations
                 var logger = provider.GetRequiredService<ILogger<LoggerService>>();
                 return new LoggerService(logger, logDirectory);
             });
-            services.AddScoped<IEmailService, EmailService>();
-            //services.AddScoped<IEmailService>(provider =>
-            //{
-            //    var emailService = provider.GetRequiredService<IEmailService>();
-            //    return new EmailService(emailSettings,baseUrl);
-            //});
+            services.AddScoped<IEmailService>(provider =>
+            {
+                return new EmailService(emailSettings);
+            });
 
 
             #endregion
