@@ -34,7 +34,22 @@ namespace ShiftSchedularAPI.Configurations
                         });
                 });
 
-                // 2. Refresh Token - Moderate (30 per hour)
+                // 2. Forgot Password - Strict to prevent abuse
+                // 3 attempts in 15 minutes per IP address
+                options.AddPolicy("forgot-password", context =>
+                {
+                    var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: ipAddress,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            Window = TimeSpan.FromMinutes(settings.ForgotPassword.WindowMinutes),
+                            PermitLimit = settings.ForgotPassword.PermitLimit,
+                            QueueLimit = 0
+                        });
+                });
+
+                // 3. Refresh Token - Moderate (30 per hour)
                 options.AddPolicy("refresh", context =>
                 {
                     // Rate limit by user ID from token or IP as fallback

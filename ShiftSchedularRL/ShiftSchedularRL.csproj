@@ -27,6 +27,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>WorkerRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\LogMessages\LogMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>LogMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\MemberManagement\EntityWorkerRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -75,6 +80,10 @@
     <EmbeddedResource Update="Resources\Home\WorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>WorkerRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\LogMessages\LogMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>LogMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\MemberManagement\EntityWorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

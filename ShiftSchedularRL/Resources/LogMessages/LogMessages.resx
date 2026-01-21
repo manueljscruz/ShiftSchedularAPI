@@ -117,70 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ConfirmEmailEmailSubject" xml:space="preserve">
-    <value>Shift Scheduler - Confirm Email</value>
-  </data>
-  <data name="ForgotPasswordEmailSubject" xml:space="preserve">
-    <value>Shift Scheduler - Forgot Password</value>
-  </data>
-  <data name="ForgotPasswordMessage" xml:space="preserve">
-    <value>If the email exists, a password reset link has been sent to the inputted email.</value>
-  </data>
-  <data name="InvalidTokens" xml:space="preserve">
-    <value>Invalid access token/refresh token</value>
-  </data>
-  <data name="PasswordResetSuccess" xml:space="preserve">
-    <value>Password was reset successfuly.</value>
-  </data>
-  <data name="TokensAreEmpty" xml:space="preserve">
-    <value>Tokens are required.</value>
-  </data>
-  <data name="WorkerEmailEmptyError" xml:space="preserve">
-    <value>Email cannot be empty.</value>
-  </data>
-  <data name="WorkerEmailExceedsLengthError" xml:space="preserve">
-    <value>Email cannot exceed 255 characters</value>
-  </data>
-  <data name="WorkerEmailInUseError" xml:space="preserve">
-    <value>This email is already in use.</value>
-  </data>
-  <data name="WorkerExceptionError" xml:space="preserve">
-    <value>An unexpected error has occured, please try again later.</value>
-  </data>
-  <data name="WorkerGenderUnexpectedValueError" xml:space="preserve">
-    <value>Selected gender value is invalid</value>
-  </data>
-  <data name="WorkerIdentifierIsEmpty" xml:space="preserve">
-    <value>Worker identifier is required.</value>
-  </data>
-  <data name="WorkerLoginEmailNotFoundError" xml:space="preserve">
-    <value>Email not found or invalid.</value>
-  </data>
-  <data name="WorkerLoginPasswordIncorrect" xml:space="preserve">
-    <value>Incorrect password</value>
-  </data>
-  <data name="WorkerNameExceedsLengthError" xml:space="preserve">
-    <value>Name cannot exceed 255 characters</value>
-  </data>
-  <data name="WorkerPasswordEmptyError" xml:space="preserve">
-    <value>Password cannot be empty.</value>
-  </data>
-  <data name="WorkerRegistrationEmailInvalidError" xml:space="preserve">
-    <value>Email is in invalid format.</value>
-  </data>
-  <data name="WorkerRegistrationNameEmptyError" xml:space="preserve">
-    <value>Name is required.</value>
-  </data>
-  <data name="WorkerRegistrationPasswordEmptyError" xml:space="preserve">
-    <value>Password cannot be empty.</value>
-  </data>
-  <data name="WorkerRegistrationPasswordExceedsLengthError" xml:space="preserve">
-    <value>Password cannot exceed 128 characters</value>
-  </data>
-  <data name="WorkerRegistrationSuccess" xml:space="preserve">
-    <value>User registration was successful.</value>
-  </data>
-  <data name="WorkerUpdateSuccess" xml:space="preserve">
-    <value>User was updated successfuly.</value>
+  <data name="BadEmailForgotPassword" xml:space="preserve">
+    <value>Attempted Forgot Password request with email {0}.</value>
   </data>
 </root>

@@ -6,7 +6,7 @@ namespace ShiftSchedularBLL.IService
 {
     public interface IUserService
     {
-        Task<BaseResponse<bool>> CreateUser(NewUserDTO newUser);
+        Task<BaseResponse<bool>> CreateUser(NewUserDTO newUser, string originLink);
         Task<BaseResponse<bool>> UpdateUser(UserDTO workerDTO);
         Task<BaseResponse<bool>> ConfirmEmail(string email, string token);
          

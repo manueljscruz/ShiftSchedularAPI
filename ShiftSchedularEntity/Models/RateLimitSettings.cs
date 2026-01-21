@@ -4,6 +4,7 @@
     {
         public LoginRateLimitSettings Login { get; set; } = new();
         public RegistrationRateLimitSettings Registration { get; set; } = new();
+        public ForgotPasswordRateLimitSettings ForgotPassword { get; set; } = new();
         public ApiRateLimitSettings Api { get; set; } = new();
     }
 
@@ -17,6 +18,12 @@
     {
         public int TokenLimit { get; set; } = 10;
         public int ReplenishmentHours { get; set; } = 1;
+    }
+
+    public class ForgotPasswordRateLimitSettings
+    {
+        public int PermitLimit { get; set; } = 3;
+        public int WindowMinutes { get; set; } = 15;
     }
 
     public class ApiRateLimitSettings

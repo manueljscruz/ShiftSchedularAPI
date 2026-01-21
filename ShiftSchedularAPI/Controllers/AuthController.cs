@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
@@ -15,10 +17,12 @@ namespace ShiftSchedularAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _userService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IAuthService userService)
+        public AuthController(IAuthService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
 
         #region Login
@@ -72,6 +76,60 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Forgot Password
+
+        [HttpPost("forgot-password")]
+        [EnableRateLimiting("forgot-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDTO request)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if (string.IsNullOrEmpty(request.Email))
+                return BadRequest(WorkerRelatedMessages.WorkerEmailEmptyError);
+
+            // Use configured frontend URL for reset link generation
+            var frontendUrl = _configuration.GetValue<string>("FrontendUrl");
+            if (string.IsNullOrEmpty(frontendUrl))
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = "Frontend URL is not configured." });
+            }
+
+            response = await _userService.ForgotPassword(request, frontendUrl);
+
+            // Response will always be OK and message will also be the same
+            // Never reveal if its an existing email or not
+            return Ok(response);
+        }
+
+        #endregion
+
+        #region Reset Password
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if (request == null)
+                return BadRequest();
+
+            response = await _userService.ResetPassword(request);
+
+            if (response.Success)
+                return Ok(response);
+
+            return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
+
+        #endregion
+
         #region Refresh Token
 
         /// <summary>
@@ -117,6 +175,8 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Logout
+
         [Authorize]
         [EnableRateLimiting("logout")]
         [HttpPost("logout")]
@@ -131,5 +191,7 @@ namespace ShiftSchedularAPI.Controllers
 
             return Ok(response);
         }
+
+        #endregion
     }
 }

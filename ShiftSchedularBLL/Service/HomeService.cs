@@ -54,8 +54,8 @@ namespace ShiftSchedularBLL.Service
         {
             Worker worker = await _unitOfWork.WorkerRepository.GetByEmail(email);
 
-            if (worker != null)
-                await _emailService.SendConfirmEmail(worker);
+            //if (worker != null)
+            //    await _emailService.SendConfirmEmail(worker);
         }
 
         #endregion

@@ -61,11 +61,47 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shift Scheduler - Confirm Email.
+        /// </summary>
+        public static string ConfirmEmailEmailSubject {
+            get {
+                return ResourceManager.GetString("ConfirmEmailEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shift Scheduler - Forgot Password.
+        /// </summary>
+        public static string ForgotPasswordEmailSubject {
+            get {
+                return ResourceManager.GetString("ForgotPasswordEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If the email exists, a password reset link has been sent to the inputted email..
+        /// </summary>
+        public static string ForgotPasswordMessage {
+            get {
+                return ResourceManager.GetString("ForgotPasswordMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid access token/refresh token.
         /// </summary>
         public static string InvalidTokens {
             get {
                 return ResourceManager.GetString("InvalidTokens", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password was reset successfuly..
+        /// </summary>
+        public static string PasswordResetSuccess {
+            get {
+                return ResourceManager.GetString("PasswordResetSuccess", resourceCulture);
             }
         }
         

@@ -8,7 +8,10 @@ using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
+using ShiftSchedularIL.IServices;
 using ShiftSchedularRL.Resources.Home;
+using ShiftSchedularRL.Resources.LogMessages;
+using ShiftSchedularRL.Resources.Shared;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -17,14 +20,16 @@ namespace ShiftSchedularBLL.Service
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
 
-        public AuthService(UserManager<ApplicationUser> userManager, IMapper mapper, IConfiguration configuration, ITokenService tokenService, ILogger<AuthService> logger)
+        public AuthService(UserManager<ApplicationUser> userManager, IEmailService emailService, IMapper mapper, IConfiguration configuration, ITokenService tokenService, ILogger<AuthService> logger)
         {
             _userManager = userManager;
+            _emailService = emailService;
             _mapper = mapper;
             _configuration = configuration;
             _tokenService = tokenService;
@@ -152,10 +157,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        public Task<BaseResponse<bool>> UpdateUser()
-        {
-            throw new NotImplementedException();
-        }
+        #region Refresh Token
 
         public async Task<BaseResponse<TokenModelDTO>> RefreshToken(TokenModelDTO tokenModelDTO)
         {
@@ -201,6 +203,71 @@ namespace ShiftSchedularBLL.Service
             response.Success = true;
             return response;
         }
+
+        #endregion
+
+        #region Forgot Password
+
+        public async Task<BaseResponse<bool>> ForgotPassword(ForgotPasswordRequestDTO request, string originRequest)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = WorkerRelatedMessages.ForgotPasswordMessage;
+            response.Success = true;
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            // No email was found in the DB
+            if(user == null)
+            {
+                _logger.LogInformation(string.Format(LogMessages.BadEmailForgotPassword, request.Email));
+                return response;
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            string resetLink = $"{originRequest}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email)}";
+
+            await _emailService.SendForgotPasswordEmail(WorkerRelatedMessages.ForgotPasswordEmailSubject, user, resetLink);
+
+            return response;
+        }
+
+        #endregion
+
+        #region Reset Password
+
+        public async Task<BaseResponse<bool>> ResetPassword(ResetPasswordRequestDTO request)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            ApplicationUser user = await _userManager.FindByEmailAsync(request.Email);
+
+            if(user == null)
+            {
+                _logger.LogInformation(string.Format(LogMessages.BadEmailForgotPassword, request.Email));
+                response.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
+                return response;
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+
+            if (result.Succeeded)
+            {
+                response.Success = true;
+                response.Message = WorkerRelatedMessages.PasswordResetSuccess;
+            }
+            else
+            {
+                response.Message = string.Join("; ", result.Errors.Select(e => e.Description));
+                _logger.LogWarning("Password reset failed for email: {Email}. Errors: {Errors}", request.Email, response.Message);
+            }
+            
+
+            return response;
+        }
+
+        #endregion
 
     }
 }
