@@ -1,4 +1,5 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
 using MimeKit;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -9,10 +10,11 @@ namespace ShiftSchedularIL.Services
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _emailSettings;
-
-        public EmailService(EmailSettings emailSettings)
+        private readonly ILogger<EmailService> _logger;
+        public EmailService(EmailSettings emailSettings, ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings ?? throw new ArgumentNullException(nameof(emailSettings));
+            _logger = logger;
         }
 
         #region Send Confirm Email
@@ -55,10 +57,13 @@ namespace ShiftSchedularIL.Services
             {
                 var email = new MimeMessage();
                 email.From.Add(new MailboxAddress("Shift Scheduler - Support", _emailSettings.SenderEmail));
+
                 foreach (string strEmail in to)
                     email.To.Add(MailboxAddress.Parse(strEmail));
+
                 foreach (string strEmail in cc)
                     email.Cc.Add(MailboxAddress.Parse(strEmail));
+
                 email.Subject = subject;
 
                 email.Body = new TextPart("html") { Text = body };
@@ -68,9 +73,12 @@ namespace ShiftSchedularIL.Services
                 await smtp.AuthenticateAsync(_emailSettings.SenderUser, _emailSettings.SenderPassword);
                 await smtp.SendAsync(email);
                 await smtp.DisconnectAsync(true);
+
+                _logger.LogInformation("Email sent successfully to {to}", string.Join(", ", to));
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to send email to {to}", string.Join(", ", to));
                 string strError = ex.Message;
             }
         }

@@ -225,7 +225,7 @@ namespace ShiftSchedularBLL.Service
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            string resetLink = $"{originRequest}/auth/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email)}";
+            string resetLink = $"{originRequest}/reset-password?token={Uri.EscapeDataString(token)}&email={Uri.EscapeDataString(user.Email)}";
 
             await _emailService.SendForgotPasswordEmail(WorkerRelatedMessages.ForgotPasswordEmailSubject, user, resetLink);
 

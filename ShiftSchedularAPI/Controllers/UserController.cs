@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Configuration;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
@@ -13,12 +14,14 @@ namespace ShiftSchedularAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
         #region Constructor
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IConfiguration configuration)
         {
             _userService = userService;
+            _configuration = configuration;
         }
 
         #endregion
@@ -44,7 +47,14 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest(ModelState); // Returns validation errors to the client
             }
 
-            BaseResponse<bool> result = await _userService.CreateUser(newUserDTO);
+            var frontendUrl = _configuration.GetValue<string>("FrontendUrl");
+            if (string.IsNullOrEmpty(frontendUrl))
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = "Frontend URL is not configured." });
+            }
+
+            BaseResponse<bool> result = await _userService.CreateUser(newUserDTO, frontendUrl);
             if(!result.Success)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, result.Message);
