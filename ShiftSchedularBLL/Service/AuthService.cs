@@ -105,10 +105,14 @@ namespace ShiftSchedularBLL.Service
                     if (!emailConfirmed)
                     {
                         loginResponseDTO.Message = WorkerRelatedMessages.EmailNotConfirmed;
+                        loginResponseDTO.Success = true;
+                        loginResponseDTO.Result = new LoginResponseDTO
+                        {
+                            User = _mapper.Map<UserDTO>(user),
+                            EmailConfirmed = false
+                        };
                         return loginResponseDTO;
                     }
-
-                    loginResponseDTO.Result.EmailConfirmed = true;
 
                     _logger.LogInformation("Successful login for user: {UserId} ({Email})", user.Id, loginDTO.Email);
                     var userRoles = await _userManager.GetRolesAsync(user);
@@ -138,7 +142,8 @@ namespace ShiftSchedularBLL.Service
                     loginResponseDTO.Result = new LoginResponseDTO
                     {
                         User = _mapper.Map<UserDTO>(user),
-                        TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo)
+                        TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo),
+                        EmailConfirmed = true
                     };
                     loginResponseDTO.Success = true;
                 }

@@ -51,6 +51,15 @@ namespace ShiftSchedularAPI.Controllers
                 return Unauthorized();
             }
 
+            if(response.Success && response.Result.EmailConfirmed == false)
+            {
+                return Ok(new LoginResponseDTO
+                {
+                    User = response.Result.User,
+                    EmailConfirmed = response.Result.EmailConfirmed
+                });
+            }
+
             // Write cookies here
             Response.Cookies.Append("access_token", response.Result.TokenResponseDTO.Token, new CookieOptions
             {
@@ -70,7 +79,8 @@ namespace ShiftSchedularAPI.Controllers
 
             return Ok(new LoginResponseDTO
             {
-                User = response.Result.User
+                User = response.Result.User,
+                EmailConfirmed = response.Result.EmailConfirmed
             });
         }
 
