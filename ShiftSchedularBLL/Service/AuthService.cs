@@ -97,8 +97,19 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 bool validLogin = await _userManager.CheckPasswordAsync(user, loginDTO.Password);
+                
+
                 if (validLogin)
                 {
+                    bool emailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+                    if (!emailConfirmed)
+                    {
+                        loginResponseDTO.Message = WorkerRelatedMessages.EmailNotConfirmed;
+                        return loginResponseDTO;
+                    }
+
+                    loginResponseDTO.Result.EmailConfirmed = true;
+
                     _logger.LogInformation("Successful login for user: {UserId} ({Email})", user.Id, loginDTO.Email);
                     var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -148,12 +159,43 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region Confirm Email
+        #region Resend Confirmation Email
 
-        public Task<BaseResponse<bool>> ConfirmEmail(string email, string token)
+
+        public async Task<BaseResponse<bool>> ResendConfirmationEmail(ResendConfirmationEmailDTO request, string frontendUrl)
         {
-            throw new NotImplementedException();
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            // Prevent email enumeration - return generic success message if user not found or already confirmed
+            if(user == null)
+            {
+                response.Success = true;
+                response.Message = WorkerRelatedMessages.EmailConfirmationProcessed;
+                return response;
+            }
+
+            bool isEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
+            if (isEmailConfirmed)
+            {
+                response.Success = true;
+                response.Message = WorkerRelatedMessages.EmailConfirmationProcessed;
+                return response;
+            }
+
+            var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            string resetLink = $"{frontendUrl}/confirm-email?token={Uri.EscapeDataString(confirmEmailToken)}&email={Uri.EscapeDataString(user.Email)}";
+            await _emailService.SendConfirmEmail(WorkerRelatedMessages.ConfirmEmailEmailSubject, user, resetLink);
+
+            response.Success = true;
+            response.Message = WorkerRelatedMessages.EmailConfirmationSent;
+
+            return response;
         }
+
 
         #endregion
 

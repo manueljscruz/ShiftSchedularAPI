@@ -63,7 +63,7 @@
                                         <div style=""border-top: 1px solid #e9ecef; margin: 30px 0;""></div>
 
                                         <p style=""margin: 0; color: #545E75; font-size: 14px; line-height: 1.6;"">
-                                            This confirmation link will expire in <strong>24 hours</strong>. If you didn't create an account with Shift Scheduler, you can safely ignore this email.
+                                            This confirmation link will expire in <strong>1 hour</strong>. If you didn't create an account with Shift Scheduler, you can safely ignore this email.
                                         </p>
                                     </td>
                                 </tr>

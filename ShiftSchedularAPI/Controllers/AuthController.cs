@@ -16,12 +16,12 @@ namespace ShiftSchedularAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _userService;
+        private readonly IAuthService _authService;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IAuthService userService, IConfiguration configuration)
+        public AuthController(IAuthService authService, IConfiguration configuration)
         {
-            _userService = userService;
+            _authService = authService;
             _configuration = configuration;
         }
 
@@ -44,7 +44,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            BaseResponse<LoginResponseDTO> response = await _userService.Login(loginDTO);
+            BaseResponse<LoginResponseDTO> response = await _authService.Login(loginDTO);
 
             if (!response.Success)
             {
@@ -98,7 +98,7 @@ namespace ShiftSchedularAPI.Controllers
                     new { message = "Frontend URL is not configured." });
             }
 
-            response = await _userService.ForgotPassword(request, frontendUrl);
+            response = await _authService.ForgotPassword(request, frontendUrl);
 
             // Response will always be OK and message will also be the same
             // Never reveal if its an existing email or not
@@ -120,12 +120,44 @@ namespace ShiftSchedularAPI.Controllers
             if (request == null)
                 return BadRequest();
 
-            response = await _userService.ResetPassword(request);
+            response = await _authService.ResetPassword(request);
 
             if (response.Success)
                 return Ok(response);
 
             return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+        }
+
+        #endregion
+
+        #region Resend Confirmation Email
+
+        [HttpPost("resend-confirmation-email")]
+        [EnableRateLimiting("resend-confirmation")] // 3 attempts per 10 minutes
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDTO request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string frontendUrl = _configuration.GetValue<string>("FrontendUrl");
+            if (string.IsNullOrEmpty(frontendUrl))
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = "Frontend URL is not configured." });
+            }
+
+            BaseResponse<bool> response = await _authService.ResendConfirmationEmail(request, frontendUrl);
+
+            if (response.Success)
+                return Ok(response);
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
 
         #endregion
@@ -148,7 +180,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest(WorkerRelatedMessages.TokensAreEmpty);
             }
 
-            BaseResponse<TokenModelDTO> response = await _userService.RefreshToken(tokenModelDTO);
+            BaseResponse<TokenModelDTO> response = await _authService.RefreshToken(tokenModelDTO);
             if (!response.Success)
             {
                 return BadRequest(response.Message);
