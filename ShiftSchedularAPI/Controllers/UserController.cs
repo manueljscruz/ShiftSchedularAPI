@@ -66,6 +66,28 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Confirm Email
+
+        [HttpPost("confirm-email")]
+        [EnableRateLimiting("auth")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ConfirmEmail([FromBody]ConfirmEmailRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            BaseResponse<bool> result = await _userService.ConfirmEmail(request);
+
+            if (result.Success)
+                return Ok(result);
+            else
+                return BadRequest(result);
+
+        }
+
+        #endregion
+
         #region Update User
 
         [Authorize]
@@ -79,7 +101,14 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            BaseResponse<bool> result = await _userService.UpdateUser(userDTO);
+            var frontendUrl = _configuration.GetValue<string>("FrontendUrl");
+            if (string.IsNullOrEmpty(frontendUrl))
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { message = "Frontend URL is not configured." });
+            }
+
+            BaseResponse<bool> result = await _userService.UpdateUser(userDTO, frontendUrl);
 
             if (!result.Success)
             {

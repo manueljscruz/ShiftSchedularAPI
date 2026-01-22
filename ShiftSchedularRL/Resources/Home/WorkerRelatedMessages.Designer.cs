@@ -70,6 +70,42 @@ namespace ShiftSchedularRL.Resources.Home {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This email has already been confirmed..
+        /// </summary>
+        public static string EmailAlreadyConfirmed {
+            get {
+                return ResourceManager.GetString("EmailAlreadyConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An email confirmation has been sent..
+        /// </summary>
+        public static string EmailConfirmationSent {
+            get {
+                return ResourceManager.GetString("EmailConfirmationSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email has been successfuly confirmed.
+        /// </summary>
+        public static string EmailConfirmed {
+            get {
+                return ResourceManager.GetString("EmailConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User needs to confirm his email before proceeding..
+        /// </summary>
+        public static string EmailNotConfirmed {
+            get {
+                return ResourceManager.GetString("EmailNotConfirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shift Scheduler - Forgot Password.
         /// </summary>
         public static string ForgotPasswordEmailSubject {
@@ -255,6 +291,24 @@ namespace ShiftSchedularRL.Resources.Home {
         public static string WorkerUpdateSuccess {
             get {
                 return ResourceManager.GetString("WorkerUpdateSuccess", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to User was updated successfully. A confirmation email has been sent to your new email address..
+        /// </summary>
+        public static string WorkerUpdateSuccessEmailSent {
+            get {
+                return ResourceManager.GetString("WorkerUpdateSuccessEmailSent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to If this email exists and is unconfirmed, a confirmation has been processed..
+        /// </summary>
+        public static string EmailConfirmationProcessed {
+            get {
+                return ResourceManager.GetString("EmailConfirmationProcessed", resourceCulture);
             }
         }
     }

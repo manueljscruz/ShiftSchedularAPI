@@ -85,6 +85,23 @@ namespace ShiftSchedularAPI.Configurations
                         });
                 });
 
+                options.AddPolicy("resend-confirmation", context =>
+                {
+                    // Rate limit by user ID from token or IP as fallback
+                    var userId = context.User.Identity?.Name
+                        ?? context.Connection.RemoteIpAddress?.ToString()
+                        ?? "unknown";
+
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        userId,
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 3,
+                            Window = TimeSpan.FromMinutes(10),
+                            QueueLimit = 0
+                        });
+                });
+
                 // 4. GENERAL API - Default for most endpoints
                 options.AddPolicy("general", context =>
                 {

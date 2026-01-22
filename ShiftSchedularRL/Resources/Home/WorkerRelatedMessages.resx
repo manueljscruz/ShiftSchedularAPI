@@ -120,6 +120,18 @@
   <data name="ConfirmEmailEmailSubject" xml:space="preserve">
     <value>Shift Scheduler - Confirm Email</value>
   </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Email is already confirmed.</value>
+  </data>
+  <data name="EmailConfirmationSent" xml:space="preserve">
+    <value>An email confirmation has been sent.</value>
+  </data>
+  <data name="EmailConfirmed" xml:space="preserve">
+    <value>Email has been successfuly confirmed</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>User needs to confirm his email before proceeding.</value>
+  </data>
   <data name="ForgotPasswordEmailSubject" xml:space="preserve">
     <value>Shift Scheduler - Forgot Password</value>
   </data>
@@ -182,5 +194,11 @@
   </data>
   <data name="WorkerUpdateSuccess" xml:space="preserve">
     <value>User was updated successfuly.</value>
+  </data>
+  <data name="WorkerUpdateSuccessEmailSent" xml:space="preserve">
+    <value>User was updated successfully. A confirmation email has been sent to your new email address.</value>
+  </data>
+  <data name="EmailConfirmationProcessed" xml:space="preserve">
+    <value>If this email exists and is unconfirmed, a confirmation has been processed.</value>
   </data>
 </root>
