@@ -50,6 +50,10 @@ namespace ShiftSchedularIL.Services
             return workerGUID.Substring(workerGUID.Length - BOT_GUID_SUBTRACTION_LENGTH);
         }
 
+        #endregion
+
+        #region Parse String to Guid
+
         public Guid ParseStringToGuid(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
@@ -85,26 +89,6 @@ namespace ShiftSchedularIL.Services
             {
                 return Guid.Empty; // or throw if you prefer strict behavior
             }
-        }
-
-
-        public Guid _ParseStringToGuid(string input)
-        {
-            string guidString = HttpUtility.UrlDecode(input);
-            Guid guid = Guid.Empty;
-
-            if (guidString == string.Empty)
-                return guid;
-
-            bool isValidGuid = Guid.TryParse(guidString, out guid);
-            if (isValidGuid)
-                return guid;
-            else
-            {
-                byte[] bytes = Convert.FromBase64String(guidString);
-                guid = new Guid(bytes);
-            }
-            return guid;
         }
 
         #endregion

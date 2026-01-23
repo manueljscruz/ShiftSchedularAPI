@@ -34,14 +34,14 @@
                 EW.WorksWeekends,
                 EW.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds
-            FROM [ShiftSchedular].[dbo].[EntityWorkers] EW
-            LEFT JOIN [ShiftSchedular].[dbo].[AspNetUsers] W 
+            FROM [dbo].[EntityWorkers] EW
+            LEFT JOIN [dbo].[AspNetUsers] W 
                 ON W.Id = EW.ApplicationUserId
             LEFT JOIN (
                 SELECT 
                     EWS.ApplicationUserId,
                     STRING_AGG(CAST(EWS.SkillId AS VARCHAR), ',') AS SkillIds
-                FROM [ShiftSchedular].[dbo].[EntityWorkerSkills] EWS
+                FROM [dbo].[EntityWorkerSkills] EWS
                 GROUP BY EWS.ApplicationUserId
             ) AS SkillAgg 
                 ON SkillAgg.ApplicationUserId = EW.ApplicationUserId
@@ -62,14 +62,14 @@
                 EUB.WorksWeekends,
                 EUB.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds
-            FROM [ShiftSchedular].[dbo].[EntityUserBots] EUB
-            LEFT JOIN [ShiftSchedular].[dbo].[UserBots] UB 
+            FROM [dbo].[EntityUserBots] EUB
+            LEFT JOIN [dbo].[UserBots] UB 
                 ON UB.UserBotId = EUB.UserBotId
             LEFT JOIN (
                 SELECT 
                     EUBS.UserBotId,
                     STRING_AGG(CAST(EUBS.SkillId AS VARCHAR), ',') AS SkillIds
-                FROM [ShiftSchedular].[dbo].[EntityUserBotSkills] EUBS
+                FROM [dbo].[EntityUserBotSkills] EUBS
                 GROUP BY EUBS.UserBotId
             ) AS SkillAgg 
                 ON SkillAgg.UserBotId = EUB.UserBotId
@@ -85,7 +85,7 @@
             SELECT 
                 COUNT(*) AS WorkerCount
             FROM 
-                [ShiftSchedular].[dbo].[EntityWorkers]
+                [dbo].[EntityWorkers]
             WHERE EntityId = @EntityId
             GROUP BY 
                 EntityId
@@ -95,7 +95,7 @@
             SELECT
                 COUNT(*) As BotsCount
             FROM
-                [ShiftSchedular].[dbo].[EntityUserBots]
+                [dbo].[EntityUserBots]
             WHERE EntityId = @EntityId
             GROUP BY
                 EntityId
