@@ -52,14 +52,22 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entity-rules-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityRulesViewModel(BaseViewModelRequest viewModelRequest)
+        public async Task<IActionResult> GetEntityRulesViewModel([FromBody] BaseViewModelRequest viewModelRequest)
         {
             if(viewModelRequest == null)
             {
-                return BadRequest();
+                return BadRequest(new { success = false, message = "Request body is null or could not be parsed" });
             }
 
-            // viewModelRequest.EntityId = HttpUtility.UrlDecode(viewModelRequest.EntityId);
+            if(viewModelRequest.EntityId == Guid.Empty)
+            {
+                return BadRequest(new { success = false, message = "EntityId is required" });
+            }
+
+            if(string.IsNullOrEmpty(viewModelRequest.WorkerId))
+            {
+                return BadRequest(new { success = false, message = "WorkerId is required" });
+            }
 
             var viewModel = await _entityRuleService.GetEntityRuleViewModel(viewModelRequest);
             return Ok(viewModel);
