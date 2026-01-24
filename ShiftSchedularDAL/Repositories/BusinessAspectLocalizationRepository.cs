@@ -46,7 +46,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (businessAspectId != 0)
             {
-                return _businessAspectDbSet.Where(i => i.BusinessAspectId.Equals(businessAspectId));
+                return _businessAspectDbSet.Where(i => i.BusinessAspectId.Equals(businessAspectId)).ToList();
             }
             else return null;
         }
@@ -61,7 +61,7 @@ namespace ShiftSchedularDAL.Repositories
             {
                 Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);
                 if (localization != null)
-                    return _businessAspectDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId));
+                    return await _businessAspectDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId)).ToListAsync();
             }
             else
                 return null;

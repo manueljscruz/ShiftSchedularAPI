@@ -27,7 +27,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (ruleTypeId != 0)
             {
-                return _rulesTypeLocalizationDbSet.Where(i => i.RuleTypeId.Equals(ruleTypeId));
+                return _rulesTypeLocalizationDbSet.Where(i => i.RuleTypeId.Equals(ruleTypeId)).ToList();
             }
             else return null;
         }
@@ -44,14 +44,14 @@ namespace ShiftSchedularDAL.Repositories
                 {
                     Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);
                     if (localization != null)
-                        return _rulesTypeLocalizationDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId));
+                        return await _rulesTypeLocalizationDbSet.Where(i => i.LocalizationId.Equals(localization.LocalizationId)).ToListAsync();
                 }
                 catch (Exception ex)
                 {
                     string strError = ex.Message;
                     return null;
                 }
-                
+
             }
             else
                 return null;
