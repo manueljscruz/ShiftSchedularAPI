@@ -67,6 +67,12 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
                 .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription));
 
+            CreateMap<Entity, EntityPublicProfileDTO>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
+                .ForMember(dest => dest.EntityTypeLocalized, opt => opt.MapFrom(src => src.EntityType.EntityTypeLocalizations.First().EntityTypeDisplayValue))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.EntityDescription));
+
             CreateMap<EntityWorkerMemberModel, EntityWorkerMemberDTO>()
                 .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.WorkerId))
                 .ForMember(dest => dest.WorkerName, opt => opt.MapFrom(src => src.WorkerName))

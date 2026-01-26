@@ -352,6 +352,13 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _scheduleEntryWorkerIneligibilityRepository = _scheduleEntryWorkerIneligibilityRepository ?? new ScheduleEntryWorkerIneligibilityRepository(_context, this); }
         }
 
+        private IEntityRepository _entityRepository;
+
+        public IEntityRepository EntityRepository
+        {
+            get { return _entityRepository = _entityRepository ?? new EntityRepository(_context, this); }
+        }
+
 
         #endregion
 

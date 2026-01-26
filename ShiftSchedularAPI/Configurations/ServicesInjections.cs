@@ -93,6 +93,7 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<IBaseEntityRuleService, BaseEntityRuleService>();
             services.AddScoped<IScheduleGeneratorService, ScheduleGeneratorService>();
             services.AddScoped<IEntityDashboardService, EntityDashboardService>();
+            services.AddScoped<ISearchService, SearchService>();
 
             // Infrastructure Services
             services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
