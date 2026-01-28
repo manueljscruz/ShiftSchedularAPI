@@ -58,20 +58,20 @@ namespace ShiftSchedularAPI.Controllers
         /// <param name="lanaguageCode">The language code for the profile information.</param>
         /// <returns>An IActionResult containing the worker's public profile if found; otherwise, a BadRequest or NotFound
         /// result.</returns>
-        [HttpGet("worker/{workerId}/{languageCode}")]
+        [HttpPost("worker")]
         [Authorize]
         [EnableRateLimiting("general")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetPublicWorkerProfile([FromQuery] string workerId, [FromQuery] string lanaguageCode)
+        public async Task<IActionResult> GetPublicWorkerProfile([FromBody] BaseViewModelRequest request)
         {
-            if (string.IsNullOrEmpty(workerId))
+            if (request == null)
             {
                 return BadRequest();
             }
 
-            BaseResponse<WorkerPublicProfileDTO> workerProfileResponse = await _searchService.GetPublicProfileWorker(workerId, lanaguageCode);
+            BaseResponse<WorkerPublicProfileDTO> workerProfileResponse = await _searchService.GetPublicProfileWorker(request.WorkerId, request.LanguageCode);
 
             if (workerProfileResponse.Success)
             {

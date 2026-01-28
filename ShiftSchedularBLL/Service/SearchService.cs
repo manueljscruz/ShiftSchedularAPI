@@ -168,7 +168,8 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            GenderLocalization genderLocalized = await _unitOfWork.GenderLocalizationRepository.GetById(user.GenderId);
+            IEnumerable<GenderLocalization> genderLocalizations = await _unitOfWork.GenderLocalizationRepository.GetGendersByLocalization(languageCode);
+            GenderLocalization genderLocalized = genderLocalizations.Where(i => i.GenderId.Equals(user.GenderId)).FirstOrDefault();
 
             response.Result = new WorkerPublicProfileDTO
             {
