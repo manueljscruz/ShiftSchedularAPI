@@ -30,6 +30,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IShiftService _shiftService;
         private readonly IEntityRuleService _entityRuleService;
         private readonly IEntityService _entityService;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #endregion
 
@@ -41,7 +42,8 @@ namespace ShiftSchedularBLL.Service
             IShiftService shiftService,
             IEntityRuleService entityRuleService,
             IEntityService entityService,
-            IEntityWorkerAbsenceService entityWorkerAbsenceService)
+            IEntityWorkerAbsenceService entityWorkerAbsenceService,
+            ILanguageAccessor languageAccessor)
         {
             _mapper = mapper;
             _generalService = generalService;
@@ -49,6 +51,7 @@ namespace ShiftSchedularBLL.Service
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
             _entityService = entityService;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -61,7 +64,7 @@ namespace ShiftSchedularBLL.Service
         {
             EntityScheduleViewModel viewModel = new EntityScheduleViewModel();
 
-            if (viewModelRequest != null && viewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequest.WorkerId) && !string.IsNullOrEmpty(viewModelRequest.LanguageCode))
+            if (viewModelRequest != null && viewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequest.WorkerId))
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(viewModelRequest.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
@@ -71,11 +74,10 @@ namespace ShiftSchedularBLL.Service
                 if (entityWorkerInstance.IsOwner)
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
-                    viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, viewModelRequest.LanguageCode);
+                    viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, _languageAccessor.GetLanguageCode());
                     PagedModelRequest baseRequest = new PagedModelRequest
                     {
-                        EntityId = viewModelRequest.EntityId,
-                        LanguageCode = viewModelRequest.LanguageCode
+                        EntityId = viewModelRequest.EntityId
                     };
                     EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
                     viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data;
@@ -112,7 +114,7 @@ namespace ShiftSchedularBLL.Service
                     return response;
                 }
 
-                ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(addScheduleEntryDTO.ShiftId), addScheduleEntryDTO.LanguageCode);
+                ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(addScheduleEntryDTO.ShiftId));
                 if (shift == null)
                 {
                     response.Message = ScheduleRelatedMessages.ShiftNotFound;
@@ -159,7 +161,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            ShiftDTO shiftDTO = await _shiftService.GetShiftById(assignEntryDTO.ShiftId, assignEntryDTO.LanguageCode);
+            ShiftDTO shiftDTO = await _shiftService.GetShiftById(assignEntryDTO.ShiftId);
 
             // Shift Not Found
             if (shiftDTO == null)
@@ -169,7 +171,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             // Get Worker data related to the entity
-            IEnumerable<EntityWorkerMemberDTO> entityWorkerMembers = await _entityService.GetEntityMembers(assignEntryDTO.EntityId, new List<string> { assignEntryDTO.WorkerId }, assignEntryDTO.LanguageCode);
+            IEnumerable<EntityWorkerMemberDTO> entityWorkerMembers = await _entityService.GetEntityMembers(assignEntryDTO.EntityId, new List<string> { assignEntryDTO.WorkerId });
 
             // No records or more than 1
             if (entityWorkerMembers.Count() == 0 || entityWorkerMembers.Count() > 1)
@@ -268,7 +270,7 @@ namespace ShiftSchedularBLL.Service
             }
             else
             {
-                scheduleEntryDTO = await GetScheduleEntryById(scheduleEntryDTO.ScheduleEntryId, assignEntryDTO.LanguageCode);
+                scheduleEntryDTO = await GetScheduleEntryById(scheduleEntryDTO.ScheduleEntryId, _languageAccessor.GetLanguageCode());
             }
 
             response.Success = true;
@@ -302,8 +304,7 @@ namespace ShiftSchedularBLL.Service
             // Batch load entity skills ONCE for all entries
             List<SkillLocalizedDTO> entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
             {
-                EntityId = viewModelRequest.EntityId,
-                LanguageCode = viewModelRequest.LanguageCode
+                EntityId = viewModelRequest.EntityId
             });
 
             // Extract ALL unique participant IDs across all schedule entries
@@ -319,8 +320,7 @@ namespace ShiftSchedularBLL.Service
             {
                 allParticipants = await _entityService.GetEntityMembers(
                     viewModelRequest.EntityId,
-                    allParticipantIds,
-                    viewModelRequest.LanguageCode);
+                    allParticipantIds);
             }
 
             // Create a lookup dictionary for fast participant access
@@ -400,13 +400,12 @@ namespace ShiftSchedularBLL.Service
             ScheduleEntryDTO scheduleEntryDTO = new ScheduleEntryDTO();
 
             ScheduleEntry scheduleEntry = await _unitOfWork.EntityScheduleRepository.GetById(scheduleEntryId);
-            ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(scheduleEntry.ShiftId.ToString()), languageCode);
+            ShiftDTO shift = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(scheduleEntry.ShiftId.ToString()));
 
             // Get Entity Skills
             List<SkillLocalizedDTO> entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
             {
-                EntityId = shift.EntityId,
-                LanguageCode = languageCode
+                EntityId = shift.EntityId
             });
 
             // Extract participant ids
@@ -423,7 +422,7 @@ namespace ShiftSchedularBLL.Service
             scheduleEntryDTO.ShiftDTO = shift;
 
             // Get Entity Worker Member Information
-            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs = await _entityService.GetEntityMembers(shift.EntityId, participantsIds, languageCode);
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOs = await _entityService.GetEntityMembers(shift.EntityId, participantsIds);
 
             // For each worker assigned to this entry
             foreach (ScheduleEntryWorkers entryWorker in scheduleEntry.ScheduleEntryWorkers)
@@ -585,7 +584,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             // Get Worker data related to the entity
-            IEnumerable<EntityWorkerMemberDTO> entityWorkerMembers = await _entityService.GetEntityMembers(intervalWorkerScheduleEntriesDTO.EntityId, new List<string> { intervalWorkerScheduleEntriesDTO.WorkerId }, intervalWorkerScheduleEntriesDTO.LanguageCode);
+            IEnumerable<EntityWorkerMemberDTO> entityWorkerMembers = await _entityService.GetEntityMembers(intervalWorkerScheduleEntriesDTO.EntityId, new List<string> { intervalWorkerScheduleEntriesDTO.WorkerId });
 
             // No records or more than 1
             if (entityWorkerMembers.Count() == 0 || entityWorkerMembers.Count() > 1)
@@ -1093,7 +1092,6 @@ namespace ShiftSchedularBLL.Service
                 {
                     EntityId = createEntityScheduleDTO.EntityId,
                     WorkerId = createEntityScheduleDTO.WorkerId,
-                    LanguageCode = createEntityScheduleDTO.LanguageCode,
                     StartDateSearch = startDate,
                     EndDateSearch = endDate
                 };
@@ -1260,7 +1258,7 @@ namespace ShiftSchedularBLL.Service
             {
                 response.Success = true;
                 response.Message = ScheduleRelatedMessages.AddScheduleParticipantSuccess;
-                response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId, scheduleParticipantOp.LanguageCode);
+                response.Result = await GetScheduleEntryById(scheduleEntry.ScheduleEntryId, _languageAccessor.GetLanguageCode());
             }
 
             return response;

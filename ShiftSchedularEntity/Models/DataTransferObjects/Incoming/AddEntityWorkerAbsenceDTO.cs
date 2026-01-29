@@ -11,6 +11,5 @@
         public int OffsetMinutes { get; set; }
         public string TimezoneId { get; set; }
         public bool IsFullDay { get; set; }
-        public string LanguageCode { get; set; }
     }
 }

@@ -24,7 +24,5 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public bool MultipleShiftAssignments { get; set; }
 
         public List<ShiftDTO> AssignedShifts { get; set; }
-
-        public string LanguageCode { get; set; }
     }
 }

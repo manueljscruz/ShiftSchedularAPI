@@ -9,6 +9,5 @@
         public int BusinessAspectId { get; set; }
         public string AspectReferenceId2 { get; set; }
         public int BusinessAspectId2 { get; set; }
-        public string LanguageCode { get; set; }
     }
 }

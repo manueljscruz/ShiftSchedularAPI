@@ -13,7 +13,6 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
 
         [RequiredWithResourceMessageAttribute(typeof(WorkerRelatedMessages), "WorkerIdentifierIsEmpty")]
         public string WorkerId { get; set; }
-        public string LanguageCode { get; set; }
 
         #endregion
 
@@ -23,7 +22,6 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         {
             EntityId = string.Empty;
             WorkerId = string.Empty;
-            LanguageCode = string.Empty;
         }
 
         #endregion

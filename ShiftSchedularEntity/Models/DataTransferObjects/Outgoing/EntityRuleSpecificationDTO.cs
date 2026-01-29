@@ -56,9 +56,5 @@
         /// Name of the second reference
         /// </summary>
         public string ReferenceName2 { get; set; }
-
-        /// <summary>
-        /// Language code - used to store the language in auxiliary functionality
-        public string LanguageCode { get; set; }
     }
 }

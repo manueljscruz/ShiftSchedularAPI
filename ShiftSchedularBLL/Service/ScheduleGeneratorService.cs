@@ -28,6 +28,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityScheduleService _entityScheduleService;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #region Constructor
 
@@ -40,7 +41,8 @@ namespace ShiftSchedularBLL.Service
             ISkillService skillService,
             IEntityScheduleService entityScheduleService,
             IMapper mapper,
-            IGenericRepository<BusinessAspect> businessAspectRepository
+            IGenericRepository<BusinessAspect> businessAspectRepository,
+            ILanguageAccessor languageAccessor
             )
         {
             _unitOfWork = unitOfWork;
@@ -53,6 +55,7 @@ namespace ShiftSchedularBLL.Service
             _entityScheduleService = entityScheduleService;
             _mapper = mapper;
             _generalService = generalService;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -96,21 +99,20 @@ namespace ShiftSchedularBLL.Service
 
                         // Get Rules
                         if (createEntityScheduleDTO.FilteredRules.Count() == 0)
-                            ruleDTOs = await _entityRuleService.GetEntityRules(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.LanguageCode);
+                            ruleDTOs = await _entityRuleService.GetEntityRules(createEntityScheduleDTO.EntityId, _languageAccessor.GetLanguageCode());
                         else
-                            ruleDTOs = await _entityRuleService.GetSpecificRules(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.FilteredRules, createEntityScheduleDTO.LanguageCode);
+                            ruleDTOs = await _entityRuleService.GetSpecificRules(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.FilteredRules, _languageAccessor.GetLanguageCode());
 
                         // Get Members
                         if (createEntityScheduleDTO.FilteredMembers.Count() == 0)
-                            entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, new List<string>(), createEntityScheduleDTO.LanguageCode);
+                            entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, new List<string>());
                         else
-                            entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.FilteredMembers, createEntityScheduleDTO.LanguageCode);
+                            entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.FilteredMembers);
 
                         // Get Entity Skills
                         entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
                         {
-                            EntityId = createEntityScheduleDTO.EntityId,
-                            LanguageCode = createEntityScheduleDTO.LanguageCode
+                            EntityId = createEntityScheduleDTO.EntityId
                         });
 
                         #endregion
@@ -223,8 +225,7 @@ namespace ShiftSchedularBLL.Service
             // Validate worker exists
             var worker = (await _entityService.GetEntityMembers(
                 rotationCycleDTO.EntityId,
-                new List<string> { rotationCycleDTO.WorkerId },
-                rotationCycleDTO.LanguageCode
+                new List<string> { rotationCycleDTO.WorkerId }
             )).FirstOrDefault();
 
             if (worker == null)
@@ -249,7 +250,6 @@ namespace ShiftSchedularBLL.Service
             var createDto = new CreateEntityScheduleDTO
             {
                 EntityId = rotationCycleDTO.EntityId,
-                LanguageCode = rotationCycleDTO.LanguageCode,
                 WorkerId = rotationCycleDTO.WorkerId,
                 StartDate = rotationCycleDTO.CycleStartDate,
                 EndDate = rotationCycleDTO.CycleEndDate,
@@ -300,7 +300,6 @@ namespace ShiftSchedularBLL.Service
                 {
                     WorkerId = string.Empty,
                     EntityId = dto.EntityId,
-                    LanguageCode = dto.LanguageCode,
                     StartDateSearch = dto.StartDate,
                     EndDateSearch = dto.EndDate
                 };
@@ -1753,7 +1752,7 @@ namespace ShiftSchedularBLL.Service
             List<ScheduleEntryIneligibilityModel> scheduleEntryIneligibilities = new List<ScheduleEntryIneligibilityModel>();
 
             // Get Absences that interfere with current schedule planning
-            List<EntityWorkerAbsenceDTO> entityWorkerAbsenceDTOs = await _entityWorkerAbsenceService.GetSpecificWorkerAbsences(createEntityScheduleDTO.EntityId, entityWorkerMemberDTOs.Where(i => i.IsBot == false).Select(i => i.WorkerId).ToList(), createEntityScheduleDTO.LanguageCode, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
+            List<EntityWorkerAbsenceDTO> entityWorkerAbsenceDTOs = await _entityWorkerAbsenceService.GetSpecificWorkerAbsences(createEntityScheduleDTO.EntityId, entityWorkerMemberDTOs.Where(i => i.IsBot == false).Select(i => i.WorkerId).ToList(), _languageAccessor.GetLanguageCode(), createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
 
             // For each absence
             foreach (EntityWorkerAbsenceDTO entityWorkerAbsence in entityWorkerAbsenceDTOs)
@@ -1841,7 +1840,6 @@ namespace ShiftSchedularBLL.Service
                     {
                         EntityId = createEntityScheduleDTO.EntityId,
                         WorkerId = createEntityScheduleDTO.WorkerId,
-                        LanguageCode = createEntityScheduleDTO.LanguageCode,
                         StartDateSearch = StartOfWeekDate,
                         EndDateSearch = createEntityScheduleDTO.StartDate
                     };
@@ -1880,7 +1878,6 @@ namespace ShiftSchedularBLL.Service
                 {
                     EntityId = createEntityScheduleDTO.EntityId,
                     WorkerId = createEntityScheduleDTO.WorkerId,
-                    LanguageCode = createEntityScheduleDTO.LanguageCode,
                     StartDateSearch = firstDayOfMonth,
                     EndDateSearch = firstDayOfCurrentPool.AddDays(-1)
                 };
@@ -1900,7 +1897,6 @@ namespace ShiftSchedularBLL.Service
                 {
                     EntityId = createEntityScheduleDTO.EntityId,
                     WorkerId = createEntityScheduleDTO.WorkerId,
-                    LanguageCode = createEntityScheduleDTO.LanguageCode,
                     StartDateSearch = lastDayOfCurrentPool.AddDays(1),
                     EndDateSearch = lastDayOfMonth
                 };

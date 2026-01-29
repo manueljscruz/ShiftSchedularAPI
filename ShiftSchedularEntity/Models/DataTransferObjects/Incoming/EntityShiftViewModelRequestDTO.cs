@@ -4,12 +4,10 @@
     {
         public Guid EntityId { get; set; }
         public string WorkerId { get; set; }
-        public string LanguageCode { get; set; }
 
         public EntityShiftViewModelRequestDTO()
         {
             WorkerId = string.Empty;
-            LanguageCode = string.Empty;
         }
     }
 }

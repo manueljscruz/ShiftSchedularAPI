@@ -34,6 +34,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IShiftService _shiftService;
         private readonly IEntityTypeService _entityTypeService;
         private readonly IGeneralService _generalService;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #region Constructor
 
@@ -44,7 +45,8 @@ namespace ShiftSchedularBLL.Service
             ISkillService skillService,
             IShiftService shiftService,
             IEntityTypeService entityTypeService,
-            IGeneralService generalService)
+            IGeneralService generalService,
+            ILanguageAccessor languageAccessor)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -54,6 +56,7 @@ namespace ShiftSchedularBLL.Service
             _shiftService = shiftService;
             _entityTypeService = entityTypeService;
             _generalService = generalService;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -369,13 +372,13 @@ namespace ShiftSchedularBLL.Service
         {
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
-            viewModel.Skills = await _skillService.GetAllSkillsByLocalization(memberListModelRequest.LanguageCode);
+            viewModel.Skills = await _skillService.GetAllSkillsByLocalization(_languageAccessor.GetLanguageCode());
 
             viewModel.EntityUsedSkills = await GetEntitySkills(memberListModelRequest);
 
             viewModel.Shifts = await _shiftService.GetEntityShifts(memberListModelRequest.EntityId);
 
-            viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.LanguageCode, memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
+            viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
 
             viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(memberListModelRequest.EntityId);
 
@@ -434,13 +437,13 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Members
 
-        public async Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode)
+        public async Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers)
         {
             List<EntityWorkerMemberDTO> entityMembers = new List<EntityWorkerMemberDTO>();
 
             List<EntityWorkerMemberModel> entityWorkerMembers = await GetAllMembers(entityId, workers);
 
-            entityMembers = await ProcessMemberData(entityId, entityWorkerMembers, lcode);
+            entityMembers = await ProcessMemberData(entityId, entityWorkerMembers, _languageAccessor.GetLanguageCode());
 
             return entityMembers;
         }
@@ -449,7 +452,7 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Members Pagination
 
-        public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, string lcode, int nextPage = 0, int itemsPerPage = 0)
+        public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, int nextPage = 0, int itemsPerPage = 0)
         {
             List<EntityWorkerMemberModel> entityWorkerMembers = await GetAllMembers(entityId, workers);
 
@@ -458,11 +461,11 @@ namespace ShiftSchedularBLL.Service
             if(nextPage != 0 && itemsPerPage != 0)
             {
                 int skipRows = (nextPage - 1) * itemsPerPage;
-                
+
                 entityWorkerMembers = entityWorkerMembers.Skip(skipRows).Take(itemsPerPage).ToList();
             }
 
-            List<EntityWorkerMemberDTO> processedMembers = await ProcessMemberData(entityId, entityWorkerMembers, lcode);
+            List<EntityWorkerMemberDTO> processedMembers = await ProcessMemberData(entityId, entityWorkerMembers, _languageAccessor.GetLanguageCode());
 
             try
             {
@@ -658,10 +661,10 @@ namespace ShiftSchedularBLL.Service
         {
             List<SkillLocalizedDTO> skillLocalizedDTOs = new List<SkillLocalizedDTO>();
 
-            if (baseViewModelRequest.EntityId != Guid.Empty && !string.IsNullOrEmpty(baseViewModelRequest.LanguageCode))
+            if (baseViewModelRequest.EntityId != Guid.Empty)
             {
                 // Gets all skills
-                List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(baseViewModelRequest.LanguageCode);
+                List<SkillLocalizedDTO> allSkills = await _skillService.GetAllSkillsByLocalization(_languageAccessor.GetLanguageCode());
 
                 // Gets all working members
                 IEnumerable<int> entityUserSkills = await _unitOfWork.EntityWorkerRepository.GetDistinctSkillsByEntityId(baseViewModelRequest.EntityId);
@@ -694,7 +697,7 @@ namespace ShiftSchedularBLL.Service
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityProfileViewModelRequest.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityProfileViewModelRequest.WorkerId, entityProfileViewModelRequest.EntityId);
                 EntityType entityType = await _unitOfWork.GetGenericRepository<EntityType>().GetById(entity.EntityTypeId);
-                EntityTypeLocalization entityTypeLocalization = await _unitOfWork.EntityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, entityProfileViewModelRequest.LanguageCode);
+                EntityTypeLocalization entityTypeLocalization = await _unitOfWork.EntityTypeLocalizationRepository.GetEntityTypeLocalizationByIds(entityType.EntityTypeId, _languageAccessor.GetLanguageCode());
 
                 try
                 {
@@ -710,7 +713,7 @@ namespace ShiftSchedularBLL.Service
 
                     if (entityProfileViewModel.AllowEdit)
                     {
-                        entityProfileViewModel.EntityTypeLocalizeds = await _entityTypeService.GetAllEntityTypesByLocalization(entityProfileViewModelRequest.LanguageCode);
+                        entityProfileViewModel.EntityTypeLocalizeds = await _entityTypeService.GetAllEntityTypesByLocalization(_languageAccessor.GetLanguageCode());
                     }
                 }
                 catch (Exception ex)

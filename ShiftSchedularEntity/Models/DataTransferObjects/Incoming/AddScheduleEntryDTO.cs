@@ -4,10 +4,9 @@
     {
         public string ShiftId { get; set; }
         public DateTime ScheduleStartDate { get; set; }
-        public string LanguageCode { get; set; }
 
-        public AddScheduleEntryDTO() 
-        { 
+        public AddScheduleEntryDTO()
+        {
         }
     }
 }

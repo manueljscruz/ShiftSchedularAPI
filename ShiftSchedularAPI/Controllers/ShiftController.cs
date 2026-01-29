@@ -28,11 +28,11 @@ namespace ShiftSchedularAPI.Controllers
 
         #region Get Shift By Id
 
-        [HttpGet("get-by-id/{id}/{lcode}")]
+        [HttpGet("get-by-id/{id}")]
         [ProducesResponseType(200, Type = typeof(ShiftDTO))]
-        public async Task<IActionResult> GetShiftById(string id, string lcode)
+        public async Task<IActionResult> GetShiftById(string id)
         {
-            var shifts = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(id), lcode);
+            var shifts = await _shiftService.GetShiftById(_generalService.ParseStringToGuid(id));
             return Ok(shifts);
         }
 

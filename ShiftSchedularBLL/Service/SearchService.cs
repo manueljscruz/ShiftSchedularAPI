@@ -16,16 +16,18 @@ namespace ShiftSchedularBLL.Service
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILanguageAccessor _languageAccessor;
 
         // Constants for result types - makes code more maintainable
         private const string ResultTypeWorker = "Worker";
         private const string ResultTypeEntity = "Entity";
 
-        public SearchService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager)
+        public SearchService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<ApplicationUser> userManager, ILanguageAccessor languageAccessor)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _userManager = userManager;
+            _languageAccessor = languageAccessor;
         }
 
         #region Search
@@ -65,7 +67,7 @@ namespace ShiftSchedularBLL.Service
             // Search Entities
             if (searchEntities)
             {
-                var entityResults = await SearchEntities(normalizedQuery, searchRequest.LanguageCode);
+                var entityResults = await SearchEntities(normalizedQuery, _languageAccessor.GetLanguageCode());
                 allResults.AddRange(entityResults);
             }
 
@@ -155,7 +157,7 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Public Profile Worker
 
-        public async Task<BaseResponse<WorkerPublicProfileDTO>> GetPublicProfileWorker(string workerId, string languageCode)
+        public async Task<BaseResponse<WorkerPublicProfileDTO>> GetPublicProfileWorker(string workerId)
         {
             BaseResponse<WorkerPublicProfileDTO> response = new BaseResponse<WorkerPublicProfileDTO>();
             response.Message = SharedMessages.UnexpectedError;
@@ -168,7 +170,7 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
-            IEnumerable<GenderLocalization> genderLocalizations = await _unitOfWork.GenderLocalizationRepository.GetGendersByLocalization(languageCode);
+            IEnumerable<GenderLocalization> genderLocalizations = await _unitOfWork.GenderLocalizationRepository.GetGendersByLocalization(_languageAccessor.GetLanguageCode());
             GenderLocalization genderLocalized = genderLocalizations.Where(i => i.GenderId.Equals(user.GenderId)).FirstOrDefault();
 
             response.Result = new WorkerPublicProfileDTO
@@ -193,7 +195,7 @@ namespace ShiftSchedularBLL.Service
             response.Message = SharedMessages.UnexpectedError;
 
             // Get Entity
-            Entity entity = await _unitOfWork.EntityRepository.GetEntityById(request.EntityId, request.LanguageCode);
+            Entity entity = await _unitOfWork.EntityRepository.GetEntityById(request.EntityId, _languageAccessor.GetLanguageCode());
 
             // Not found
             if(entity == null)

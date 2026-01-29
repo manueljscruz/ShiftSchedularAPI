@@ -19,18 +19,21 @@ namespace ShiftSchedularBLL.Service
         private readonly IGeneralService _generalService;
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #region Constructor
 
         public EntityWorkerAbsenceService(IUnitOfWork unitOfWork,
            IGeneralService generalService,
            UserManager<ApplicationUser> userManager,
-           IMapper mapper)
+           IMapper mapper,
+           ILanguageAccessor languageAccessor)
         {
             _unitOfWork = unitOfWork;
             _generalService = generalService;
             _userManager = userManager;
             _mapper = mapper;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -89,7 +92,7 @@ namespace ShiftSchedularBLL.Service
 
                 await _unitOfWork.EntityWorkerAbsenceRepository.Update(entityWorkerAbsence);
 
-                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, absenceApprovalDecisionDTO.LanguageCode);
+                response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, _languageAccessor.GetLanguageCode());
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.AbsenceDecisionApprovalSubmitted;
             }
@@ -189,7 +192,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Map added object to DTO instance
-                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, addEntityWorkerAbsence.LanguageCode);
+                EntityWorkerAbsenceDTO entityWorkerAbsenceDTO = await HandleEntityWorkerAbsenceData(entityWorkerAbsence, _languageAccessor.GetLanguageCode());
 
                 response.Result = entityWorkerAbsenceDTO;
                 response.Success = true;
@@ -306,13 +309,13 @@ namespace ShiftSchedularBLL.Service
         {
             EntityWorkerAbsenceViewModel viewModel = new EntityWorkerAbsenceViewModel();
 
-            if (viewModelRequestDTO != null && viewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId) && !string.IsNullOrEmpty(viewModelRequestDTO.LanguageCode))
+            if (viewModelRequestDTO != null && viewModelRequestDTO.EntityId != Guid.Empty && !string.IsNullOrEmpty(viewModelRequestDTO.WorkerId))
             {
                 // Check if its the owner
                 viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(viewModelRequestDTO.EntityId, viewModelRequestDTO.WorkerId);
 
                 // Retrieve all the absence types
-                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(viewModelRequestDTO.LanguageCode);
+                IEnumerable<AbsenceTypeLocalization> absenceTypeLocalizeds = await _unitOfWork.AbsenceTypeLocalizationRepository.GetAbsenceTypesByLocalization(_languageAccessor.GetLanguageCode());
                 foreach (AbsenceTypeLocalization absenceType in absenceTypeLocalizeds)
                     viewModel.AbsenceTypeLocalizeds.Add(_mapper.Map<AbsenceTypeLocalizedDTO>(absenceType));
 
@@ -346,7 +349,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             foreach (EntityWorkerAbsence entityWorkerAbsence in entityWorkerAbsences)
-                entityWorkerAbsencesList.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, pagedModelRequest.LanguageCode));
+                entityWorkerAbsencesList.Add(await HandleEntityWorkerAbsenceData(entityWorkerAbsence, _languageAccessor.GetLanguageCode()));
 
             PagedList<EntityWorkerAbsenceDTO> pagedList = PagedList<EntityWorkerAbsenceDTO>.Create(entityWorkerAbsencesList.AsQueryable(), totalCount, pagedModelRequest.NextPage, pagedModelRequest.ItemsPerPage);
 

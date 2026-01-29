@@ -4,7 +4,6 @@
     {
         public string ScheduleEntryId { get; set; }
         public string WorkerId { get; set; }
-        public string LanguageCode { get; set; }
         public bool IsEditing { get; set; }
         public bool IsRemoving { get; set; }
 

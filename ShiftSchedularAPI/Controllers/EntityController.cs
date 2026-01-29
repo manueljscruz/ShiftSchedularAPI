@@ -166,7 +166,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            PagedList<EntityWorkerMemberDTO> memberList = await _entityService.GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.LanguageCode, memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
+            PagedList<EntityWorkerMemberDTO> memberList = await _entityService.GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
 
             return Ok(memberList);
         }

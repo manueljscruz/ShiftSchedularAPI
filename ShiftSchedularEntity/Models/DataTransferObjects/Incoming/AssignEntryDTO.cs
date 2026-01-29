@@ -14,8 +14,6 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         [RequiredWithResourceMessage(typeof(EntitiesRelatedMessages), "EntityNoIdentifierError")]
         public Guid EntityId { get; set; }
 
-        public string LanguageCode { get; set; }
-
         public bool IsBot { get; set; }
         public string ScheduleId { get; set; }
 

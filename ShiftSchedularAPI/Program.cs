@@ -13,6 +13,8 @@ using ShiftSchedularEntity.Converters;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularAPI.Middleware;
+using ShiftSchedularBLL.IService;
+using ShiftSchedularBLL.Service;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -171,6 +173,10 @@ try
     builder.Services.AddServicesInjections(logDirectory, emailSettings);
     builder.Services.AddCustomRateLimiting(builder.Configuration);
 
+    // 6. Add HttpContextAccessor and LanguageAccessor for language header support
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<ILanguageAccessor, LanguageAccessor>();
+
     // 6. Configure JWT Authentication and Authorization
     builder.Services.AddAuthentication(options =>
     {
@@ -216,6 +222,9 @@ try
 
     // 2. Use CORS to allow cross-origin requests (must come before auth/authorization)
     app.UseCors(MyAllowSpecificOrigins);
+
+    // 2.5 Extract language code from Accept-Language header
+    app.UseLanguageMiddleware();
 
     // 3. Enable HTTPS redirection
     app.UseHttpsRedirection();

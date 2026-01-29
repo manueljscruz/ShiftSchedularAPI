@@ -15,6 +15,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityWorkerAbsenceService _entityWorkerAbsenceService;
         private readonly IShiftService _shiftService;
         private readonly IEntityRuleService _entityRuleService;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #region Constructor
 
@@ -23,7 +24,8 @@ namespace ShiftSchedularBLL.Service
             IEntityScheduleService entityScheduleService,
             IEntityWorkerAbsenceService entityWorkerAbsenceService,
             IShiftService shiftService,
-            IEntityRuleService entityRuleService)
+            IEntityRuleService entityRuleService,
+            ILanguageAccessor languageAccessor)
         {
             _generalService = generalService;
             _entityService = entityService;
@@ -31,6 +33,7 @@ namespace ShiftSchedularBLL.Service
             _entityWorkerAbsenceService = entityWorkerAbsenceService;
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -45,10 +48,10 @@ namespace ShiftSchedularBLL.Service
             Guid entityId = _generalService.ParseStringToGuid(request.EntityId.ToString());
 
             // Get entity data
-            dashboardEntityViewModel.EntityDTO = await _entityService.GetEntityById(entityId, request.LanguageCode);
+            dashboardEntityViewModel.EntityDTO = await _entityService.GetEntityById(entityId, _languageAccessor.GetLanguageCode());
 
             // Get entity member data that is requesting data
-            List<EntityWorkerMemberDTO> entityWorkerMemberDTOLst = await _entityService.GetEntityMembers(entityId, new List<string> { request.WorkerId }, request.LanguageCode);
+            List<EntityWorkerMemberDTO> entityWorkerMemberDTOLst = await _entityService.GetEntityMembers(entityId, new List<string> { request.WorkerId });
             EntityWorkerMemberDTO entityWorkerMemberDTO = entityWorkerMemberDTOLst.First();
 
             // Set Owner flag
@@ -58,7 +61,7 @@ namespace ShiftSchedularBLL.Service
             dashboardEntityViewModel.AssignedEntitySkills = entityWorkerMemberDTO.SkillSet;
 
             // Get schedule entries
-            ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO(entityId, request.WorkerId, request.LanguageCode, DateTime.UtcNow, DateTime.UtcNow.AddDays(7));
+            ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO(entityId, request.WorkerId, DateTime.UtcNow, DateTime.UtcNow.AddDays(7));
             List<ScheduleEntryDTO> scheduleEntryDTOs = await _entityScheduleService.GetScheduleEntries(scheduleViewModelRequest);
 
             // Show all schedules entries if owner, filter by user if not
@@ -68,7 +71,7 @@ namespace ShiftSchedularBLL.Service
                 dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.Worker.Equals(entityWorkerMemberDTO))).ToList();
 
             // Get Absences
-            PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, request.LanguageCode, 0, 1, 20);
+            PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, 0, 1, 20);
             dashboardEntityViewModel.EntityWorkerAbsenceEntries = await _entityWorkerAbsenceService.GetEntityWorkerAbsences(absencesRequest);
 
             // Get Statistics

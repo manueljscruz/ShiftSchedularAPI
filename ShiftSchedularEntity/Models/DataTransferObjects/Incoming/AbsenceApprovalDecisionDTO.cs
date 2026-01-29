@@ -6,6 +6,5 @@
         public string AbsenceDecisionSignature { get; set; }
         public bool AbsenceDecision { get; set; }
         public string DecisionTimezoneId { get; set; }
-        public string LanguageCode { get; set; }
     }
 }

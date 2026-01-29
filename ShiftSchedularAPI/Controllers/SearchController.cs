@@ -71,7 +71,7 @@ namespace ShiftSchedularAPI.Controllers
                 return BadRequest();
             }
 
-            BaseResponse<WorkerPublicProfileDTO> workerProfileResponse = await _searchService.GetPublicProfileWorker(request.WorkerId, request.LanguageCode);
+            BaseResponse<WorkerPublicProfileDTO> workerProfileResponse = await _searchService.GetPublicProfileWorker(request.WorkerId);
 
             if (workerProfileResponse.Success)
             {
