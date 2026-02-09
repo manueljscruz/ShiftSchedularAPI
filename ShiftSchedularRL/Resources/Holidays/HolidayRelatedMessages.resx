@@ -1,0 +1,192 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<!-- 
+		Microsoft ResX Schema
+
+		Version 1.3
+
+		The primary goals of this format is to allow a simple XML format 
+		that is mostly human readable. The generation and parsing of the 
+		various data types are done through the TypeConverter classes 
+		associated with the data types.
+
+		Example:
+
+		... ado.net/XML headers & schema ...
+		<resheader name="resmimetype">text/microsoft-resx</resheader>
+		<resheader name="version">1.3</resheader>
+		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+		<data name="Name1">this is my long string</data>
+		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+			[base64 mime encoded serialized .NET Framework object]
+		</data>
+		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+			[base64 mime encoded string representing a byte array form of the .NET Framework object]
+		</data>
+
+		There are any number of "resheader" rows that contain simple 
+		name/value pairs.
+
+		Each data row contains a name, and value. The row also contains a 
+		type or mimetype. Type corresponds to a .NET class that support 
+		text/value conversion through the TypeConverter architecture. 
+		Classes that don't support this are serialized and stored with the 
+		mimetype set.
+
+		The mimetype is used for serialized objects, and tells the 
+		ResXResourceReader how to depersist the object. This is currently not 
+		extensible. For a given mimetype the value must be set accordingly:
+
+		Note - application/x-microsoft.net.object.binary.base64 is the format 
+		that the ResXResourceWriter will generate, however the reader can 
+		read any of the formats listed below.
+
+		mimetype: application/x-microsoft.net.object.binary.base64
+		value   : The object must be serialized with 
+			: System.Serialization.Formatters.Binary.BinaryFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.soap.base64
+		value   : The object must be serialized with 
+			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+			: and then encoded with base64 encoding.
+
+		mimetype: application/x-microsoft.net.object.bytearray.base64
+		value   : The object must be serialized into a byte array 
+			: using a System.ComponentModel.TypeConverter
+			: and then encoded with base64 encoding.
+	-->
+	
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>1.3</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<!-- Holiday Type Messages -->
+	<data name="HolidayTypeInvalidData" xml:space="preserve">
+		<value>Invalid holiday type data provided.</value>
+	</data>
+	<data name="HolidayTypeNotFound" xml:space="preserve">
+		<value>Holiday type not found.</value>
+	</data>
+	<data name="HolidayTypeUpdatedSuccess" xml:space="preserve">
+		<value>Holiday type updated successfully.</value>
+	</data>
+	<data name="HolidayTypeUpdateError" xml:space="preserve">
+		<value>An error occurred while updating the holiday type. Please try again later.</value>
+	</data>
+	<data name="HolidayTypeInvalidId" xml:space="preserve">
+		<value>Invalid holiday type ID provided.</value>
+	</data>
+	<data name="HolidayTypeDeletedSuccess" xml:space="preserve">
+		<value>Holiday type deleted successfully.</value>
+	</data>
+	<data name="HolidayTypeDeleteError" xml:space="preserve">
+		<value>An error occurred while deleting the holiday type. Please try again later.</value>
+	</data>
+	<!-- Holiday Behaviour Messages -->
+	<data name="HolidayBehaviourInvalidData" xml:space="preserve">
+		<value>Invalid holiday behaviour data provided.</value>
+	</data>
+	<data name="HolidayBehaviourNotFound" xml:space="preserve">
+		<value>Holiday behaviour not found.</value>
+	</data>
+	<data name="HolidayBehaviourUpdatedSuccess" xml:space="preserve">
+		<value>Holiday behaviour updated successfully.</value>
+	</data>
+	<data name="HolidayBehaviourUpdateError" xml:space="preserve">
+		<value>An error occurred while updating the holiday behaviour. Please try again later.</value>
+	</data>
+	<data name="HolidayBehaviourInvalidId" xml:space="preserve">
+		<value>Invalid holiday behaviour ID provided.</value>
+	</data>
+	<data name="HolidayBehaviourDeletedSuccess" xml:space="preserve">
+		<value>Holiday behaviour deleted successfully.</value>
+	</data>
+	<data name="HolidayBehaviourDeleteError" xml:space="preserve">
+		<value>An error occurred while deleting the holiday behaviour. Please try again later.</value>
+	</data>
+	<!-- Holiday Catalog Messages -->
+	<data name="HolidayCatalogInvalidData" xml:space="preserve">
+		<value>Invalid holiday catalog data provided.</value>
+	</data>
+	<data name="HolidayCatalogNotFound" xml:space="preserve">
+		<value>Holiday catalog entry not found.</value>
+	</data>
+	<data name="HolidayCatalogUpdatedSuccess" xml:space="preserve">
+		<value>Holiday catalog updated successfully.</value>
+	</data>
+	<data name="HolidayCatalogUpdateError" xml:space="preserve">
+		<value>An error occurred while updating the holiday catalog. Please try again later.</value>
+	</data>
+	<data name="HolidayCatalogInvalidId" xml:space="preserve">
+		<value>Invalid holiday catalog ID provided.</value>
+	</data>
+	<data name="HolidayCatalogDeletedSuccess" xml:space="preserve">
+		<value>Holiday catalog entry deleted successfully.</value>
+	</data>
+	<data name="HolidayCatalogDeleteError" xml:space="preserve">
+		<value>An error occurred while deleting the holiday catalog. Please try again later.</value>
+	</data>
+	<!-- Entity Holiday Messages -->
+	<data name="EntityHolidayInvalidData" xml:space="preserve">
+		<value>Invalid entity holiday data provided.</value>
+	</data>
+	<data name="EntityHolidayNotFound" xml:space="preserve">
+		<value>Entity holiday not found.</value>
+	</data>
+	<data name="EntityHolidayCreatedSuccess" xml:space="preserve">
+		<value>Entity holiday created successfully.</value>
+	</data>
+	<data name="EntityHolidayCreateError" xml:space="preserve">
+		<value>An error occurred while creating the entity holiday. Please try again later.</value>
+	</data>
+	<data name="EntityHolidayUpdatedSuccess" xml:space="preserve">
+		<value>Entity holiday updated successfully.</value>
+	</data>
+	<data name="EntityHolidayUpdateError" xml:space="preserve">
+		<value>An error occurred while updating the entity holiday. Please try again later.</value>
+	</data>
+	<data name="EntityHolidayDeletedSuccess" xml:space="preserve">
+		<value>Entity holiday deleted successfully.</value>
+	</data>
+	<data name="EntityHolidayDeleteError" xml:space="preserve">
+		<value>An error occurred while deleting the entity holiday. Please try again later.</value>
+	</data>
+</root>

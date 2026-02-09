@@ -298,6 +298,66 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.DateOfAssessment, opt => opt.MapFrom(src => src.DateOfAssessement))
                 .ForMember(dest => dest.WorkerId, opt => opt.MapFrom(src => src.ApplicationUserId))
                 .ForMember(dest => dest.IsBot, opt => opt.MapFrom(src => false));
+
+            #region Holiday Mappings
+
+            // HolidayType Localization -> DTO
+            CreateMap<HolidayTypeLocalization, HolidayTypeLocalizedDTO>()
+                .ForMember(dest => dest.HolidayTypeId, opt => opt.MapFrom(src => src.HolidayTypeId))
+                .ForMember(dest => dest.HolidayTypeLocalizedName, opt => opt.MapFrom(src => src.HolidayTypeDisplayValue));
+
+            // HolidayBehaviour Localization -> DTO
+            CreateMap<HolidayBehaviourLocalization, HolidayBehaviourLocalizedDTO>()
+                .ForMember(dest => dest.HolidayBehaviourId, opt => opt.MapFrom(src => src.HolidayBehaviourId))
+                .ForMember(dest => dest.HolidayBehaviourLocalizedName, opt => opt.MapFrom(src => src.HolidayBehaviourDisplayValue));
+
+            // HolidayCatalog Localization -> DTO
+            CreateMap<HolidayCatalogLocalization, HolidayCatalogLocalizedDTO>()
+                .ForMember(dest => dest.HolidayCatalogId, opt => opt.MapFrom(src => src.HolidayCatalogId))
+                .ForMember(dest => dest.HolidayCatalogLocalizedName, opt => opt.MapFrom(src => src.LocalizedName))
+                .ForMember(dest => dest.HolidayCatalogLocalizedDescription, opt => opt.MapFrom(src => src.LocalizedDescription))
+                .ForMember(dest => dest.IsRecurring, opt => opt.MapFrom(src => src.IsRecurring))
+                .ForMember(dest => dest.RecurrenceDay, opt => opt.MapFrom(src => src.RecurrenceDay))
+                .ForMember(dest => dest.RecurrenceMonth, opt => opt.MapFrom(src => src.RecurrenceMonth))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+
+            // EntityHoliday -> DTO
+            CreateMap<EntityHoliday, EntityHolidayDTO>()
+                .ForMember(dest => dest.EntityHolidayId, opt => opt.MapFrom(src => src.EntityHolidayId))
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.CustomHolidayName, opt => opt.MapFrom(src => src.CustomHolidayName))
+                .ForMember(dest => dest.CustomDay, opt => opt.MapFrom(src => src.CustomDay))
+                .ForMember(dest => dest.CustomMonth, opt => opt.MapFrom(src => src.CustomMonth))
+                .ForMember(dest => dest.OperatingStartTime, opt => opt.MapFrom(src => src.OperatingStartTime))
+                .ForMember(dest => dest.OperatingEndTime, opt => opt.MapFrom(src => src.OperatingEndTime))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes));
+
+            // AddEntityHolidayDTO -> EntityHoliday
+            CreateMap<AddEntityHolidayDTO, EntityHoliday>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.HolidayCatalogId, opt => opt.MapFrom(src => src.IsCustom ? (int?)null : src.HolidayCatalogId))
+                .ForMember(dest => dest.HolidayBehaviourId, opt => opt.MapFrom(src => src.HolidayBehaviourId))
+                .ForMember(dest => dest.CustomHolidayName, opt => opt.MapFrom(src => src.CustomHolidayName))
+                .ForMember(dest => dest.CustomDay, opt => opt.MapFrom(src => src.CustomDay))
+                .ForMember(dest => dest.CustomMonth, opt => opt.MapFrom(src => src.CustomMonth))
+                .ForMember(dest => dest.OperatingStartTime, opt => opt.MapFrom(src => src.OperatingStartTime))
+                .ForMember(dest => dest.OperatingEndTime, opt => opt.MapFrom(src => src.OperatingEndTime))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true));
+
+            // AddHolidayCatalogDTO -> HolidayCatalog
+            CreateMap<AddHolidayCatalogDTO, HolidayCatalog>()
+                .ForMember(dest => dest.HolidayTypeId, opt => opt.MapFrom(src => src.HolidayTypeId))
+                .ForMember(dest => dest.HolidayBehaviourId, opt => opt.MapFrom(src => src.HolidayBehaviourId))
+                .ForMember(dest => dest.HolidayName, opt => opt.MapFrom(src => src.HolidayName))
+                .ForMember(dest => dest.HolidayDescription, opt => opt.MapFrom(src => src.HolidayDescription))
+                .ForMember(dest => dest.RecurrenceDay, opt => opt.MapFrom(src => src.RecurrenceDay))
+                .ForMember(dest => dest.RecurrenceMonth, opt => opt.MapFrom(src => src.RecurrenceMonth))
+                .ForMember(dest => dest.IsRecurring, opt => opt.MapFrom(src => src.IsRecurring))
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+
+            #endregion
         }
     }
 }

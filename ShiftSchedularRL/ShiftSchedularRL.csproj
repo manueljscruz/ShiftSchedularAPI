@@ -22,6 +22,11 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>EntityRulesRelatedMessages.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\Holidays\HolidayRelatedMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>HolidayRelatedMessages.resx</DependentUpon>
+    </Compile>
     <Compile Update="Resources\Home\WorkerRelatedMessages.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -81,6 +86,10 @@
     <EmbeddedResource Update="Resources\EntityRuleManagement\EntityRulesRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>EntityRulesRelatedMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Holidays\HolidayRelatedMessages.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>HolidayRelatedMessages.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\Home\WorkerRelatedMessages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

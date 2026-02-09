@@ -50,6 +50,7 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityShiftRotation> EntityShiftRotations { get; set; }
         public virtual ICollection<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
         public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
+        public virtual ICollection<EntityHoliday> EntityHolidays { get; set; }
 
         #endregion
     }
