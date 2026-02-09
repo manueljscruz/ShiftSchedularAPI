@@ -55,6 +55,13 @@ namespace ShiftSchedularDAL.Data
         public DbSet<ScheduleEntryBots> ScheduleEntryBots { get; set; }
         public DbSet<ScheduleEntryWorkerIneligibility> ScheduleEntryWorkerIneligibilities { get; set; }
         public DbSet<ScheduleEntryBotIneligibility> scheduleEntryBotIneligibilities { get; set; }
+        public DbSet<HolidayType> HolidayTypes { get; set; }
+        public DbSet<HolidayTypeLocalization> HolidayTypeLocalizations { get; set; }
+        public DbSet<HolidayBehaviour> HolidayBehaviours { get; set; }
+        public DbSet<HolidayBehaviourLocalization> HolidayBehaviourLocalizations { get; set; }
+        public DbSet<HolidayCatalog> HolidayCatalogs { get; set; }
+        public DbSet<HolidayCatalogLocalization> HolidayCatalogLocalizations { get; set; }
+        public DbSet<EntityHoliday> EntityHolidays { get; set; }
 
         #endregion
 
@@ -659,7 +666,142 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
+            #region Holiday Type Configuration
+
+            modelBuilder.Entity<HolidayType>()
+                .HasKey(ht => ht.HolidayTypeId);
+
+            #endregion
+
+            #region Holiday Type Localization Configuration
+
+            modelBuilder.Entity<HolidayTypeLocalization>()
+                .HasKey(htl => new { htl.HolidayTypeId, htl.LocalizationId });
+
+            modelBuilder.Entity<HolidayTypeLocalization>()
+                .HasOne(htl => htl.HolidayType)
+                .WithMany(ht => ht.HolidayTypeLocalizations)
+                .HasForeignKey(htl => htl.HolidayTypeId);
+
+            modelBuilder.Entity<HolidayTypeLocalization>()
+                .HasOne(htl => htl.Localization)
+                .WithMany(l => l.HolidayTypeLocalizations)
+                .HasForeignKey(htl => htl.LocalizationId);
+
+            #endregion
+
+            #region Holiday Behaviour Configuration
+
+            modelBuilder.Entity<HolidayBehaviour>()
+                .HasKey(hb => hb.HolidayBehaviourId);
+
+            #endregion
+
+            #region Holiday Behaviour Localization Configuration
+
+            modelBuilder.Entity<HolidayBehaviourLocalization>()
+                .HasKey(hbl => new { hbl.HolidayBehaviourId, hbl.LocalizationId });
+
+            modelBuilder.Entity<HolidayBehaviourLocalization>()
+                .HasOne(hbl => hbl.HolidayBehaviour)
+                .WithMany(hb => hb.HolidayBehaviourLocalizations)
+                .HasForeignKey(hbl => hbl.HolidayBehaviourId);
+
+            modelBuilder.Entity<HolidayBehaviourLocalization>()
+                .HasOne(hbl => hbl.Localization)
+                .WithMany(l => l.HolidayBehaviourLocalizations)
+                .HasForeignKey(hbl => hbl.LocalizationId);
+
+            #endregion
+
+            #region Holiday Catalog Configuration
+
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasKey(hc => hc.HolidayCatalogId);
+
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasOne(hc => hc.HolidayType)
+                .WithMany(ht => ht.HolidayCatalogs)
+                .HasForeignKey(hc => hc.HolidayTypeId);
+
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasOne(hc => hc.HolidayBehaviour)
+                .WithMany(hb => hb.HolidayCatalogs)
+                .HasForeignKey(hc => hc.HolidayBehaviourId);
+
+            #endregion
+
+            #region Holiday Catalog Localization Configuration
+
+            modelBuilder.Entity<HolidayCatalogLocalization>()
+                .HasKey(hcl => new { hcl.HolidayCatalogId, hcl.LocalizationId });
+
+            modelBuilder.Entity<HolidayCatalogLocalization>()
+                .HasOne(hcl => hcl.HolidayCatalog)
+                .WithMany(hc => hc.HolidayCatalogLocalizations)
+                .HasForeignKey(hcl => hcl.HolidayCatalogId);
+
+            modelBuilder.Entity<HolidayCatalogLocalization>()
+                .HasOne(hcl => hcl.Localization)
+                .WithMany(l => l.HolidayCatalogLocalizations)
+                .HasForeignKey(hcl => hcl.LocalizationId);
+
+            #endregion
+
+            #region Entity Holiday Configuration
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasKey(eh => eh.EntityHolidayId);
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasOne(eh => eh.Entity)
+                .WithMany(e => e.EntityHolidays)
+                .HasForeignKey(eh => eh.EntityId);
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasOne(eh => eh.HolidayCatalog)
+                .WithMany(hc => hc.EntityHolidays)
+                .HasForeignKey(eh => eh.HolidayCatalogId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasOne(eh => eh.HolidayBehaviour)
+                .WithMany(hb => hb.EntityHolidays)
+                .HasForeignKey(eh => eh.HolidayBehaviourId);
+
+            #endregion
+
             #region Database Indexes for Performance
+
+            // HolidayCatalog indexes
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasIndex(hc => hc.HolidayTypeId)
+                .HasDatabaseName("IX_HolidayCatalogs_HolidayTypeId");
+
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasIndex(hc => hc.HolidayBehaviourId)
+                .HasDatabaseName("IX_HolidayCatalogs_HolidayBehaviourId");
+
+            modelBuilder.Entity<HolidayCatalog>()
+                .HasIndex(hc => new { hc.RecurrenceMonth, hc.RecurrenceDay })
+                .HasDatabaseName("IX_HolidayCatalogs_RecurrenceDate");
+
+            // EntityHoliday indexes - frequently queried by entity
+            modelBuilder.Entity<EntityHoliday>()
+                .HasIndex(eh => eh.EntityId)
+                .HasDatabaseName("IX_EntityHolidays_EntityId");
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasIndex(eh => eh.HolidayCatalogId)
+                .HasDatabaseName("IX_EntityHolidays_HolidayCatalogId");
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasIndex(eh => eh.HolidayBehaviourId)
+                .HasDatabaseName("IX_EntityHolidays_HolidayBehaviourId");
+
+            modelBuilder.Entity<EntityHoliday>()
+                .HasIndex(eh => new { eh.EntityId, eh.CustomMonth, eh.CustomDay })
+                .HasDatabaseName("IX_EntityHolidays_EntityId_CustomDate");
 
             // EntityWorker indexes - highly queried table
             modelBuilder.Entity<EntityWorker>()

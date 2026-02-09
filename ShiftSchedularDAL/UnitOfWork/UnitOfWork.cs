@@ -359,6 +359,45 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _entityRepository = _entityRepository ?? new EntityRepository(_context, this); }
         }
 
+        private IHolidayTypeLocalizationRepository _holidayTypeLocalizationRepository;
+
+        /// <summary>
+        /// Repository for HolidayTypeLocalization operations.
+        /// </summary>
+        public IHolidayTypeLocalizationRepository HolidayTypeLocalizationRepository
+        {
+            get { return _holidayTypeLocalizationRepository = _holidayTypeLocalizationRepository ?? new HolidayTypeLocalizationRepository(_context, this); }
+        }
+
+        private IHolidayBehaviourLocalizationRepository _holidayBehaviourLocalizationRepository;
+
+        /// <summary>
+        /// Repository for HolidayBehaviourLocalization operations.
+        /// </summary>
+        public IHolidayBehaviourLocalizationRepository HolidayBehaviourLocalizationRepository
+        {
+            get { return _holidayBehaviourLocalizationRepository = _holidayBehaviourLocalizationRepository ?? new HolidayBehaviourLocalizationRepository(_context, this); }
+        }
+
+        private IHolidayCatalogLocalizationRepository _holidayCatalogLocalizationRepository;
+
+        /// <summary>
+        /// Repository for HolidayCatalogLocalization operations.
+        /// </summary>
+        public IHolidayCatalogLocalizationRepository HolidayCatalogLocalizationRepository
+        {
+            get { return _holidayCatalogLocalizationRepository = _holidayCatalogLocalizationRepository ?? new HolidayCatalogLocalizationRepository(_context, this); }
+        }
+
+        private IEntityHolidayRepository _entityHolidayRepository;
+
+        /// <summary>
+        /// Repository for EntityHoliday operations.
+        /// </summary>
+        public IEntityHolidayRepository EntityHolidayRepository
+        {
+            get { return _entityHolidayRepository = _entityHolidayRepository ?? new EntityHolidayRepository(_context, this); }
+        }
 
         #endregion
 
