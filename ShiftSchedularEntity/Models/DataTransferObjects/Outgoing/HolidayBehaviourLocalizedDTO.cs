@@ -4,5 +4,6 @@
     {
         public int HolidayBehaviourId { get; set; }
         public string HolidayBehaviourLocalizedName { get; set; }
+        public bool AllowsOperatingTimes { get; set; }
     }
 }

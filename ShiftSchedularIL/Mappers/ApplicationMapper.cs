@@ -309,7 +309,8 @@ namespace ShiftSchedularIL.Mappers
             // HolidayBehaviour Localization -> DTO
             CreateMap<HolidayBehaviourLocalization, HolidayBehaviourLocalizedDTO>()
                 .ForMember(dest => dest.HolidayBehaviourId, opt => opt.MapFrom(src => src.HolidayBehaviourId))
-                .ForMember(dest => dest.HolidayBehaviourLocalizedName, opt => opt.MapFrom(src => src.HolidayBehaviourDisplayValue));
+                .ForMember(dest => dest.HolidayBehaviourLocalizedName, opt => opt.MapFrom(src => src.HolidayBehaviourDisplayValue))
+                .ForMember(dest => dest.AllowsOperatingTimes, opt => opt.MapFrom(src => src.HolidayBehaviour.AllowsOperatingTimes));
 
             // HolidayCatalog Localization -> DTO
             CreateMap<HolidayCatalogLocalization, HolidayCatalogLocalizedDTO>()

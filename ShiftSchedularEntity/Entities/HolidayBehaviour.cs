@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
@@ -13,6 +14,9 @@ namespace ShiftSchedularEntity.Entities
         [Required]
         [MaxLength(100)]
         public string HolidayBehaviourName { get; set; }
+
+        [DefaultValue(true)]
+        public bool AllowsOperatingTimes { get; set; }
 
         #region Navigation Properties
 

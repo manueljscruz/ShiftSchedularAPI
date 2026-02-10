@@ -26,6 +26,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IGenericRepository<HolidayType> _holidayTypeRepository;
         private readonly IGenericRepository<HolidayBehaviour> _holidayBehaviourRepository;
         private readonly IGenericRepository<HolidayCatalog> _holidayCatalogRepository;
+        private readonly ILanguageAccessor _languageAccessor;
 
         #endregion
 
@@ -46,7 +47,8 @@ namespace ShiftSchedularBLL.Service
             IMapper mapper,
             IGenericRepository<HolidayType> holidayTypeRepository,
             IGenericRepository<HolidayBehaviour> holidayBehaviourRepository,
-            IGenericRepository<HolidayCatalog> holidayCatalogRepository)
+            IGenericRepository<HolidayCatalog> holidayCatalogRepository,
+            ILanguageAccessor languageAccessor)
         {
             _unitOfWork = unitOfWork;
             _generalService = generalService;
@@ -54,6 +56,7 @@ namespace ShiftSchedularBLL.Service
             _holidayTypeRepository = holidayTypeRepository;
             _holidayBehaviourRepository = holidayBehaviourRepository;
             _holidayCatalogRepository = holidayCatalogRepository;
+            _languageAccessor = languageAccessor;
         }
 
         #endregion
@@ -603,11 +606,6 @@ namespace ShiftSchedularBLL.Service
             if (viewModelRequestDTO == null || viewModelRequestDTO.EntityId == Guid.Empty)
                 return viewModel;
 
-            // Extract language code (handle format like "en-US" -> "en")
-            string languageCode = viewModelRequestDTO.LanguageCode;
-            if (!string.IsNullOrEmpty(languageCode) && languageCode.Contains("-"))
-                languageCode = languageCode.Split('-')[0];
-
             try
             {
                 // Determine if the worker is the owner of the entity
@@ -620,17 +618,17 @@ namespace ShiftSchedularBLL.Service
 
                 // Get Holiday Types Localized
                 IEnumerable<HolidayTypeLocalization> holidayTypeLocalizations =
-                    await _unitOfWork.HolidayTypeLocalizationRepository.GetHolidayTypesByLocalization(languageCode);
+                    await _unitOfWork.HolidayTypeLocalizationRepository.GetHolidayTypesByLocalization(_languageAccessor.GetLanguageCode());
                 viewModel.HolidayTypeDTOs = _mapper.Map<List<HolidayTypeLocalizedDTO>>(holidayTypeLocalizations);
 
                 // Get Holiday Behaviours Localized
                 IEnumerable<HolidayBehaviourLocalization> holidayBehaviourLocalizations =
-                    await _unitOfWork.HolidayBehaviourLocalizationRepository.GetHolidayBehavioursByLocalization(languageCode);
+                    await _unitOfWork.HolidayBehaviourLocalizationRepository.GetHolidayBehavioursByLocalization(_languageAccessor.GetLanguageCode());
                 viewModel.HolidayBehaviourDTOs = _mapper.Map<List<HolidayBehaviourLocalizedDTO>>(holidayBehaviourLocalizations);
 
                 // Get Holiday Catalog Localized
                 IEnumerable<HolidayCatalogLocalization> holidayCatalogLocalizations =
-                    await _unitOfWork.HolidayCatalogLocalizationRepository.GetHolidayCatalogsByLocalization(languageCode);
+                    await _unitOfWork.HolidayCatalogLocalizationRepository.GetHolidayCatalogsByLocalization(_languageAccessor.GetLanguageCode());
                 viewModel.HolidayCatalogDTOs = _mapper.Map<List<HolidayCatalogLocalizedDTO>>(holidayCatalogLocalizations);
 
                 // Get Entity Holidays

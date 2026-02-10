@@ -10,8 +10,8 @@
 
 namespace ShiftSchedularRL.Resources.Holidays {
     using System;
-
-
+    
+    
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -23,15 +23,15 @@ namespace ShiftSchedularRL.Resources.Holidays {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class HolidayRelatedMessages {
-
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal HolidayRelatedMessages() {
         }
-
+        
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -45,7 +45,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -59,16 +59,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 resourceCulture = value;
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while creating the entity holiday. Please try again later..
-        /// </summary>
-        public static string EntityHolidayCreateError {
-            get {
-                return ResourceManager.GetString("EntityHolidayCreateError", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Entity holiday created successfully..
         /// </summary>
@@ -77,16 +68,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("EntityHolidayCreatedSuccess", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while deleting the entity holiday. Please try again later..
+        ///   Looks up a localized string similar to An error occurred while creating the entity holiday. Please try again later..
         /// </summary>
-        public static string EntityHolidayDeleteError {
+        public static string EntityHolidayCreateError {
             get {
-                return ResourceManager.GetString("EntityHolidayDeleteError", resourceCulture);
+                return ResourceManager.GetString("EntityHolidayCreateError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Entity holiday deleted successfully..
         /// </summary>
@@ -95,7 +86,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("EntityHolidayDeletedSuccess", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while deleting the entity holiday. Please try again later..
+        /// </summary>
+        public static string EntityHolidayDeleteError {
+            get {
+                return ResourceManager.GetString("EntityHolidayDeleteError", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid entity holiday data provided..
         /// </summary>
@@ -104,7 +104,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("EntityHolidayInvalidData", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Entity holiday not found..
         /// </summary>
@@ -113,16 +113,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("EntityHolidayNotFound", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while updating the entity holiday. Please try again later..
-        /// </summary>
-        public static string EntityHolidayUpdateError {
-            get {
-                return ResourceManager.GetString("EntityHolidayUpdateError", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Entity holiday updated successfully..
         /// </summary>
@@ -131,16 +122,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("EntityHolidayUpdatedSuccess", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while deleting the holiday behaviour. Please try again later..
+        ///   Looks up a localized string similar to An error occurred while updating the entity holiday. Please try again later..
         /// </summary>
-        public static string HolidayBehaviourDeleteError {
+        public static string EntityHolidayUpdateError {
             get {
-                return ResourceManager.GetString("HolidayBehaviourDeleteError", resourceCulture);
+                return ResourceManager.GetString("EntityHolidayUpdateError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday behaviour deleted successfully..
         /// </summary>
@@ -149,7 +140,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayBehaviourDeletedSuccess", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while deleting the holiday behaviour. Please try again later..
+        /// </summary>
+        public static string HolidayBehaviourDeleteError {
+            get {
+                return ResourceManager.GetString("HolidayBehaviourDeleteError", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday behaviour data provided..
         /// </summary>
@@ -158,7 +158,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayBehaviourInvalidData", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday behaviour ID provided..
         /// </summary>
@@ -167,7 +167,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayBehaviourInvalidId", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday behaviour not found..
         /// </summary>
@@ -176,16 +176,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayBehaviourNotFound", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while updating the holiday behaviour. Please try again later..
-        /// </summary>
-        public static string HolidayBehaviourUpdateError {
-            get {
-                return ResourceManager.GetString("HolidayBehaviourUpdateError", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday behaviour updated successfully..
         /// </summary>
@@ -194,16 +185,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayBehaviourUpdatedSuccess", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while deleting the holiday catalog. Please try again later..
+        ///   Looks up a localized string similar to An error occurred while updating the holiday behaviour. Please try again later..
         /// </summary>
-        public static string HolidayCatalogDeleteError {
+        public static string HolidayBehaviourUpdateError {
             get {
-                return ResourceManager.GetString("HolidayCatalogDeleteError", resourceCulture);
+                return ResourceManager.GetString("HolidayBehaviourUpdateError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday catalog entry deleted successfully..
         /// </summary>
@@ -212,7 +203,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayCatalogDeletedSuccess", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while deleting the holiday catalog. Please try again later..
+        /// </summary>
+        public static string HolidayCatalogDeleteError {
+            get {
+                return ResourceManager.GetString("HolidayCatalogDeleteError", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday catalog data provided..
         /// </summary>
@@ -221,7 +221,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayCatalogInvalidData", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday catalog ID provided..
         /// </summary>
@@ -230,7 +230,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayCatalogInvalidId", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday catalog entry not found..
         /// </summary>
@@ -239,16 +239,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayCatalogNotFound", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while updating the holiday catalog. Please try again later..
-        /// </summary>
-        public static string HolidayCatalogUpdateError {
-            get {
-                return ResourceManager.GetString("HolidayCatalogUpdateError", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday catalog updated successfully..
         /// </summary>
@@ -257,16 +248,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayCatalogUpdatedSuccess", resourceCulture);
             }
         }
-
+        
         /// <summary>
-        ///   Looks up a localized string similar to An error occurred while deleting the holiday type. Please try again later..
+        ///   Looks up a localized string similar to An error occurred while updating the holiday catalog. Please try again later..
         /// </summary>
-        public static string HolidayTypeDeleteError {
+        public static string HolidayCatalogUpdateError {
             get {
-                return ResourceManager.GetString("HolidayTypeDeleteError", resourceCulture);
+                return ResourceManager.GetString("HolidayCatalogUpdateError", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday type deleted successfully..
         /// </summary>
@@ -275,7 +266,16 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayTypeDeletedSuccess", resourceCulture);
             }
         }
-
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while deleting the holiday type. Please try again later..
+        /// </summary>
+        public static string HolidayTypeDeleteError {
+            get {
+                return ResourceManager.GetString("HolidayTypeDeleteError", resourceCulture);
+            }
+        }
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday type data provided..
         /// </summary>
@@ -284,7 +284,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayTypeInvalidData", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Invalid holiday type ID provided..
         /// </summary>
@@ -293,7 +293,7 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayTypeInvalidId", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday type not found..
         /// </summary>
@@ -302,22 +302,22 @@ namespace ShiftSchedularRL.Resources.Holidays {
                 return ResourceManager.GetString("HolidayTypeNotFound", resourceCulture);
             }
         }
-
-        /// <summary>
-        ///   Looks up a localized string similar to An error occurred while updating the holiday type. Please try again later..
-        /// </summary>
-        public static string HolidayTypeUpdateError {
-            get {
-                return ResourceManager.GetString("HolidayTypeUpdateError", resourceCulture);
-            }
-        }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to Holiday type updated successfully..
         /// </summary>
         public static string HolidayTypeUpdatedSuccess {
             get {
                 return ResourceManager.GetString("HolidayTypeUpdatedSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while updating the holiday type. Please try again later..
+        /// </summary>
+        public static string HolidayTypeUpdateError {
+            get {
+                return ResourceManager.GetString("HolidayTypeUpdateError", resourceCulture);
             }
         }
     }

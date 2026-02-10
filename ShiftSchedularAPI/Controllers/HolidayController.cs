@@ -226,7 +226,6 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
-
         #region Add Holiday Catalog
 
         [HttpPost("holiday-catalog/add")]
@@ -315,7 +314,6 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
-
 
         #region Add Entity Holiday
 
