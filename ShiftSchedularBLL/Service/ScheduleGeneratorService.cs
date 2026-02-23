@@ -26,6 +26,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityService _entityService;
         private readonly ISkillService _skillService;
         private readonly IEntityScheduleService _entityScheduleService;
+        private readonly IHolidayService _holidayService;
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILanguageAccessor _languageAccessor;
@@ -40,6 +41,7 @@ namespace ShiftSchedularBLL.Service
             IEntityService entityService,
             ISkillService skillService,
             IEntityScheduleService entityScheduleService,
+            IHolidayService holidayService,
             IMapper mapper,
             IGenericRepository<BusinessAspect> businessAspectRepository,
             ILanguageAccessor languageAccessor
@@ -53,6 +55,7 @@ namespace ShiftSchedularBLL.Service
             _businessAspectRepository = businessAspectRepository;
             _skillService = skillService;
             _entityScheduleService = entityScheduleService;
+            _holidayService = holidayService;
             _mapper = mapper;
             _generalService = generalService;
             _languageAccessor = languageAccessor;
@@ -90,6 +93,7 @@ namespace ShiftSchedularBLL.Service
                         List<EntityRuleDTO> ruleDTOs = new List<EntityRuleDTO>();
                         List<EntityWorkerMemberDTO> entityWorkerMemberDTOs = new List<EntityWorkerMemberDTO>();
                         List<SkillLocalizedDTO> entitySkills = new List<SkillLocalizedDTO>();
+                        List<EntityHolidayDTO> entityHolidayDTOs = new List<EntityHolidayDTO>();
 
                         // Get Shifts
                         if (createEntityScheduleDTO.FilteredShifts.Count() == 0)
@@ -115,6 +119,9 @@ namespace ShiftSchedularBLL.Service
                             EntityId = createEntityScheduleDTO.EntityId
                         });
 
+                        // Get Entity Holidays
+                        entityHolidayDTOs = await _holidayService.GetEntityHolidaysByPeriod(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
+
                         #endregion
 
                         #region Get Shift Rotation
@@ -124,6 +131,8 @@ namespace ShiftSchedularBLL.Service
                         #endregion
 
                         #region Create Shift Entries
+
+                        // TODO: TAKE ENTITY HOLIDAYS INTO ACCOUNT!!
 
                         DateTime cycleDate = createEntityScheduleDTO.StartDate;
 

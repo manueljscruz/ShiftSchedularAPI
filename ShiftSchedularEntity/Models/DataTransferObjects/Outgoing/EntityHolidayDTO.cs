@@ -19,7 +19,5 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Outgoing
         public TimeSpan? OperatingEndTime { get; set; }
         public bool IsActive { get; set; }
         public string Notes { get; set; }
-
-
     }
 }

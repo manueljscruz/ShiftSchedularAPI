@@ -35,14 +35,24 @@ namespace ShiftSchedularDAL.Repositories
         /// </summary>
         /// <param name="entityId">The unique identifier of the entity</param>
         /// <returns>A collection of EntityHoliday records for the specified entity</returns>
-        public async Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId)
+        public async Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode)
         {
             if (entityId == Guid.Empty)
                 return Enumerable.Empty<EntityHoliday>();
 
+            Localization localization = await _unitOfWork.LocalizationRepository.GetLocalizationByLanguageCode(languageCode);
+
             return await _dbSet
                 .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayCatalogLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                 .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayType)
+                        .ThenInclude(ht => ht.HolidayTypeLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayBehaviour)
+                        .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Include(eh => eh.HolidayBehaviour)
+                    .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Where(eh => eh.EntityId.Equals(entityId))
                 .ToListAsync();
         }
@@ -53,14 +63,24 @@ namespace ShiftSchedularDAL.Repositories
         /// </summary>
         /// <param name="entityHolidayId">The unique identifier of the entity holiday</param>
         /// <returns>The EntityHoliday record if found, otherwise null</returns>
-        public async Task<EntityHoliday> GetEntityHolidayById(Guid entityHolidayId)
+        public async Task<EntityHoliday> GetEntityHolidayById(Guid entityHolidayId, string languageCode)
         {
             if (entityHolidayId == Guid.Empty)
                 return null;
 
+            Localization localization = await _unitOfWork.LocalizationRepository.GetLocalizationByLanguageCode(languageCode);
+
             return await _dbSet
                 .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayCatalogLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                 .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayType)
+                        .ThenInclude(ht => ht.HolidayTypeLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayBehaviour)
+                        .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Include(eh => eh.HolidayBehaviour)
+                    .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .FirstOrDefaultAsync(eh => eh.EntityHolidayId.Equals(entityHolidayId));
         }
 
@@ -72,16 +92,25 @@ namespace ShiftSchedularDAL.Repositories
         /// <param name="pageNumber">The page number (1-based)</param>
         /// <param name="pageSize">The number of records per page</param>
         /// <returns>A paginated list of EntityHoliday records</returns>
-        public async Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize)
+        public async Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize, string languageCode)
         {
             if (entityId == Guid.Empty)
                 return PagedList<EntityHoliday>.CreateEmpty();
 
+            Localization localization = await _unitOfWork.LocalizationRepository.GetLocalizationByLanguageCode(languageCode);
+
             // Build the base query
             var baseQuery = _dbSet
                 .Include(eh => eh.HolidayCatalog)
-                    //.ThenInclude(eh => eh.HolidayCatalogLocalizations)
+                    .ThenInclude(hc => hc.HolidayCatalogLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                 .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayType)
+                        .ThenInclude(ht => ht.HolidayTypeLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
+                .Include(eh => eh.HolidayCatalog)
+                    .ThenInclude(hc => hc.HolidayBehaviour)
+                        .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Include(eh => eh.HolidayBehaviour)
+                    .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Where(eh => eh.EntityId.Equals(entityId))
                 .OrderBy(eh => eh.CustomMonth)
                 .ThenBy(eh => eh.CustomDay);

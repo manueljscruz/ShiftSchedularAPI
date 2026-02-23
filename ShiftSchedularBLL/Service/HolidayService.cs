@@ -61,7 +61,9 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region HolidayType Methods
+        #region Holiday Type Methods
+
+        #region Add Holiday Type
 
         /// <summary>
         /// Adds a new holiday type to the system.
@@ -83,6 +85,10 @@ namespace ShiftSchedularBLL.Service
             return newHolidayType.HolidayTypeId;
         }
 
+        #endregion
+
+        #region Get Holiday Type By Id
+
         /// <summary>
         /// Retrieves a holiday type by its unique identifier.
         /// </summary>
@@ -95,6 +101,10 @@ namespace ShiftSchedularBLL.Service
 
             return await _holidayTypeRepository.GetById(id);
         }
+
+        #endregion
+
+        #region Update Holiday Type
 
         /// <summary>
         /// Updates an existing holiday type.
@@ -136,6 +146,10 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Delete Holiday Type
+
         /// <summary>
         /// Deletes a holiday type by its unique identifier.
         /// </summary>
@@ -169,7 +183,11 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #endregion
+
         #region HolidayBehaviour Methods
+
+        #region Add Holiday Behaviour
 
         /// <summary>
         /// Adds a new holiday behaviour to the system.
@@ -191,6 +209,10 @@ namespace ShiftSchedularBLL.Service
             return newHolidayBehaviour.HolidayBehaviourId;
         }
 
+        #endregion
+
+        #region Get Holiday Behaviour By Id
+
         /// <summary>
         /// Retrieves a holiday behaviour by its unique identifier.
         /// </summary>
@@ -203,6 +225,10 @@ namespace ShiftSchedularBLL.Service
 
             return await _holidayBehaviourRepository.GetById(id);
         }
+
+        #endregion
+
+        #region Update Holiday Behaviour
 
         /// <summary>
         /// Updates an existing holiday behaviour.
@@ -244,6 +270,10 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Delete Holiday Behaviour
+
         /// <summary>
         /// Deletes a holiday behaviour by its unique identifier.
         /// </summary>
@@ -277,7 +307,11 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #endregion
+
         #region HolidayCatalog Methods
+
+        #region Add Holiday Catalog
 
         /// <summary>
         /// Adds a new holiday catalog entry to the system.
@@ -295,6 +329,10 @@ namespace ShiftSchedularBLL.Service
             return newCatalog.HolidayCatalogId;
         }
 
+        #endregion
+
+        #region Get Holiday Catalog By Id
+
         /// <summary>
         /// Retrieves a holiday catalog entry by its unique identifier.
         /// </summary>
@@ -307,6 +345,10 @@ namespace ShiftSchedularBLL.Service
 
             return await _holidayCatalogRepository.GetById(id);
         }
+
+        #endregion
+
+        #region Update Holiday Catalog
 
         /// <summary>
         /// Updates an existing holiday catalog entry.
@@ -357,6 +399,10 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Delete Holiday Catalog
+
         /// <summary>
         /// Deletes a holiday catalog entry by its unique identifier.
         /// </summary>
@@ -390,7 +436,11 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region EntityHoliday Methods
+        #endregion
+
+        #region Entity Holiday Methods
+
+        #region Add Entity Holiday
 
         /// <summary>
         /// Adds a new entity holiday (custom or from catalog) to the system.
@@ -421,7 +471,7 @@ namespace ShiftSchedularBLL.Service
                 await _unitOfWork.CommitAsync();
 
                 // Retrieve the created entity with navigation properties
-                EntityHoliday createdHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHoliday.EntityHolidayId);
+                EntityHoliday createdHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHoliday.EntityHolidayId, _languageAccessor.GetLanguageCode());
                 EntityHolidayDTO resultDTO = _mapper.Map<EntityHolidayDTO>(createdHoliday);
 
                 response.Success = true;
@@ -441,6 +491,10 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Get Entity Holiday By Id
+
         /// <summary>
         /// Retrieves an entity holiday by its unique identifier.
         /// </summary>
@@ -451,13 +505,17 @@ namespace ShiftSchedularBLL.Service
             if (id == Guid.Empty)
                 return null;
 
-            EntityHoliday entityHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(id);
+            EntityHoliday entityHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(id, _languageAccessor.GetLanguageCode());
 
             if (entityHoliday == null)
                 return null;
 
             return _mapper.Map<EntityHolidayDTO>(entityHoliday);
         }
+
+        #endregion
+
+        #region Get Entity Holidays Pagination
 
         /// <summary>
         /// Retrieves a paginated list of entity holidays for a specific entity.
@@ -473,7 +531,8 @@ namespace ShiftSchedularBLL.Service
             PagedList<EntityHoliday> pagedHolidays = await _unitOfWork.EntityHolidayRepository.GetEntityHolidaysPaginated(
                 entityHolidaysPaginationRequest.EntityId,
                 entityHolidaysPaginationRequest.NextPage,
-                entityHolidaysPaginationRequest.ItemsPerPage);
+                entityHolidaysPaginationRequest.ItemsPerPage, 
+                _languageAccessor.GetLanguageCode());
 
             // Map the Data list to DTOs
             List<EntityHolidayDTO> holidayDTOs = _mapper.Map<List<EntityHolidayDTO>>(pagedHolidays.Data);
@@ -485,11 +544,15 @@ namespace ShiftSchedularBLL.Service
                 pagedHolidays.PageSize);
         }
 
+        #endregion
+
+        #region Update Entity Holiday
+
         /// <summary>
         /// Updates an existing entity holiday.
         /// </summary>
         /// <param name="entityHolidayDTO">The entity holiday DTO with updated values</param>
-        /// <returns>A BaseResponse indicating success or failure</returns>
+        /// <returns>A BaseResponse containing the updated EntityHolidayDTO</returns>
         public async Task<BaseResponse<bool>> UpdateEntityHoliday(EntityHolidayDTO entityHolidayDTO)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
@@ -500,11 +563,13 @@ namespace ShiftSchedularBLL.Service
                 return response;
             }
 
+            string languageCode = _languageAccessor.GetLanguageCode();
+
             try
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                EntityHoliday existingHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.EntityHolidayId);
+                EntityHoliday existingHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.EntityHolidayId, languageCode);
 
                 if (existingHoliday == null)
                 {
@@ -513,6 +578,7 @@ namespace ShiftSchedularBLL.Service
                 }
 
                 // Update fields
+                existingHoliday.HolidayBehaviourId = entityHolidayDTO.HolidayBehaviourLocalized.HolidayBehaviourId;
                 existingHoliday.CustomHolidayName = entityHolidayDTO.CustomHolidayName;
                 existingHoliday.CustomDay = entityHolidayDTO.CustomDay;
                 existingHoliday.CustomMonth = entityHolidayDTO.CustomMonth;
@@ -521,9 +587,20 @@ namespace ShiftSchedularBLL.Service
                 existingHoliday.IsActive = entityHolidayDTO.IsActive;
                 existingHoliday.Notes = entityHolidayDTO.Notes;
 
+                // Clear catalog association if this is now a custom holiday
+                // (indicated by having a non-empty CustomHolidayName and no catalog reference)
+                if (!string.IsNullOrWhiteSpace(entityHolidayDTO.CustomHolidayName) && entityHolidayDTO.HolidayCatalog == null)
+                {
+                    existingHoliday.HolidayCatalogId = null;
+                }
+
                 await _unitOfWork.EntityHolidayRepository.Update(existingHoliday);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
+
+                // Retrieve the updated entity with navigation properties
+                EntityHoliday updatedHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.EntityHolidayId, languageCode);
+                EntityHolidayDTO resultDTO = _mapper.Map<EntityHolidayDTO>(updatedHoliday);
 
                 response.Success = true;
                 response.Result = true;
@@ -542,18 +619,29 @@ namespace ShiftSchedularBLL.Service
             return response;
         }
 
+        #endregion
+
+        #region Delete Entity Holiday
+
         /// <summary>
         /// Deletes an entity holiday.
         /// </summary>
         /// <param name="entityHolidayDTO">The entity holiday DTO containing the ID to delete</param>
         /// <returns>A BaseResponse indicating success or failure</returns>
-        public async Task<BaseResponse<bool>> DeleteEntityHoliday(EntityHolidayDTO entityHolidayDTO)
+        public async Task<BaseResponse<bool>> DeleteEntityHoliday(DeleteEntityObjectDTO entityHolidayDTO)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
 
-            if (entityHolidayDTO == null || entityHolidayDTO.EntityHolidayId == Guid.Empty)
+            if (entityHolidayDTO == null || entityHolidayDTO.ObjectId == Guid.Empty)
             {
                 response.Message = HolidayRelatedMessages.EntityHolidayInvalidData;
+                return response;
+            }
+
+            EntityHoliday entityHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.ObjectId, _languageAccessor.GetLanguageCode());
+            if(entityHoliday == null)
+            {
+                response.Message = HolidayRelatedMessages.EntityHolidayNotFound;
                 return response;
             }
 
@@ -561,7 +649,7 @@ namespace ShiftSchedularBLL.Service
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.EntityHolidayRepository.Delete(entityHolidayDTO.EntityHolidayId);
+                await _unitOfWork.EntityHolidayRepository.Delete(entityHolidayDTO.ObjectId);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
 
@@ -584,6 +672,8 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #endregion
+
         #region Get Entity Holidays View Model
 
         /// <summary>
@@ -592,7 +682,7 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="viewModelRequestDTO">The view model request containing entity ID and language code</param>
         /// <returns>An EntityHolidaysViewModel populated with all required data</returns>
-        public async Task<EntityHolidaysViewModel> GetEntityHolidaysViewModel(BaseViewModelRequest viewModelRequestDTO)
+        public async Task<EntityHolidaysViewModel> GetEntityHolidaysViewModel(PagedModelRequest viewModelRequestDTO)
         {
             EntityHolidaysViewModel viewModel = new EntityHolidaysViewModel
             {
@@ -600,7 +690,7 @@ namespace ShiftSchedularBLL.Service
                 HolidayCatalogDTOs = new List<HolidayCatalogLocalizedDTO>(),
                 HolidayBehaviourDTOs = new List<HolidayBehaviourLocalizedDTO>(),
                 HolidayTypeDTOs = new List<HolidayTypeLocalizedDTO>(),
-                EntityHolidayDTOs = new List<EntityHolidayDTO>()
+                EntityHolidayDTOs = PagedList<EntityHolidayDTO>.CreateEmpty()
             };
 
             if (viewModelRequestDTO == null || viewModelRequestDTO.EntityId == Guid.Empty)
@@ -632,12 +722,11 @@ namespace ShiftSchedularBLL.Service
                 viewModel.HolidayCatalogDTOs = _mapper.Map<List<HolidayCatalogLocalizedDTO>>(holidayCatalogLocalizations);
 
                 // Get Entity Holidays
-                IEnumerable<EntityHoliday> entityHolidays =
-                    await _unitOfWork.EntityHolidayRepository.GetEntityHolidays(viewModelRequestDTO.EntityId);
-                viewModel.EntityHolidayDTOs = _mapper.Map<List<EntityHolidayDTO>>(entityHolidays);
+                viewModel.EntityHolidayDTOs = await GetEntityHolidaysPagination(viewModelRequestDTO);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                string strErr = ex.Message;
                 // Return empty view model on error
                 // Consider logging the exception
             }

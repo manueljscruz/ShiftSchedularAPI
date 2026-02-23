@@ -29,7 +29,7 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entity-holidays-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityHolidaysViewModel([FromBody] BaseViewModelRequest viewModelRequestDTO)
+        public async Task<IActionResult> GetEntityHolidaysViewModel([FromBody] PagedModelRequest viewModelRequestDTO)
         {
             if (viewModelRequestDTO == null)
             {
@@ -384,7 +384,7 @@ namespace ShiftSchedularAPI.Controllers
 
         [HttpPut("entity-holiday/update")]
         [Authorize]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateEntityHoliday([FromBody] EntityHolidayDTO entityHolidayDTO)
         {
@@ -395,7 +395,7 @@ namespace ShiftSchedularAPI.Controllers
             BaseResponse<bool> response = await _holidayService.UpdateEntityHoliday(entityHolidayDTO);
 
             if (response.Success)
-                return NoContent();
+                return Ok(response);
             else
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
         }
@@ -409,7 +409,7 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteEntityHoliday([FromBody] EntityHolidayDTO entityHolidayDTO)
+        public async Task<IActionResult> DeleteEntityHoliday([FromBody] DeleteEntityObjectDTO entityHolidayDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest();

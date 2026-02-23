@@ -45,7 +45,10 @@ namespace ShiftSchedularDAL.Repositories
             Localization localization = await _localizationRepository.GetLocalizationByLanguageCode(languageCode);
 
             if (localization != null)
-                return await _dbSet.Where(hbl => hbl.LocalizationId.Equals(localization.LocalizationId)).ToListAsync();
+                return await _dbSet
+                    .Include(hbl => hbl.HolidayBehaviour)
+                    .Where(hbl => hbl.LocalizationId.Equals(localization.LocalizationId))
+                    .ToListAsync();
 
             return Enumerable.Empty<HolidayBehaviourLocalization>();
         }

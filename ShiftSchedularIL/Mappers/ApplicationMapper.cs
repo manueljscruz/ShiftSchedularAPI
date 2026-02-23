@@ -320,13 +320,17 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.IsRecurring, opt => opt.MapFrom(src => src.IsRecurring))
                 .ForMember(dest => dest.RecurrenceDay, opt => opt.MapFrom(src => src.RecurrenceDay))
                 .ForMember(dest => dest.RecurrenceMonth, opt => opt.MapFrom(src => src.RecurrenceMonth))
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+                .ForMember(dest => dest.HolidayTypeLocalized, opt => opt.MapFrom(src => src.HolidayCatalog.HolidayType.HolidayTypeLocalizations.FirstOrDefault()))
+                .ForMember(dest => dest.HolidayBehaviourLocalized, opt => opt.MapFrom(src => src.HolidayCatalog.HolidayBehaviour.HolidayBehaviourLocalizations.FirstOrDefault()));
 
             // EntityHoliday -> DTO
             CreateMap<EntityHoliday, EntityHolidayDTO>()
                 .ForMember(dest => dest.EntityHolidayId, opt => opt.MapFrom(src => src.EntityHolidayId))
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
-                .ForMember(dest => dest.CustomHolidayName, opt => opt.MapFrom(src => src.CustomHolidayName))
+                .ForMember(dest => dest.HolidayCatalog, opt => opt.MapFrom(src => src.HolidayCatalog != null? src.HolidayCatalog.HolidayCatalogLocalizations.FirstOrDefault() : null))
+                .ForMember(dest => dest.HolidayBehaviourLocalized, opt => opt.MapFrom(src => src.HolidayBehaviour != null ? src.HolidayBehaviour.HolidayBehaviourLocalizations.FirstOrDefault() : null))
+                .ForMember(dest => dest.CustomHolidayName, opt => opt.MapFrom(src => src.HolidayCatalog != null? src.HolidayCatalog.HolidayName : src.CustomHolidayName))
                 .ForMember(dest => dest.CustomDay, opt => opt.MapFrom(src => src.CustomDay))
                 .ForMember(dest => dest.CustomMonth, opt => opt.MapFrom(src => src.CustomMonth))
                 .ForMember(dest => dest.OperatingStartTime, opt => opt.MapFrom(src => src.OperatingStartTime))
