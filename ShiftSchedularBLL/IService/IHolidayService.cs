@@ -22,7 +22,7 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteHolidayCatalog(int id);
         Task<BaseResponse<bool>> DeleteHolidayType(int id);
         Task<EntityHolidayDTO> GetEntityHolidayById(Guid id);
-        Task<List<EntityHolidayDTO>> GetEntityHolidaysByPeriod(Guid entityId, DateTime startDate, DateTime endDate);
+        Task<List<EntityHolidayDTO>> GetEntityHolidaysByPeriod(Guid entityId, bool includeInactive, DateTime startDate, DateTime endDate);
         Task<PagedList<EntityHolidayDTO>> GetEntityHolidaysPagination(PagedModelRequest entityHolidaysPaginationRequest);
         Task<EntityHolidaysViewModel> GetEntityHolidaysViewModel(PagedModelRequest viewModelRequestDTO);
         Task<HolidayBehaviour> GetHolidayBehaviourById(int id);

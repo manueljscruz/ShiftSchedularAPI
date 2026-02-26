@@ -743,23 +743,43 @@ namespace ShiftSchedularBLL.Service
 
         #region Create Base Schedule Entry
 
-        public async Task<ScheduleEntry> CreateBaseScheduleEntry(ShiftDTO shift, DateTime date)
+        public async Task<ScheduleEntry> CreateBaseScheduleEntry(ShiftDTO shift, DateTime date, EntityHolidayDTO entityHolidayDTO = null)
         {
-            var entry = new ScheduleEntry
-            {
-                ScheduleEntryId = Guid.NewGuid(),
-                ShiftId = shift.ShiftId,
-                ScheduleStartDate = date.Add(shift.ShiftStartHour),
-            };
+            bool isOperationalConstricted = false;
+            if (entityHolidayDTO != null && entityHolidayDTO.OperatingStartTime.HasValue && entityHolidayDTO.OperatingEndTime.HasValue)
+                isOperationalConstricted = true;
 
             var breakDuration = shift.ShiftBreakDTOs
                 .Where(sb => sb.IncludedInShift)
                 .Select(sb => sb.ShiftBreakDuration)
                 .Aggregate(TimeSpan.Zero, (sum, next) => sum.Add(next));
 
-            entry.ScheduleEndDate = entry.ScheduleStartDate
-                .Add(shift.ShiftDuration)
-                .Add(breakDuration);
+            var shiftStart = date.Add(shift.ShiftStartHour);
+            var shiftEnd = shiftStart.Add(shift.ShiftDuration)
+                            .Add(breakDuration);
+
+            // If there is a holiday with operational constrictions
+            if (isOperationalConstricted)
+            {
+                var opStart = date.Add(entityHolidayDTO.OperatingStartTime.Value);
+                var opEnd = date.Add(entityHolidayDTO.OperatingEndTime.Value);
+
+                // Doesn't overlap, meaning its completely outside the operating times
+                if (shiftStart >= opEnd || shiftEnd <= opStart)
+                    return null;
+
+                // Check overlaps and adjust timers
+                shiftStart = shiftStart < opStart ? opStart : shiftStart;
+                shiftEnd = shiftEnd > opEnd ? opEnd : shiftEnd;
+            }
+
+            var entry = new ScheduleEntry
+            {
+                ScheduleEntryId = Guid.NewGuid(),
+                ShiftId = shift.ShiftId,
+                ScheduleStartDate = shiftStart,
+                ScheduleEndDate = shiftEnd
+            };
 
             entry = await _unitOfWork.EntityScheduleRepository.Add(entry);
 

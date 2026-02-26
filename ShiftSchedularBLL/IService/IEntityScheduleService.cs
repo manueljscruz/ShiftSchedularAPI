@@ -17,6 +17,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> SaveScheduleEntries(ScheduleEntryDTO[] scheduleEntryDTOs);
         Task<BaseResponse<bool>> DeleteWorkerScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO);
         Task<BaseResponse<bool>> DeleteScheduleEntries(DeleteIntervalWorkerScheduleEntriesDTO intervalWorkerScheduleEntriesDTO);
-        Task<ScheduleEntry> CreateBaseScheduleEntry(ShiftDTO shift, DateTime date);
+        Task<ScheduleEntry> CreateBaseScheduleEntry(ShiftDTO shift, DateTime date, EntityHolidayDTO entityHolidayDTO = null);
     }
 }

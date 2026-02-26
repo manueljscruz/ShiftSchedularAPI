@@ -185,7 +185,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region HolidayBehaviour Methods
+        #region Holiday Behaviour Methods
 
         #region Add Holiday Behaviour
 
@@ -309,7 +309,7 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
-        #region HolidayCatalog Methods
+        #region Holiday Catalog Methods
 
         #region Add Holiday Catalog
 
@@ -531,8 +531,9 @@ namespace ShiftSchedularBLL.Service
             PagedList<EntityHoliday> pagedHolidays = await _unitOfWork.EntityHolidayRepository.GetEntityHolidaysPaginated(
                 entityHolidaysPaginationRequest.EntityId,
                 entityHolidaysPaginationRequest.NextPage,
-                entityHolidaysPaginationRequest.ItemsPerPage, 
-                _languageAccessor.GetLanguageCode());
+                entityHolidaysPaginationRequest.ItemsPerPage,
+                _languageAccessor.GetLanguageCode(),
+                entityHolidaysPaginationRequest.ShowInactive);
 
             // Map the Data list to DTOs
             List<EntityHolidayDTO> holidayDTOs = _mapper.Map<List<EntityHolidayDTO>>(pagedHolidays.Data);
@@ -599,8 +600,8 @@ namespace ShiftSchedularBLL.Service
                 await _unitOfWork.CommitAsync();
 
                 // Retrieve the updated entity with navigation properties
-                EntityHoliday updatedHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.EntityHolidayId, languageCode);
-                EntityHolidayDTO resultDTO = _mapper.Map<EntityHolidayDTO>(updatedHoliday);
+                //EntityHoliday updatedHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.EntityHolidayId, languageCode);
+                //EntityHolidayDTO resultDTO = _mapper.Map<EntityHolidayDTO>(updatedHoliday);
 
                 response.Success = true;
                 response.Result = true;
@@ -639,7 +640,7 @@ namespace ShiftSchedularBLL.Service
             }
 
             EntityHoliday entityHoliday = await _unitOfWork.EntityHolidayRepository.GetEntityHolidayById(entityHolidayDTO.ObjectId, _languageAccessor.GetLanguageCode());
-            if(entityHoliday == null)
+            if (entityHoliday == null)
             {
                 response.Message = HolidayRelatedMessages.EntityHolidayNotFound;
                 return response;
@@ -669,8 +670,6 @@ namespace ShiftSchedularBLL.Service
 
             return response;
         }
-
-        #endregion
 
         #endregion
 
@@ -735,5 +734,37 @@ namespace ShiftSchedularBLL.Service
         }
 
         #endregion
+
+        #region Get Entity Holidays By Period
+
+        /// <summary>
+        /// Gets Entity Holidays that are within an interval of time
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        public async Task<List<EntityHolidayDTO>> GetEntityHolidaysByPeriod(Guid entityId, bool includeInactive, DateTime startDate, DateTime endDate)
+        {
+            // Validate if entity id is not empty and are valid dates
+            if (entityId == Guid.Empty || startDate > endDate)
+            {
+                return new List<EntityHolidayDTO>();
+            }
+
+            // Get Language Code
+            string languageCode = _languageAccessor.GetLanguageCode();
+
+            // Get entity holidays within interval and map them into DTO
+            IEnumerable<EntityHoliday> entityHolidays = await _unitOfWork.EntityHolidayRepository.GetEntityHolidays(entityId, languageCode, includeInactive, startDate, endDate);
+
+            return _mapper.Map<List<EntityHolidayDTO>>(entityHolidays);
+
+        }
+
+        #endregion
+
+        #endregion
+
     }
 }

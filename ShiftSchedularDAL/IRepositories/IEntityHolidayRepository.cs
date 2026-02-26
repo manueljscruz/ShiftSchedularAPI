@@ -14,7 +14,7 @@ namespace ShiftSchedularDAL.IRepositories
         /// </summary>
         /// <param name="entityId">The unique identifier of the entity</param>
         /// <returns>A collection of EntityHoliday records for the specified entity</returns>
-        Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode);
+        Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode, bool includeInactive = false, DateTime? startDateSearch = null, DateTime? endDateSearch = null);
 
         /// <summary>
         /// Retrieves a specific entity holiday by its unique identifier.
@@ -31,6 +31,6 @@ namespace ShiftSchedularDAL.IRepositories
         /// <param name="pageNumber">The page number (1-based)</param>
         /// <param name="pageSize">The number of records per page</param>
         /// <returns>A paginated list of EntityHoliday records</returns>
-        Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize, string languageCode);
+        Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize, string languageCode, bool includeInactive);
     }
 }

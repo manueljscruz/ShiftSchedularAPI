@@ -17,6 +17,8 @@ namespace ShiftSchedularDAL.Repositories
         private readonly DbSet<EntityHoliday> _dbSet;
         private readonly IUnitOfWork _unitOfWork;
 
+        #region Constructor
+
         /// <summary>
         /// Initializes a new instance of the EntityHolidayRepository.
         /// </summary>
@@ -29,20 +31,24 @@ namespace ShiftSchedularDAL.Repositories
             _dbSet = _context.Set<EntityHoliday>();
         }
 
+        #endregion
+
+        #region Get Entity Holidays
+
         /// <summary>
         /// Retrieves all holidays associated with a specific entity.
         /// Includes HolidayCatalog and HolidayBehaviour navigation properties.
         /// </summary>
         /// <param name="entityId">The unique identifier of the entity</param>
         /// <returns>A collection of EntityHoliday records for the specified entity</returns>
-        public async Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode)
+        public async Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode, bool includeInactive = false, DateTime? startDateSearch = null, DateTime? endDateSearch = null)
         {
             if (entityId == Guid.Empty)
                 return Enumerable.Empty<EntityHoliday>();
 
             Localization localization = await _unitOfWork.LocalizationRepository.GetLocalizationByLanguageCode(languageCode);
 
-            return await _dbSet
+            var results = await _dbSet
                 .Include(eh => eh.HolidayCatalog)
                     .ThenInclude(hc => hc.HolidayCatalogLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                  .Include(eh => eh.HolidayCatalog)
@@ -53,9 +59,45 @@ namespace ShiftSchedularDAL.Repositories
                         .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Include(eh => eh.HolidayBehaviour)
                     .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
-                .Where(eh => eh.EntityId.Equals(entityId))
-                .ToListAsync();
+                .Where(eh => eh.EntityId.Equals(entityId) && (includeInactive || eh.IsActive)).ToListAsync();
+
+            if(startDateSearch != null && endDateSearch != null)
+            {
+                int startYear = startDateSearch.Value.Year;
+                int endYear = endDateSearch.Value.Year;
+
+                return results.Where(i =>
+                    Enumerable.Range(startYear, endYear - startYear + 1)
+                        .Any(year =>
+                        {
+                            DateTime holidayDate = GetHolidayDate(i, year);
+                            return holidayDate >= startDateSearch.Value && holidayDate <= endDateSearch.Value;
+                        })
+                );
+            }
+
+            return results;
         }
+
+        #endregion
+
+        #region Aux : Get Holiday Date
+
+        /// <summary>
+        /// Used to facilitate the filtering of entity holidays by dates
+        /// Checks if its a custom holiday vs an existing holiday from the catalog
+        /// </summary>
+        /// <param name="h"></param>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        private DateTime GetHolidayDate(EntityHoliday h, int year) =>
+            h.HolidayCatalog != null
+                ? new DateTime(year, h.HolidayCatalog.RecurrenceMonth, h.HolidayCatalog.RecurrenceDay)
+                : new DateTime(year, h.CustomMonth, h.CustomDay);
+
+        #endregion
+
+        #region Get Entity Holiday By Id
 
         /// <summary>
         /// Retrieves a specific entity holiday by its unique identifier.
@@ -84,6 +126,10 @@ namespace ShiftSchedularDAL.Repositories
                 .FirstOrDefaultAsync(eh => eh.EntityHolidayId.Equals(entityHolidayId));
         }
 
+        #endregion
+
+        #region Get Entity Holidays Paginated
+
         /// <summary>
         /// Retrieves a paginated list of holidays for a specific entity.
         /// Includes HolidayCatalog and HolidayBehaviour navigation properties.
@@ -92,7 +138,7 @@ namespace ShiftSchedularDAL.Repositories
         /// <param name="pageNumber">The page number (1-based)</param>
         /// <param name="pageSize">The number of records per page</param>
         /// <returns>A paginated list of EntityHoliday records</returns>
-        public async Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize, string languageCode)
+        public async Task<PagedList<EntityHoliday>> GetEntityHolidaysPaginated(Guid entityId, int pageNumber, int pageSize, string languageCode, bool includeInactive)
         {
             if (entityId == Guid.Empty)
                 return PagedList<EntityHoliday>.CreateEmpty();
@@ -111,7 +157,7 @@ namespace ShiftSchedularDAL.Repositories
                         .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
                 .Include(eh => eh.HolidayBehaviour)
                     .ThenInclude(hb => hb.HolidayBehaviourLocalizations.Where(i => i.LocalizationId.Equals(localization.LocalizationId)))
-                .Where(eh => eh.EntityId.Equals(entityId))
+                .Where(eh => eh.EntityId.Equals(entityId) && (includeInactive || eh.IsActive))
                 .OrderBy(eh => eh.CustomMonth)
                 .ThenBy(eh => eh.CustomDay);
 
@@ -126,5 +172,7 @@ namespace ShiftSchedularDAL.Repositories
 
             return PagedList<EntityHoliday>.Create(pagedItems.AsQueryable(), totalCount, pageNumber, pageSize);
         }
+
+        #endregion
     }
 }

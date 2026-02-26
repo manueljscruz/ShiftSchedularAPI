@@ -71,7 +71,7 @@ namespace ShiftSchedularBLL.Service
                 dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.Worker.Equals(entityWorkerMemberDTO))).ToList();
 
             // Get Absences
-            PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, 0, 1, 20);
+            PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, 0, 1, 20, false);
             dashboardEntityViewModel.EntityWorkerAbsenceEntries = await _entityWorkerAbsenceService.GetEntityWorkerAbsences(absencesRequest);
 
             // Get Statistics

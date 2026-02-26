@@ -120,7 +120,7 @@ namespace ShiftSchedularBLL.Service
                         });
 
                         // Get Entity Holidays
-                        entityHolidayDTOs = await _holidayService.GetEntityHolidaysByPeriod(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
+                        entityHolidayDTOs = await _holidayService.GetEntityHolidaysByPeriod(createEntityScheduleDTO.EntityId, false, createEntityScheduleDTO.StartDate, createEntityScheduleDTO.EndDate);
 
                         #endregion
 
@@ -132,39 +132,47 @@ namespace ShiftSchedularBLL.Service
 
                         #region Create Shift Entries
 
-                        // TODO: TAKE ENTITY HOLIDAYS INTO ACCOUNT!!
-
                         DateTime cycleDate = createEntityScheduleDTO.StartDate;
 
                         while (cycleDate <= createEntityScheduleDTO.EndDate)
                         {
+                            EntityHolidayDTO entityHolidayDTO = entityHolidayDTOs.Where(i => GetHolidayDate(i, cycleDate.Year).Equals(cycleDate)).FirstOrDefault();
+
+                            bool behaviourEligible = false;
+                            if (entityHolidayDTO == null || entityHolidayDTO.HolidayBehaviourLocalized.HolidayBehaviourId != HolidayBehaviourConstants.CLOSED_BEHAVIOUR)
+                                behaviourEligible = true;
+
                             bool isWeekend = cycleDate.DayOfWeek == DayOfWeek.Saturday || cycleDate.DayOfWeek == DayOfWeek.Sunday;
 
-                            foreach (ShiftDTO shift in shifts)
+                            if (behaviourEligible)
                             {
-                                // Check if Shift is to be applied on the weekends
-                                if (isWeekend && !ruleDTOs.Any(i =>
-                                        i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) &&
-                                        i.EntityRuleSpecificationDTOs.Any(j =>
-                                            _generalService.ParseStringToGuid(j.AspectReferenceId).Equals(shift.ShiftId) &&
-                                            j.RuleSpecificationValue.Equals(1))))
+                                foreach (ShiftDTO shift in shifts)
                                 {
-                                    continue;
+                                    // Check if Shift is to be applied on the weekends
+                                    if (isWeekend && !ruleDTOs.Any(i =>
+                                            i.RuleTypeId.Equals(RuleTypeConstants.SHIFT_INCLUDES_WEEKENDS_ID) &&
+                                            i.EntityRuleSpecificationDTOs.Any(j =>
+                                                _generalService.ParseStringToGuid(j.AspectReferenceId).Equals(shift.ShiftId) &&
+                                                j.RuleSpecificationValue.Equals(1))))
+                                    {
+                                        continue;
+                                    }
+
+                                    // Check if there is an entry for this shift at this date already
+                                    ScheduleEntryDTO existingEntry = scheduleEntryDTOs
+                                            .FirstOrDefault(i => i.ScheduleStartDate.Date.Equals(cycleDate.Date) && i.ShiftId.Equals(shift.ShiftId));
+
+                                    // If it exists continue
+                                    if (existingEntry != null)
+                                        continue;
+
+                                    // Create new one
+                                    ScheduleEntryDTO scheduleEntryDTO = await CreateShiftEntry(shift, cycleDate, entityHolidayDTO);
+
+                                    // If a schedule entry is created, add it
+                                    if(scheduleEntryDTO != null)
+                                        scheduleEntryDTOs.Add(scheduleEntryDTO);
                                 }
-
-                                // Check if there is an entry for this shift at this date already
-                                ScheduleEntryDTO existingEntry = scheduleEntryDTOs
-                                        .FirstOrDefault(i => i.ScheduleStartDate.Date.Equals(cycleDate.Date) && i.ShiftId.Equals(shift.ShiftId));
-
-                                // If it exists continue
-                                if (existingEntry != null)
-                                    continue;
-
-                                // Create new one
-                                ScheduleEntryDTO scheduleEntryDTO = await CreateShiftEntry(shift, cycleDate);
-
-                                // Add it
-                                scheduleEntryDTOs.Add(scheduleEntryDTO);
                             }
 
                             // Move to the next day
@@ -212,17 +220,38 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Aux : Get Holiday Date
+
+        /// <summary>
+        /// Used to facilitate the filtering of entity holidays by dates
+        /// Checks if its a custom holiday vs an existing holiday from the catalog
+        /// </summary>
+        /// <param name="h"></param>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        private DateTime GetHolidayDate(EntityHolidayDTO h, int year) =>
+            h.HolidayCatalog != null
+                ? new DateTime(year, h.HolidayCatalog.RecurrenceMonth, h.HolidayCatalog.RecurrenceDay)
+                : new DateTime(year, h.CustomMonth, h.CustomDay);
+
+        #endregion
+
         #region AUX: Create Shift Entry
 
-        private async Task<ScheduleEntryDTO> CreateShiftEntry(ShiftDTO shift, DateTime cycleDate)
+        private async Task<ScheduleEntryDTO> CreateShiftEntry(ShiftDTO shift, DateTime cycleDate, EntityHolidayDTO entityHolidayDTO = null)
         {
-            var entry = await _entityScheduleService.CreateBaseScheduleEntry(shift, cycleDate);
+            var entry = await _entityScheduleService.CreateBaseScheduleEntry(shift, cycleDate, entityHolidayDTO);
 
-            var dto = _mapper.Map<ScheduleEntryDTO>(entry);
-            dto.ShiftDTO = shift;
-            dto.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
+            if(entry != null)
+            {
+                var dto = _mapper.Map<ScheduleEntryDTO>(entry);
+                dto.ShiftDTO = shift;
+                dto.ScheduleParticipants = new List<ScheduleEntryParticipantDTO>();
 
-            return dto;
+                return dto;
+            }
+
+            return null;
         }
 
         #endregion
