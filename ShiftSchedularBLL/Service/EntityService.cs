@@ -1338,7 +1338,7 @@ namespace ShiftSchedularBLL.Service
                 List<EntityWorkerSkill> entityWorkerSkills = new List<EntityWorkerSkill>();
 
                 // set new entity worker skills
-                foreach (EntityUserBotSkill entityUserBotSkill in userBot.UserBot.EntityUserBotSkills)
+                foreach (EntityUserBotSkill entityUserBotSkill in userBot.UserBot.EntityUserBotSkills.Where(s => s.EntityId == convertBotToUserDTO.EntityId))
                 {
                     entityWorkerSkills.Add(new EntityWorkerSkill
                     {
@@ -1356,7 +1356,7 @@ namespace ShiftSchedularBLL.Service
 
                 List<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = new List<EntityWorkerShiftAssigned>();
 
-                foreach (EntityUserBotShiftAssigned entityUserBotShiftAssigneds in userBot.UserBot.EntityUserBotShiftAssigneds)
+                foreach (EntityUserBotShiftAssigned entityUserBotShiftAssigneds in userBot.UserBot.EntityUserBotShiftAssigneds.Where(a => a.EntityId == convertBotToUserDTO.EntityId))
                 {
                     entityWorkerShiftAssigneds.Add(new EntityWorkerShiftAssigned
                     {
@@ -1414,12 +1414,15 @@ namespace ShiftSchedularBLL.Service
                 await _unitOfWork.UserBotRepository.Delete(userBot.UserBotId);
 
                 await _unitOfWork.CommitAsync();
+
+                List<EntityWorkerMemberDTO> convertedMember = await GetEntityMembers(convertBotToUserDTO.EntityId, new List<string> { convertBotToUserDTO.ApplicationUserIdTarget });
+                response.Result = convertedMember.FirstOrDefault();
                 response.Message = EntityWorkerRelatedMessages.BotToUserConversionSuccessful;
                 response.Success = true;
             }
             catch (Exception ex)
             {
-                string strErr = ex.Message;
+                response.Message = ex.Message;
                 await _unitOfWork.RollbackAsync();
             }
             finally
