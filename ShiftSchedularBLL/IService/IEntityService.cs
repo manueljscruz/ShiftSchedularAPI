@@ -23,5 +23,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeleteEntityMember(DeleteMemberDTO workerMemberDTO);
         Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers);
         Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, int nextPage = 0, int itemsPerPage = 0);
+        Task<BaseResponse<EntityWorkerMemberDTO>> ConvertBotToUser(ConvertBotToUserDTO convertBotToUserDTO);
     }
 }

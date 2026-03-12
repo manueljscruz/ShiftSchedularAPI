@@ -150,4 +150,7 @@
   <data name="UpdateEntityUnexpectedError" xml:space="preserve">
     <value>An unexpected error occurred when updating an worker entity. Please try again later.</value>
   </data>
+  <data name="EntityWorkerNotFound" xml:space="preserve">
+    <value>No user bot found associated with this work entity. If this error persist, contact support to resolve this issue.</value>
+  </data>
 </root>

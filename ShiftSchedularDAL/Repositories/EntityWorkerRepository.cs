@@ -73,7 +73,24 @@ namespace ShiftSchedularDAL.Repositories
             {
                 try
                 {
-                    return await _entityWorkerDbSet.Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId)).FirstOrDefaultAsync();
+                    return await _entityWorkerDbSet
+                        // Entity Worker Skills
+                        .Include(ew => ew.ApplicationUser)
+                            .ThenInclude(au => au.EntityWorkerSkills)
+
+                        // Schedule Entry Workers
+                        .Include(ew => ew.ApplicationUser)
+                            .ThenInclude(au => au.ScheduleEntryWorkers)
+
+                        // Entity Worker Shift Assigneds
+                        .Include(ew => ew.ApplicationUser)
+                            .ThenInclude(au => au.EntityWorkerShiftAssigneds)
+
+                        // Schedule Entry Worker Ineligibilites
+                        .Include(ew => ew.ApplicationUser)
+                            .ThenInclude(au => au.ScheduleEntryWorkerIneligibilities)
+
+                        .Where(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId)).FirstOrDefaultAsync();
                 }
                 catch (Exception ex)
                 {
@@ -115,14 +132,6 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
-
-        //public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembersPagination(Guid entityId, int currentIndex, int nextIndex, int itemsPerPage)
-        //{
-        //    if (!string.IsNullOrEmpty(entityId.ToString()))
-        //    {
-
-        //    }
-        //}
 
         #region Get Distinct Members By Entity Id
 

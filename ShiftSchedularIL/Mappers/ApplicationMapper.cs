@@ -362,6 +362,17 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.IsRecurring, opt => opt.MapFrom(src => src.IsRecurring))
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
 
+            CreateMap<EntityUserBot, EntityWorker>()
+                .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
+                .ForMember(dest => dest.ActiveWorkerStatus, opt => opt.MapFrom(src => src.ActiveWorkerStatus))
+                .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.CanCreateSchedules , opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.DateOfJoin , opt => opt.MapFrom(src => src.DateOfJoin))
+                .ForMember(dest => dest.DateToExit, opt => opt.MapFrom(src => DateTime.MinValue))
+                .ForMember(dest => dest.PartOfRotation, opt => opt.MapFrom(src => src.PartOfRotation))
+                .ForMember(dest => dest.WorksWeekDays, opt => opt.MapFrom(src => src.WorksWeekDays))
+                .ForMember(dest => dest.WorksWeekends, opt => opt.MapFrom(src => src.WorksWeekends))
+                .ForMember(dest => dest.MultipleShiftAssignments, opt => opt.MapFrom(src => src.MultipleShiftAssignments));
             #endregion
         }
     }

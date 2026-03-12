@@ -390,6 +390,31 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Convert Bot To User
+
+        [Authorize]
+        [HttpPost("convert-bot-to-user")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ConvertBotToUser([FromBody] ConvertBotToUserDTO convertBotToUserDTO)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            BaseResponse<EntityWorkerMemberDTO> conversionResponse = await _entityService.ConvertBotToUser(convertBotToUserDTO);
+
+            if (conversionResponse.Success)
+                return Ok(conversionResponse);
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, conversionResponse.Message);
+        }
+
+
+        #endregion
+
         #endregion
     }
 }

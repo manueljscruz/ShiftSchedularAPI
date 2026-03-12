@@ -82,7 +82,24 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (entityId != Guid.Empty && userId != Guid.Empty)
             {
-                return _entityUserBotDbSet.Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userId)).FirstOrDefault();
+                return _entityUserBotDbSet
+                    // Entity User Bot Skills
+                    .Include(eub => eub.UserBot)
+                        .ThenInclude(ub => ub.EntityUserBotSkills)
+
+                    // Entity User Bot Shift Assigneds
+                    .Include(eub => eub.UserBot)
+                        .ThenInclude(ub => ub.EntityUserBotShiftAssigneds)
+
+                    // Schedule Entry Bots
+                    .Include(eub => eub.UserBot)
+                        .ThenInclude(ub => ub.ScheduleEntryBots)
+
+                    // Schedule Entry Bot Ineligibilities
+                    .Include(eub => eub.UserBot)
+                        .ThenInclude(ub => ub.ScheduleEntryBotIneligibilities)
+
+                    .Where(x => x.EntityId.Equals(entityId) && x.UserBotId.Equals(userId)).FirstOrDefault();
             }
             else return null;
         }

@@ -124,6 +124,15 @@ namespace ShiftSchedularRL.Resources.MemberManagement {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to User bot information converted to user successfuly.
+        /// </summary>
+        public static string BotToUserConversionSuccessful {
+            get {
+                return ResourceManager.GetString("BotToUserConversionSuccessful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to associate member to the entity. .
         /// </summary>
         public static string MemberDestinationEntityEmpty {

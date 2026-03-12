@@ -142,6 +142,15 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No user bot found associated with this work entity. If this error persist, contact support to resolve this issue..
+        /// </summary>
+        public static string EntityWorkerNotFound {
+            get {
+                return ResourceManager.GetString("EntityWorkerNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Work Entity was updated successfully..
         /// </summary>
         public static string UpdateEntitySuccess {

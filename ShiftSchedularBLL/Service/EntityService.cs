@@ -458,7 +458,7 @@ namespace ShiftSchedularBLL.Service
 
             int count = entityWorkerMembers.Count;
             // If pagination is being used
-            if(nextPage != 0 && itemsPerPage != 0)
+            if (nextPage != 0 && itemsPerPage != 0)
             {
                 int skipRows = (nextPage - 1) * itemsPerPage;
 
@@ -704,10 +704,10 @@ namespace ShiftSchedularBLL.Service
                     int botsCount = await _unitOfWork.EntityUserBotRepository.GetUserBotsByEntityCount(entity.EntityId);
                     int workersCount = await _unitOfWork.EntityWorkerRepository.GetTotalCountByEntity(entity.EntityId);
 
-                    entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId, 
-                                                                    entityName: entity.EntityName, 
-                                                                    entityDescription: entity.EntityDescription, 
-                                                                    entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue, 
+                    entityProfileViewModel.EntityDTO = new EntityDTO(entityId: entity.EntityId,
+                                                                    entityName: entity.EntityName,
+                                                                    entityDescription: entity.EntityDescription,
+                                                                    entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
                                                                     botsCount + workersCount);
                     entityProfileViewModel.AllowEdit = entityWorkerInstance.IsOwner;
 
@@ -1170,7 +1170,7 @@ namespace ShiftSchedularBLL.Service
                 await _unitOfWork.EntityWorkerSkillRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, _generalService.ParseStringToGuid(editMemberDTO.WorkerId));
                 List<EntityWorkerSkill> entityUserBotSkills = new List<EntityWorkerSkill>();
 
-                foreach(SkillLocalizedDTO skillLocalizedDTO in editMemberDTO.AssignedSkills)
+                foreach (SkillLocalizedDTO skillLocalizedDTO in editMemberDTO.AssignedSkills)
                 {
                     entityUserBotSkills.Add(new EntityWorkerSkill
                     {
@@ -1292,6 +1292,139 @@ namespace ShiftSchedularBLL.Service
                 {
                     _unitOfWork.Dispose();
                 }
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Convert Bot To User
+
+        public async Task<BaseResponse<EntityWorkerMemberDTO>> ConvertBotToUser(ConvertBotToUserDTO convertBotToUserDTO)
+        {
+            BaseResponse<EntityWorkerMemberDTO> response = new BaseResponse<EntityWorkerMemberDTO>();
+            response.Message = SharedMessages.UnexpectedError;
+
+            EntityDTO entityDTO = await this.GetEntityById(convertBotToUserDTO.EntityId, _languageAccessor.GetLanguageCode());
+            if (entityDTO == null)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNotFound;
+                return response;
+            }
+
+            EntityUserBot userBot = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotByEntityAndId(convertBotToUserDTO.EntityId, convertBotToUserDTO.UserBotId);
+            if (userBot == null)
+            {
+                response.Message = EntitiesRelatedMessages.EntityWorkerNotFound;
+                return response;
+            }
+
+            EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(convertBotToUserDTO.ApplicationUserIdTarget, convertBotToUserDTO.EntityId);
+            if (entityWorker == null)
+            {
+                response.Message = EntityWorkerRelatedMessages.MemberNotFound;
+                return response;
+            }
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                // Entity Worker Skills
+                // Delete any current assigned worker skills
+                await _unitOfWork.EntityWorkerSkillRepository.DeleteRange(entityWorker.ApplicationUser.EntityWorkerSkills);
+
+                List<EntityWorkerSkill> entityWorkerSkills = new List<EntityWorkerSkill>();
+
+                // set new entity worker skills
+                foreach (EntityUserBotSkill entityUserBotSkill in userBot.UserBot.EntityUserBotSkills)
+                {
+                    entityWorkerSkills.Add(new EntityWorkerSkill
+                    {
+                        ApplicationUserId = entityWorker.ApplicationUserId,
+                        SkillId = entityUserBotSkill.SkillId,
+                        EntityId = entityUserBotSkill.EntityId
+                    });
+                }
+
+                // Add new entity worker skill entries
+                await _unitOfWork.EntityWorkerSkillRepository.AddRange(entityWorkerSkills);
+
+                // Entity Worker Shift Assigned
+                await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteRange(entityWorker.ApplicationUser.EntityWorkerShiftAssigneds);
+
+                List<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = new List<EntityWorkerShiftAssigned>();
+
+                foreach (EntityUserBotShiftAssigned entityUserBotShiftAssigneds in userBot.UserBot.EntityUserBotShiftAssigneds)
+                {
+                    entityWorkerShiftAssigneds.Add(new EntityWorkerShiftAssigned
+                    {
+                        ApplicationUserId = entityWorker.ApplicationUserId,
+                        EntityId = entityUserBotShiftAssigneds.EntityId,
+                        ShiftId = entityUserBotShiftAssigneds.ShiftId
+                    });
+
+                }
+
+                // Add new Entity Worker Shift Assignments
+                await _unitOfWork.EntityWorkerShiftAssignedsRepository.AddRange(entityWorkerShiftAssigneds);
+
+
+                // Schedule Entry Workers
+                // Delete any current Schedule Entries
+                await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(entityWorker.ApplicationUser.ScheduleEntryWorkers);
+
+                List<ScheduleEntryWorkers> scheduleEntryWorkers = new List<ScheduleEntryWorkers>();
+
+                foreach (ScheduleEntryBots scheduleEntryBots in userBot.UserBot.ScheduleEntryBots)
+                {
+                    scheduleEntryWorkers.Add(new ScheduleEntryWorkers
+                    {
+                        ApplicationUserId = entityWorker.ApplicationUserId,
+                        ScheduleEntryId = scheduleEntryBots.ScheduleEntryId,
+                        SpecificSkillAssignments = scheduleEntryBots.SpecificSkillAssignments
+                    });
+                }
+
+                // Add new Schedule Entry Workers
+                await _unitOfWork.EntityScheduleWorkersRepository.AddRange(scheduleEntryWorkers);
+
+                // Schedule Entry Worker Ineligibilities
+                // Delete Existing
+                await _unitOfWork.ScheduleEntryWorkerIneligibilityRepository.DeleteRange(entityWorker.ApplicationUser.ScheduleEntryWorkerIneligibilities);
+
+                List<ScheduleEntryWorkerIneligibility> scheduleEntryWorkerIneligibilities = new List<ScheduleEntryWorkerIneligibility>();
+
+                foreach (ScheduleEntryBotIneligibility scheduleEntryBotIneligibility in userBot.UserBot.ScheduleEntryBotIneligibilities)
+                {
+                    scheduleEntryWorkerIneligibilities.Add(new ScheduleEntryWorkerIneligibility
+                    {
+                        ScheduleEntryId = scheduleEntryBotIneligibility.ScheduleEntryId,
+                        IneligibilityObservations = scheduleEntryBotIneligibility.IneligibilityObservations,
+                        DateOfAssessement = scheduleEntryBotIneligibility.DateOfAssessement,
+                        ApplicationUserId = entityWorker.ApplicationUserId
+                    });
+                }
+
+                await _unitOfWork.ScheduleEntryWorkerIneligibilityRepository.AddRange(scheduleEntryWorkerIneligibilities);
+
+                // Remove User bot
+                await _unitOfWork.EntityUserBotRepository.DeleteEntityUserBot(userBot.EntityId, userBot.UserBotId);
+                await _unitOfWork.UserBotRepository.Delete(userBot.UserBotId);
+
+                await _unitOfWork.CommitAsync();
+                response.Message = EntityWorkerRelatedMessages.BotToUserConversionSuccessful;
+                response.Success = true;
+            }
+            catch (Exception ex)
+            {
+                string strErr = ex.Message;
+                await _unitOfWork.RollbackAsync();
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
             }
 
             return response;

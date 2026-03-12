@@ -159,4 +159,7 @@
   <data name="NotPartOfRotationEmptyShifts" xml:space="preserve">
     <value>No shifts were assigned when not in the rotation.</value>
   </data>
+  <data name="BotToUserConversionSuccessful" xml:space="preserve">
+    <value>User bot information converted to user successfuly</value>
+  </data>
 </root>
