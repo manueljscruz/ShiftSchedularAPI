@@ -137,11 +137,10 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entities-members-view-model")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest)
+        public async Task<IActionResult> GetEntitiesMembersViewModel(MemberPagedModelRequestDTO memberListModelRequest)
         {
             if (memberListModelRequest.EntityId != Guid.Empty)
             {
-                // string decodedEntityId = HttpUtility.UrlDecode(entityId);
                 var entities = await _entityService.GetEntitiesMembersViewModel(memberListModelRequest);
                 return Ok(entities);
             }
@@ -159,14 +158,14 @@ namespace ShiftSchedularAPI.Controllers
         [HttpPost("get-entity-members-pagination")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetEntityMembersPagination(PagedModelRequest memberListModelRequest)
+        public async Task<IActionResult> GetEntityMembersPagination(MemberPagedModelRequestDTO memberListModelRequest)
         {
             if(memberListModelRequest == null)
             {
                 return BadRequest();
             }
 
-            PagedList<EntityWorkerMemberDTO> memberList = await _entityService.GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
+            PagedList<EntityWorkerMemberDTO> memberList = await _entityService.GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.MemberFilters, memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
 
             return Ok(memberList);
         }

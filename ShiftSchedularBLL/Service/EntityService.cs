@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using AutoMapper.Execution;
 using Azure;
 using Microsoft.AspNetCore.Identity;
@@ -368,7 +368,7 @@ namespace ShiftSchedularBLL.Service
         /// <param name="entityId">Entity identifier</param>
         /// <param name="lcode">Language code</param>
         /// <returns></returns>
-        public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest)
+        public async Task<EntityMembersViewModel> GetEntitiesMembersViewModel(MemberPagedModelRequestDTO memberListModelRequest)
         {
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
@@ -378,7 +378,7 @@ namespace ShiftSchedularBLL.Service
 
             viewModel.Shifts = await _shiftService.GetEntityShifts(memberListModelRequest.EntityId);
 
-            viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
+            viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.MemberFilters ?? new MemberListFilterDTO(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
 
             viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(memberListModelRequest.EntityId);
 
@@ -452,9 +452,9 @@ namespace ShiftSchedularBLL.Service
 
         #region Get Entity Members Pagination
 
-        public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, int nextPage = 0, int itemsPerPage = 0)
+        public async Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, MemberListFilterDTO memberListFilterDTO, int nextPage = 0, int itemsPerPage = 0)
         {
-            List<EntityWorkerMemberModel> entityWorkerMembers = await GetAllMembers(entityId, workers);
+            List<EntityWorkerMemberModel> entityWorkerMembers = await GetAllMembers(entityId, workers, memberListFilterDTO);
 
             int count = entityWorkerMembers.Count;
             // If pagination is being used
@@ -487,18 +487,25 @@ namespace ShiftSchedularBLL.Service
         #region Get All Members
 
         /// <summary>
-        /// Gets all members (workers and bots) for an entity.
+        /// Gets all members (workers and bots) for an entity, with optional filtering.
         /// </summary>
         /// <param name="entityId">The entity identifier</param>
         /// <param name="workers">Optional list of worker IDs to filter by. If empty, returns all members.</param>
-        /// <returns>List of entity members (workers and bots)</returns>
-        private async Task<List<EntityWorkerMemberModel>> GetAllMembers(Guid entityId, List<string> workers)
+        /// <param name="filters">Optional member list filters to apply.</param>
+        /// <returns>Filtered and ordered list of entity members (workers and/or bots)</returns>
+        private async Task<List<EntityWorkerMemberModel>> GetAllMembers(Guid entityId, List<string> workers, MemberListFilterDTO filters = null)
         {
-            // Get regular members
-            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId);
+            // Determine which member types to fetch — skip the unused repo call entirely
+            bool fetchWorkers = filters == null || !filters.ApplyMemberTypeFilter || !filters.IsBot;
+            bool fetchBots    = filters == null || !filters.ApplyMemberTypeFilter || filters.IsBot;
 
-            // Get user bots
-            IEnumerable<EntityWorkerMemberModel> userBots = await _unitOfWork.EntityUserBotRepository.GetDistinctUserBotsByEntityId(entityId);
+            IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = fetchWorkers
+                ? await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId)
+                : Enumerable.Empty<EntityWorkerMemberModel>();
+
+            IEnumerable<EntityWorkerMemberModel> userBots = fetchBots
+                ? await _unitOfWork.EntityUserBotRepository.GetDistinctUserBotsByEntityId(entityId)
+                : Enumerable.Empty<EntityWorkerMemberModel>();
 
             List<EntityWorkerMemberModel> members = new();
 
@@ -529,6 +536,45 @@ namespace ShiftSchedularBLL.Service
             else
             {
                 members = entityWorkerMembers.Concat(userBots).ToList();
+            }
+
+            // Apply in-memory filters after combining both sets
+            if (filters != null)
+            {
+                if (!string.IsNullOrWhiteSpace(filters.NameFilter))
+                    members = members
+                        .Where(m => m.WorkerName.Contains(filters.NameFilter, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                if (filters.PartOfRotation)
+                    members = members.Where(m => m.PartOfRotation).ToList();
+
+                if (filters.WorkWeekDays)
+                    members = members.Where(m => m.WorksWeekDays).ToList();
+
+                if (filters.WorkWeekEnds)
+                    members = members.Where(m => m.WorksWeekends).ToList();
+
+                if (filters.SelectedSkills is { Count: > 0 })
+                {
+                    var selectedSkillIds = filters.SelectedSkills
+                        .Select(s => s.SkillId.ToString())
+                        .ToHashSet();
+
+                    members = members
+                        .Where(m =>
+                        {
+                            if (string.IsNullOrEmpty(m.SkillIds)) return false;
+                            var memberSkillIds = m.SkillIds
+                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                .ToHashSet();
+                            return selectedSkillIds.All(id => memberSkillIds.Contains(id));
+                        })
+                        .ToList();
+                }
+
+                // Note: SelectedShits (shift assignment filter) is not applied here because shift
+                // assignments are not part of EntityWorkerMemberModel. Apply after ProcessMemberData if needed.
             }
 
             if (members != null)

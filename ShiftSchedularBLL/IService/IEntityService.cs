@@ -15,14 +15,14 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> UpdateEntity(FormEntityDTO entity);
         Task<BaseResponse<bool>> DeleteEntityById(Guid entityId);
         Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId);
-        Task<EntityMembersViewModel> GetEntitiesMembersViewModel(PagedModelRequest memberListModelRequest);
+        Task<EntityMembersViewModel> GetEntitiesMembersViewModel(MemberPagedModelRequestDTO memberListModelRequest);
         Task<List<SkillLocalizedDTO>> GetEntitySkills(BaseViewModelRequest baseViewModelRequest);
         Task<EntityProfileViewModel> GetEntityProfileViewModel(BaseViewModelRequest entityProfileViewModelRequest);
         Task<BaseResponse<object>> AddNewEntityMember(AddNewMemberDTO newMemberDTO);
         Task<BaseResponse<bool>> UpdateEntityMember(EditMemberDTO updateEntityMemberDTO);
         Task<BaseResponse<bool>> DeleteEntityMember(DeleteMemberDTO workerMemberDTO);
         Task<List<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers);
-        Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, int nextPage = 0, int itemsPerPage = 0);
+        Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, MemberListFilterDTO memberListFilterDTO, int nextPage = 0, int itemsPerPage = 0);
         Task<BaseResponse<EntityWorkerMemberDTO>> ConvertBotToUser(ConvertBotToUserDTO convertBotToUserDTO);
     }
 }

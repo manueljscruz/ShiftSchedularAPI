@@ -75,7 +75,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, _languageAccessor.GetLanguageCode());
-                    PagedModelRequest baseRequest = new PagedModelRequest
+                    MemberPagedModelRequestDTO baseRequest = new MemberPagedModelRequestDTO
                     {
                         EntityId = viewModelRequest.EntityId
                     };
