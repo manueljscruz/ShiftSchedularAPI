@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShiftSchedularEntity.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class EntityRule
+    public class EntityRule : BaseEntity
     {
         #region Properties
 

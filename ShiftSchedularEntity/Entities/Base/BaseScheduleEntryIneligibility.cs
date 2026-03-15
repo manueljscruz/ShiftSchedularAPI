@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities.Base
 {
-    public class BaseScheduleEntryIneligibility
+    public class BaseScheduleEntryIneligibility : BaseEntity
     {
         [Required]
         [Column(TypeName = "BINARY(16)")]

@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShiftSchedularEntity.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class EntityWorker
+    public class EntityWorker : BaseEntity
     {
         #region Properties
 
@@ -66,12 +67,18 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public bool MultipleShiftAssignments { get; set; }
 
+        public Guid? ConvertedFromBotId { get; set; }
+        public DateTime? ConvertedAt { get; set; }
+        public string? ConvertedBy { get; set; }
+
         #endregion
 
         #region Navigation Properties
 
         public virtual Entity Entity { get; set; }
         public virtual ApplicationUser ApplicationUser { get; set; }
+        public UserBot? ConvertedFromBot { get; set; }
+        public ApplicationUser? ConvertedByUser { get; set; }
 
         #endregion
 

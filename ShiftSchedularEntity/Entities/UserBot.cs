@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShiftSchedularEntity.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
-    public class UserBot
+    public class UserBot : BaseEntity
     {
         #region Properties
 
@@ -14,8 +15,6 @@ namespace ShiftSchedularEntity.Entities
         [Required]
         [MaxLength(200)]
         public string UserDisplayName { get; set; }
-
-        public DateTime DateOfCreation { get; set; }
 
         #endregion
 

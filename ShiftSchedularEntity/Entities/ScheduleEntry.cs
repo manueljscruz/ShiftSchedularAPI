@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using ShiftSchedularEntity.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShiftSchedularEntity.Entities
 {
     [Table("ScheduleEntry")]
-    public class ScheduleEntry
+    public class ScheduleEntry : BaseEntity
     {
         [Required]
         [Column(TypeName = "BINARY(16)")]

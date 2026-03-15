@@ -1,14 +1,22 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ShiftSchedularEntity.Entities;
+using ShiftSchedularEntity.Entities.Base;
+using System.Linq.Expressions;
+using System.Security.Claims;
 
 namespace ShiftSchedularDAL.Data
 {
     public class DataContext : IdentityDbContext<ApplicationUser>
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
-        { }
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public DataContext(DbContextOptions<DataContext> options, IHttpContextAccessor httpContextAccessor) : base(options)
+        {
+            _httpContextAccessor = httpContextAccessor;
+        }
 
 
         #region Db Sets
@@ -65,11 +73,90 @@ namespace ShiftSchedularDAL.Data
 
         #endregion
 
+        #region Save Changes
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            ApplyAuditFields();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            ApplyAuditFields();
+            return base.SaveChanges();
+        }
+
+        private void ApplyAuditFields()
+        {
+            var currentUserId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var now = DateTime.UtcNow;
+
+            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.CreatedAt = now;
+                        entry.Entity.CreatedById = currentUserId;
+                        entry.Entity.IsDeleted = false;
+                        break;
+
+                    case EntityState.Modified:
+                        entry.Entity.UpdatedAt = now;
+                        entry.Entity.UpdatedById = currentUserId;
+                        break;
+
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified;
+                        entry.Entity.IsDeleted = true;
+                        entry.Entity.DeletedAt = now;
+                        entry.Entity.DeletedById = currentUserId;
+                        break;
+                }
+            }
+        }
+
+        #endregion
+
         #region On Model Creating
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            #region BaseEntity Configuration
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                .Where(e => typeof(BaseEntity).IsAssignableFrom(e.ClrType)
+                         && e.ClrType != typeof(BaseEntity)
+                         && e.ClrType != typeof(BaseScheduleEntryIneligibility)))
+            {
+                modelBuilder.Entity(entityType.ClrType, entity =>
+                {
+                    entity.HasOne(typeof(ApplicationUser), "CreatedByUser")
+                          .WithMany()
+                          .HasForeignKey("CreatedById")
+                          .IsRequired(false)
+                          .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasOne(typeof(ApplicationUser), "UpdatedByUser")
+                          .WithMany()
+                          .HasForeignKey("UpdatedById")
+                          .IsRequired(false)
+                          .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasOne(typeof(ApplicationUser), "DeletedByUser")
+                          .WithMany()
+                          .HasForeignKey("DeletedById")
+                          .IsRequired(false)
+                          .OnDelete(DeleteBehavior.Restrict);
+
+                    entity.HasQueryFilter(BuildSoftDeleteFilter(entityType.ClrType));
+                });
+            }
+
+            #endregion
 
             #region Application User
 
@@ -182,6 +269,21 @@ namespace ShiftSchedularDAL.Data
                 .HasOne(ew => ew.ApplicationUser)
                 .WithMany(e => e.EntityWorkers)
                 .HasForeignKey(ew => ew.ApplicationUserId);
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasOne(ew => ew.ConvertedByUser)
+                .WithMany()
+                .HasForeignKey(ew => ew.ConvertedBy)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasOne(ew => ew.ConvertedFromBot)
+                .WithMany()
+                .HasForeignKey(ew => ew.ConvertedFromBotId)
+                .HasPrincipalKey(ub => ub.UserBotId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
 
             #endregion
 
@@ -918,9 +1020,61 @@ namespace ShiftSchedularDAL.Data
                 .HasIndex(er => er.RuleTypeId)
                 .HasDatabaseName("IX_EntityRules_RuleTypeId");
 
+            // EntityWorker conversion indexes
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => ew.ConvertedFromBotId)
+                .HasDatabaseName("IX_EntityWorkers_ConvertedFromBotId");
+
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => ew.ConvertedBy)
+                .HasDatabaseName("IX_EntityWorkers_ConvertedBy");
+
+            // Soft delete filtered indexes - only index active (non-deleted) rows
+            modelBuilder.Entity<EntityWorker>()
+                .HasIndex(ew => ew.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_EntityWorkers_IsDeleted");
+
+            modelBuilder.Entity<UserBot>()
+                .HasIndex(ub => ub.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_UserBots_IsDeleted");
+
+            modelBuilder.Entity<EntityUserBot>()
+                .HasIndex(eub => eub.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_EntityUserBots_IsDeleted");
+
+            modelBuilder.Entity<ScheduleEntry>()
+                .HasIndex(se => se.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_ScheduleEntries_IsDeleted");
+
+            modelBuilder.Entity<ScheduleEntryWorkers>()
+                .HasIndex(sew => sew.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_ScheduleEntryWorkers_IsDeleted");
+
+            modelBuilder.Entity<ScheduleEntryBots>()
+                .HasIndex(seb => seb.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_ScheduleEntryBots_IsDeleted");
+
+            modelBuilder.Entity<EntityWorkerAbsence>()
+                .HasIndex(ewa => ewa.IsDeleted)
+                .HasFilter("IsDeleted = 0")
+                .HasDatabaseName("IX_EntityWorkerAbsences_IsDeleted");
+
             #endregion
         }
 
         #endregion
+
+        private static LambdaExpression BuildSoftDeleteFilter(Type entityType)
+        {
+            var param = Expression.Parameter(entityType, "e");
+            var body = Expression.Not(Expression.Property(param, "IsDeleted"));
+            return Expression.Lambda(body, param);
+        }
     }
 }
