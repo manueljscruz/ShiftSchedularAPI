@@ -119,12 +119,12 @@ namespace ShiftSchedularBLL.Service
                             }
                         }
 
-                        // Save changes in the database and assign values to the response result 
+                        // Save changes in the database and assign values to the response result
                         await _unitOfWork.CommitAsync();
                         response.Success = true;
                         response.Message = ShiftRelatedMessages.AddNewShiftSuccessful;
 
-                        response.Result = shiftDTO;
+                        response.Result = await GetShiftById(newShift.ShiftId);
                     }
                     catch (Exception ex)
                     {
