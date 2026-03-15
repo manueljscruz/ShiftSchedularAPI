@@ -27,8 +27,8 @@ namespace ShiftSchedularUnitTesting.AbsenceTypeController
             });
 
             _mapper = config.CreateMapper();
-            var context = new DataContext(_dbContextOptions);
-            _repository = new UnitOfWork(context);
+            // var context = new DataContext(_dbContextOptions);
+            // _repository = new UnitOfWork(context);
         }
     }
 }

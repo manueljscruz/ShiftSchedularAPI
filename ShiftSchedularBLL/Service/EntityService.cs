@@ -856,7 +856,6 @@ namespace ShiftSchedularBLL.Service
             BaseResponse<object> response = new BaseResponse<object>();
 
             UserBot newUserBot = _mapper.Map<UserBot>(newMemberDTO);
-            newUserBot.DateOfCreation = nowUTCTime;
 
             try
             {
