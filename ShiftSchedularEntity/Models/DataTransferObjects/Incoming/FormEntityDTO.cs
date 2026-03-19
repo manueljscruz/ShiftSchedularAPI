@@ -7,5 +7,6 @@
         public int EntityTypeId { get; set; }
         public string EntityDescription { get; set; }
         public string WorkerId { get; set; }
+        public Guid? ParentEntityId { get; set; }
     }
 }

@@ -70,6 +70,9 @@ namespace ShiftSchedularDAL.Data
         public DbSet<HolidayCatalog> HolidayCatalogs { get; set; }
         public DbSet<HolidayCatalogLocalization> HolidayCatalogLocalizations { get; set; }
         public DbSet<EntityHoliday> EntityHolidays { get; set; }
+        public DbSet<EntityPermission> EntityPermissions { get; set; }
+        public DbSet<EntityPermissionRole> EntityPermissionRoles { get; set; }
+        public DbSet<EntityPermissionRoleLocalization> EntityPermissionRoleLocalizations { get; set; }
 
         #endregion
 
@@ -197,6 +200,12 @@ namespace ShiftSchedularDAL.Data
 
             modelBuilder.Entity<Entity>()
                 .HasKey(e => e.EntityId);
+
+            modelBuilder.Entity<Entity>()
+                .HasOne(e => e.ParentEntity)
+                .WithMany(pe => pe.ChildrenEntities)
+                .HasForeignKey(e => e.ParentEntityId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             #endregion
 
@@ -873,6 +882,52 @@ namespace ShiftSchedularDAL.Data
 
             #endregion
 
+            #region Entity Permission Role Configuration
+
+            modelBuilder.Entity<EntityPermissionRole>()
+                .HasKey(epr => epr.EntityPermissionRoleId);
+
+            #endregion
+
+            #region Entity Permission Role Localization Configuration
+
+            modelBuilder.Entity<EntityPermissionRoleLocalization>()
+                .HasKey(epr => new { epr.EntityPermissionRoleId, epr.LocalizationId });
+
+            modelBuilder.Entity<EntityPermissionRoleLocalization>()
+                .HasOne(eprl => eprl.Localization)
+                .WithMany(l => l.EntityPermissionRoleLocalizations)
+                .HasForeignKey(eprl => eprl.LocalizationId);
+
+            modelBuilder.Entity<EntityPermissionRoleLocalization>()
+                .HasOne(eprl => eprl.EntityPermissionRole)
+                .WithMany(epr => epr.EntityPermissionRoleLocalizations)
+                .HasForeignKey(eprl => eprl.EntityPermissionRoleId);
+
+            #endregion
+
+            #region Entity Permission Configuration
+
+            modelBuilder.Entity<EntityPermission>()
+                .HasKey(ep => new { ep.EntityId, ep.ApplicationUserId, ep.EntityPermissionRoleId });
+
+            modelBuilder.Entity<EntityPermission>()
+                .HasOne(ep => ep.Entity)
+                .WithMany(e => e.EntityPermissions)
+                .HasForeignKey(ep => ep.EntityId);
+
+            modelBuilder.Entity<EntityPermission>()
+                .HasOne(ep => ep.EntityPermissionRole)
+                .WithMany(epr => epr.EntityPermissions)
+                .HasForeignKey(ep => ep.EntityPermissionRoleId);
+
+            modelBuilder.Entity<EntityPermission>()
+                .HasOne(ep => ep.ApplicationUser)
+                .WithMany(au => au.EntityPermissions)
+                .HasForeignKey(ep => ep.ApplicationUserId);
+
+            #endregion
+
             #region Database Indexes for Performance
 
             // HolidayCatalog indexes
@@ -1028,6 +1083,20 @@ namespace ShiftSchedularDAL.Data
             modelBuilder.Entity<EntityWorker>()
                 .HasIndex(ew => ew.ConvertedBy)
                 .HasDatabaseName("IX_EntityWorkers_ConvertedBy");
+
+            // Entity Permission Indexes
+            modelBuilder.Entity<EntityPermission>()
+                .HasIndex(ep => ep.ApplicationUserId)
+                .HasDatabaseName("IX_EntityPermissions_ApplicationUserId");
+
+            modelBuilder.Entity<EntityPermission>()
+                .HasIndex(ep => new { ep.EntityId, ep.EntityPermissionRoleId })
+                .HasDatabaseName("IX_EntityPermissions_EntityId_RoleId");
+
+            // Entity hierarchy index - supports loading children of a parent entity
+            modelBuilder.Entity<Entity>()
+                .HasIndex(e => e.ParentEntityId)
+                .HasDatabaseName("IX_Entities_ParentEntityId");
 
             // Soft delete filtered indexes - only index active (non-deleted) rows
             modelBuilder.Entity<EntityWorker>()

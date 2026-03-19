@@ -153,4 +153,16 @@
   <data name="EntityWorkerNotFound" xml:space="preserve">
     <value>No user bot found associated with this work entity. If this error persist, contact support to resolve this issue.</value>
   </data>
+  <data name="ParentEntityNotFound" xml:space="preserve">
+    <value>No parent entity was found with that identifier. If this continues, contact IT support.</value>
+  </data>
+  <data name="UserCannotCreateEntityPermission" xml:space="preserve">
+    <value>User does not have a permission to create entities.</value>
+  </data>
+  <data name="DeleteEntityHasChildrenError" xml:space="preserve">
+    <value>This entity cannot be deleted because it has child entities. Please delete or reassign all child entities first.</value>
+  </data>
+  <data name="EntityDeletedSuccessfuly" xml:space="preserve">
+    <value>Work Entity was deleted successfuly.</value>
+  </data>
 </root>

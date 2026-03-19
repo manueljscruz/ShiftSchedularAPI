@@ -399,6 +399,24 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _entityHolidayRepository = _entityHolidayRepository ?? new EntityHolidayRepository(_context, this); }
         }
 
+        private IEntityPermissionRepository _entityPermissionRepository;
+        public IEntityPermissionRepository EntityPermissionRepository 
+        {
+            get { return _entityPermissionRepository ?? new EntityPermissionRepository(_context, this); } 
+        }
+
+        private IEntityPermissionRoleRepository _entityPermissionRoleRepository;
+        public IEntityPermissionRoleRepository EntityPermissionRoleRepository
+        {
+            get { return _entityPermissionRoleRepository ?? new EntityPermissionRoleRepository(_context, this); }
+        }
+
+        private IEntityPermissionRoleLocalizationRepository _entityPermissionRoleLocalizationRepository;
+        public IEntityPermissionRoleLocalizationRepository EntityPermissionRoleLocalizationRepository
+        {
+            get { return _entityPermissionRoleLocalizationRepository ?? new EntityPermissionRoleLocalizationRepository(_context, this); }
+        }
+
         #endregion
 
         #region Constructor

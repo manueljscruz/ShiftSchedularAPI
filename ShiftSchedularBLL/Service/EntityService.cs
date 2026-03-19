@@ -90,6 +90,27 @@ namespace ShiftSchedularBLL.Service
 
                 EntityType entityTypeInstance = await _unitOfWork.GetGenericRepository<EntityType>().GetById(newEntity.EntityTypeId); // _entityTypeRepository.GetById(newEntity.EntityTypeId);
 
+                // Check if its a child entity being created
+                if (newEntity.ParentEntityId != Guid.Empty)
+                {
+                    // Check if parent exists
+                    Entity parentEntity = await _unitOfWork.EntityRepository.GetEntityById(newEntity.ParentEntityId.Value, _languageAccessor.GetLanguageCode());
+                    if (parentEntity == null)
+                    {
+                        response.Message = EntitiesRelatedMessages.ParentEntityNotFound;
+                        return response;
+                    }
+                    else
+                    {
+                        bool valid = await _unitOfWork.EntityPermissionRepository.CanUserCreateEntities(parentEntity.EntityId, newEntity.WorkerId);
+                        if (!valid)
+                        {
+                            response.Message = EntitiesRelatedMessages.UserCannotCreateEntityPermission;
+                            return response;
+                        }
+                    }
+                }
+
                 if (entityTypeInstance != null && !string.IsNullOrEmpty(newEntity.WorkerId))
                 {
                     await _unitOfWork.BeginTransactionAsync();
@@ -116,9 +137,6 @@ namespace ShiftSchedularBLL.Service
                         {
                             ApplicationUserId = newEntity.WorkerId,
                             EntityId = entity.EntityId,
-                            ActiveWorkerStatus = true,
-                            IsOwner = true,
-                            CanCreateSchedules = true,
                             DateOfJoin = nowUtcTime,
                             PartOfRotation = true,
                             WorksWeekDays = true,
@@ -143,6 +161,16 @@ namespace ShiftSchedularBLL.Service
 
                         // Add entity worker skills
                         await _unitOfWork.EntityWorkerSkillRepository.AddRange(entityWorkerSkills);
+
+                        // Add Entity Permission - Creator becomes General Manager
+                        EntityPermission entityPermission = new EntityPermission
+                        {
+                            ApplicationUserId = newEntity.WorkerId,
+                            EntityId = entity.EntityId,
+                            EntityPermissionRoleId = EntityPermisisonRoleConstants.GENERAL_MANAGER_ID
+                        };
+
+                        await _unitOfWork.EntityPermissionRepository.Add(entityPermission);
 
                         await _unitOfWork.CommitAsync();
 
@@ -187,37 +215,63 @@ namespace ShiftSchedularBLL.Service
             // if entity identifier is different than null
             if (entityId != Guid.Empty)
             {
-                Entity entityInstance = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
+                Entity entityInstance = await _unitOfWork.EntityRepository.GetEntityById(entityId, _languageAccessor.GetLanguageCode());
+
+                if (entityInstance == null)
+                {
+                    response.Message = EntitiesRelatedMessages.EntityNotFound;
+                    return response;
+                }
+
+                if (entityInstance.ChildrenEntities.Count != 0)
+                {
+                    response.Message = EntitiesRelatedMessages.DeleteEntityHasChildrenError;
+                    return response;
+                }
+
                 IEnumerable<EntityWorker> entityWorkers = await _unitOfWork.EntityWorkerRepository.GetByEntityId(entityId);
                 IEnumerable<EntityWorkerSkill> entityWorkerSkills = await _unitOfWork.EntityWorkerSkillRepository.GetByEntityId(entityId);
                 IEnumerable<EntityUserBot> entityUserBots = await _unitOfWork.EntityUserBotRepository.GetUserBotsByEntityId(entityId);
                 IEnumerable<EntityUserBotSkill> entityUserBotSkills = await _unitOfWork.EntityUserBotSkillRepository.GetByEntityId(entityId);
+                IEnumerable<EntityPermission> entityPermissions = await _unitOfWork.EntityPermissionRepository.GetByEntityId(entityId);
+                IEnumerable<EntityWorkerShiftAssigned> entityWorkerShiftAssigneds = await _unitOfWork.EntityWorkerShiftAssignedsRepository.GetAllByEntityId(entityId);
+                IEnumerable<EntityUserBotShiftAssigned> entityUserBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityId(entityId);
+                IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(entityId, "", true);
+                IEnumerable<EntityRule> entityRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(entityId);
+                IEnumerable<EntityHoliday> entityHolidays = await _unitOfWork.EntityHolidayRepository.GetEntityHolidays(entityId, _languageAccessor.GetLanguageCode());
 
-                if (entityInstance != null && entityInstance.EntityWorkers.Count != 0)
+
+                await _unitOfWork.BeginTransactionAsync();
+
+                try
                 {
-                    await _unitOfWork.BeginTransactionAsync();
+                    await _unitOfWork.EntityWorkerRepository.DeleteRange(entityWorkers);
+                    await _unitOfWork.EntityWorkerSkillRepository.DeleteRange(entityWorkerSkills);
+                    await _unitOfWork.EntityUserBotRepository.DeleteRange(entityUserBots);
+                    await _unitOfWork.EntityUserBotSkillRepository.DeleteRange(entityUserBotSkills);
+                    await _unitOfWork.EntityWorkerInvitationRepository.DeleteAllByEntity(entityId);
+                    await _unitOfWork.EntityPermissionRepository.DeleteRange(entityPermissions);
+                    await _unitOfWork.EntityHolidayRepository.DeleteRange(entityHolidays);
+                    foreach (EntityRule entityRule in entityRules)
+                        await _unitOfWork.EntityRuleSpecificationRepository.DeleteRange(entityRule.EntityRuleSpecifications);
+                    await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteRange(entityWorkerShiftAssigneds);
+                    await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteRange(entityUserBotShiftAssigneds);
+                    await _unitOfWork.EntityWorkerAbsenceRepository.DeleteRange(entityWorkerAbsences);
+                    await _unitOfWork.EntityRuleRepository.DeleteRange(entityRules);
+                    await _unitOfWork.EntityRepository.Delete(entityInstance.EntityId);
+                    await _unitOfWork.CommitAsync();
 
-                    try
-                    {
-                        await _unitOfWork.EntityWorkerRepository.DeleteRange(entityInstance.EntityWorkers);
-                        await _unitOfWork.EntityWorkerSkillRepository.DeleteRange(entityWorkerSkills);
-                        await _unitOfWork.EntityUserBotRepository.DeleteRange(entityUserBots);
-                        await _unitOfWork.EntityUserBotSkillRepository.DeleteRange(entityUserBotSkills);
-                        await _unitOfWork.EntityWorkerInvitationRepository.DeleteAllByEntity(entityId);
-                        await _unitOfWork.GetGenericRepository<Entity>().Delete(entityInstance.EntityId);
-                        await _unitOfWork.CommitAsync();
-
-                        response.Success = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        await _unitOfWork.RollbackAsync();
-                        response.Message = EntitiesRelatedMessages.DeleteEntityUnexpectedError;
-                    }
-                    finally
-                    {
-                        _unitOfWork.Dispose();
-                    }
+                    response.Success = true;
+                    response.Message = EntitiesRelatedMessages.EntityDeletedSuccessfuly;
+                }
+                catch (Exception ex)
+                {
+                    await _unitOfWork.RollbackAsync();
+                    response.Message = EntitiesRelatedMessages.DeleteEntityUnexpectedError;
+                }
+                finally
+                {
+                    _unitOfWork.Dispose();
                 }
             }
             else
@@ -497,7 +551,7 @@ namespace ShiftSchedularBLL.Service
         {
             // Determine which member types to fetch — skip the unused repo call entirely
             bool fetchWorkers = filters == null || !filters.ApplyMemberTypeFilter || !filters.IsBot;
-            bool fetchBots    = filters == null || !filters.ApplyMemberTypeFilter || filters.IsBot;
+            bool fetchBots = filters == null || !filters.ApplyMemberTypeFilter || filters.IsBot;
 
             IEnumerable<EntityWorkerMemberModel> entityWorkerMembers = fetchWorkers
                 ? await _unitOfWork.EntityWorkerRepository.GetDistinctMembersByEntityId(entityId)
@@ -755,7 +809,7 @@ namespace ShiftSchedularBLL.Service
                                                                     entityDescription: entity.EntityDescription,
                                                                     entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
                                                                     botsCount + workersCount);
-                    entityProfileViewModel.AllowEdit = entityWorkerInstance.IsOwner;
+                    entityProfileViewModel.AllowEdit = true;
 
                     if (entityProfileViewModel.AllowEdit)
                     {

@@ -35,6 +35,11 @@ namespace ShiftSchedularEntity.Entities
         /// </summary>
         public int EntityTypeId { get; set; }
 
+        /// <summary>
+        /// Identifier of a parent Entity if applicable
+        /// </summary>
+        public Guid? ParentEntityId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -52,7 +57,9 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; }
         public virtual ICollection<EntityUserBotShiftAssigned> EntityUserBotShiftAssigneds { get; set; }
         public virtual ICollection<EntityHoliday> EntityHolidays { get; set; }
-
+        public virtual Entity? ParentEntity { get; set; }
+        public virtual ICollection<Entity> ChildrenEntities { get; set; }
+        public virtual ICollection<EntityPermission> EntityPermissions { get; set; }
         #endregion
     }
 }

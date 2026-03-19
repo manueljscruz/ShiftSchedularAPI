@@ -36,6 +36,7 @@ namespace ShiftSchedularDAL.Repositories
                 return await _entityDbSet.Include(e => e.EntityType)
                     .ThenInclude(et => et.EntityTypeLocalizations
                         .Where(etl => etl.LocalizationId.Equals(localization.LocalizationId)))
+                    .Include(e => e.ChildrenEntities)
                     .FirstOrDefaultAsync(e => e.EntityId.Equals(entityId));
             }
             else return null;

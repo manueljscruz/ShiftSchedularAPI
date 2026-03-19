@@ -88,11 +88,29 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This entity cannot be deleted because it has child entities. Please delete or reassign all child entities first..
+        /// </summary>
+        public static string DeleteEntityHasChildrenError {
+            get {
+                return ResourceManager.GetString("DeleteEntityHasChildrenError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An unexpected error occurred when deleting an worker entity. Please try again later..
         /// </summary>
         public static string DeleteEntityUnexpectedError {
             get {
                 return ResourceManager.GetString("DeleteEntityUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Work Entity was deleted successfuly..
+        /// </summary>
+        public static string EntityDeletedSuccessfuly {
+            get {
+                return ResourceManager.GetString("EntityDeletedSuccessfuly", resourceCulture);
             }
         }
         
@@ -151,6 +169,15 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No parent entity was found with that identifier. If this continues, contact IT support..
+        /// </summary>
+        public static string ParentEntityNotFound {
+            get {
+                return ResourceManager.GetString("ParentEntityNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Work Entity was updated successfully..
         /// </summary>
         public static string UpdateEntitySuccess {
@@ -165,6 +192,15 @@ namespace ShiftSchedularRL.Resources.Dashboard {
         public static string UpdateEntityUnexpectedError {
             get {
                 return ResourceManager.GetString("UpdateEntityUnexpectedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to User does not have a permission to create entities..
+        /// </summary>
+        public static string UserCannotCreateEntityPermission {
+            get {
+                return ResourceManager.GetString("UserCannotCreateEntityPermission", resourceCulture);
             }
         }
     }

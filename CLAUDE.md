@@ -95,6 +95,13 @@ The following indexes exist for query optimization (added 2026-01-15):
 **ScheduleEntryWorkers**:
 - `IX_ScheduleEntryWorkers_ScheduleEntryId`
 
+**Entity** (hierarchy):
+- `IX_Entities_ParentEntityId`
+
+**EntityPermissions**:
+- `IX_EntityPermissions_ApplicationUserId`
+- `IX_EntityPermissions_EntityId_RoleId` (composite)
+
 ## Security
 
 ### Authentication & Authorization
