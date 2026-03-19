@@ -68,10 +68,10 @@ namespace ShiftSchedularBLL.Service
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(viewModelRequest.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(viewModelRequest.WorkerId, viewModelRequest.EntityId);
-                viewModel.AllowEdit = entityWorkerInstance.IsOwner;
+                viewModel.AllowEdit = true;
 
                 // If it can change data
-                if (entityWorkerInstance.IsOwner)
+                if (viewModel.AllowEdit)
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, _languageAccessor.GetLanguageCode());

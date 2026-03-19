@@ -65,7 +65,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
                 .ForMember(dest => dest.EntityTypeId, opt => opt.MapFrom(src => src.EntityTypeId))
                 .ForMember(dest => dest.EntityName, opt => opt.MapFrom(src => src.EntityName))
-                .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription));
+                .ForMember(dest => dest.EntityDescription, opt => opt.MapFrom(src => src.EntityDescription))
+                .ForMember(dest => dest.ParentEntityId, opt => opt.MapFrom(src => src.ParentEntityId));
 
             CreateMap<Entity, EntityPublicProfileDTO>()
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
@@ -364,9 +365,6 @@ namespace ShiftSchedularIL.Mappers
 
             CreateMap<EntityUserBot, EntityWorker>()
                 .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.EntityId))
-                .ForMember(dest => dest.ActiveWorkerStatus, opt => opt.MapFrom(src => src.ActiveWorkerStatus))
-                .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => false))
-                .ForMember(dest => dest.CanCreateSchedules , opt => opt.MapFrom(src => false))
                 .ForMember(dest => dest.DateOfJoin , opt => opt.MapFrom(src => src.DateOfJoin))
                 .ForMember(dest => dest.DateToExit, opt => opt.MapFrom(src => DateTime.MinValue))
                 .ForMember(dest => dest.PartOfRotation, opt => opt.MapFrom(src => src.PartOfRotation))

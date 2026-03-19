@@ -147,9 +147,7 @@ namespace ShiftSchedularDAL.Repositories
                            {
                                WorkerId = ew.ApplicationUserId,
                                WorkerName = w.DisplayName,
-                               CanCreateSchedules = ew.CanCreateSchedules,
                                IsBot = false,
-                               IsOwner = ew.IsOwner,
                                DateOfJoin = ew.DateOfJoin,
                                PartOfRotation = ew.PartOfRotation,
                                WorksWeekDays = ew.WorksWeekDays,
@@ -198,7 +196,7 @@ namespace ShiftSchedularDAL.Repositories
         {
             if (!string.IsNullOrEmpty(entityId.ToString()))
             {
-                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i => i.IsOwner && i.EntityId.Equals(entityId));
+                EntityWorker entityWorker = await _entityWorkerDbSet.FirstOrDefaultAsync(i =>  i.EntityId.Equals(entityId)); // i.IsOwner &&
 
                 if (entityWorker != null)
                     return entityWorker.ApplicationUserId;
@@ -255,7 +253,7 @@ namespace ShiftSchedularDAL.Repositories
             if (!string.IsNullOrEmpty(workerId))
             {
                 EntityWorker entityWorker = await _entityWorkerDbSet.Where(i => i.ApplicationUserId.Equals(workerId) && i.EntityId.Equals(entityId)).FirstOrDefaultAsync();
-                if (entityWorker != null && entityWorker.IsOwner)
+                if (entityWorker != null) // && entityWorker.IsOwner
                     result = true;
             }
 

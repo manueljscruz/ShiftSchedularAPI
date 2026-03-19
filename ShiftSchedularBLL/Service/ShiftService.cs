@@ -378,10 +378,10 @@ namespace ShiftSchedularBLL.Service
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(shiftViewModelRequestDTO.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(shiftViewModelRequestDTO.WorkerId, shiftViewModelRequestDTO.EntityId);
-                shiftViewModel.AllowEdit = entityWorkerInstance.IsOwner;
+                shiftViewModel.AllowEdit = true;
 
                 // If it can change data
-                if (entityWorkerInstance.IsOwner)
+                if (shiftViewModel.AllowEdit)
                 {
                     // Get Shift Break Types Localized
                     IEnumerable<ShiftBreakTypeLocalization> shiftBreakTypeLocalizations = await _unitOfWork.ShiftBreakTypeLocalizationRepository.GetShiftBreaksTypeLocalized(_languageAccessor.GetLanguageCode());

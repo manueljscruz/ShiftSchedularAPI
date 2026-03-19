@@ -24,21 +24,6 @@ namespace ShiftSchedularEntity.Entities
         public string ApplicationUserId { get; set; }
 
         /// <summary>
-        /// Part of the active worker roster
-        /// </summary>
-        public bool ActiveWorkerStatus { get; set; }
-
-        /// <summary>
-        /// Flag indicator of being a manager/owner of the entity
-        /// </summary>
-        public bool IsOwner { get; set; }
-
-        /// <summary>
-        /// Flag indicator of being able to create schedules
-        /// </summary>
-        public bool CanCreateSchedules { get; set; }
-
-        /// <summary>
         /// Date of joining the entity workforce
         /// </summary>
         public DateTime DateOfJoin { get; set; }

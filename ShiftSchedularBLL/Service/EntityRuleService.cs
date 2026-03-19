@@ -472,10 +472,10 @@ namespace ShiftSchedularBLL.Service
             {
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityRuleViewModelRequestDTO.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
-                entityRuleViewModel.AllowEdit = entityWorkerInstance.IsOwner;
+                entityRuleViewModel.AllowEdit = true;
 
                 // If it can change data
-                if (entityWorkerInstance.IsOwner)
+                if (entityRuleViewModel.AllowEdit) // entityWorkerInstance.IsOwner
                 {
                     // Get All business aspect localized
                     IEnumerable<BusinessAspectLocalization> businessAspectLocalizations = await _unitOfWork.BusinessAspectLocalizationRepository.GetBusinessAspectsByLocalization(_languageAccessor.GetLanguageCode());
