@@ -3,7 +3,7 @@
     public class EntityWorkerSQL
     {
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
-            SELECT 
+            SELECT
                 EW.ApplicationUserId AS WorkerId,
                 W.DisplayName AS WorkerName,
                 CAST(0 AS BIT) AS IsBot,
@@ -12,24 +12,29 @@
                 EW.WorksWeekDays,
                 EW.WorksWeekends,
                 EW.MultipleShiftAssignments,
-                ISNULL(SkillAgg.SkillIds, '') AS SkillIds
+                ISNULL(SkillAgg.SkillIds, '') AS SkillIds,
+                CASE WHEN EP.RoleId = 1 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsGeneralManager
             FROM [dbo].[EntityWorkers] EW
-            LEFT JOIN [dbo].[AspNetUsers] W 
+            LEFT JOIN [dbo].[AspNetUsers] W
                 ON W.Id = EW.ApplicationUserId
             LEFT JOIN (
-                SELECT 
+                SELECT
                     EWS.ApplicationUserId,
                     STRING_AGG(CAST(EWS.SkillId AS VARCHAR), ',') AS SkillIds
                 FROM [dbo].[EntityWorkerSkills] EWS
                 GROUP BY EWS.ApplicationUserId
-            ) AS SkillAgg 
+            ) AS SkillAgg
                 ON SkillAgg.ApplicationUserId = EW.ApplicationUserId
+            LEFT JOIN [dbo].[EntityPermissions] EP
+                ON EP.ApplicationUserId = EW.ApplicationUserId
+                AND EP.EntityId = @EntityId
+                AND EP.RoleId = 1
             WHERE EW.EntityId = @EntityId
             {0};
         ";
 
         public static readonly string GetDistinctUserBotsByEntityId = @"
-            SELECT 
+            SELECT
                 EUB.UserBotId AS WorkerId,
                 UB.UserDisplayName AS WorkerName,
                 CAST(1 AS BIT) AS IsBot,
@@ -38,17 +43,18 @@
                 EUB.WorksWeekDays,
                 EUB.WorksWeekends,
                 EUB.MultipleShiftAssignments,
-                ISNULL(SkillAgg.SkillIds, '') AS SkillIds
+                ISNULL(SkillAgg.SkillIds, '') AS SkillIds,
+                CAST(0 AS BIT) AS IsGeneralManager
             FROM [dbo].[EntityUserBots] EUB
-            LEFT JOIN [dbo].[UserBots] UB 
+            LEFT JOIN [dbo].[UserBots] UB
                 ON UB.UserBotId = EUB.UserBotId
             LEFT JOIN (
-                SELECT 
+                SELECT
                     EUBS.UserBotId,
                     STRING_AGG(CAST(EUBS.SkillId AS VARCHAR), ',') AS SkillIds
                 FROM [dbo].[EntityUserBotSkills] EUBS
                 GROUP BY EUBS.UserBotId
-            ) AS SkillAgg 
+            ) AS SkillAgg
                 ON SkillAgg.UserBotId = EUB.UserBotId
             WHERE EUB.EntityId = @EntityId
             {0};

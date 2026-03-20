@@ -13,6 +13,7 @@ namespace ShiftSchedularEntity.Models.QueryModels
         public bool MultipleShiftAssignments { get; set; }
         public DateTime DateOfJoin { get; set; }
         public string SkillIds { get; set; }
+        public bool IsGeneralManager { get; set; }
 
         public EntityWorkerMemberModel()
         {

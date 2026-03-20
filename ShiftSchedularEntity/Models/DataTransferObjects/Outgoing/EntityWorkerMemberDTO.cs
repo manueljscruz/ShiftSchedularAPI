@@ -12,6 +12,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects
         public bool WorksWeekDays { get; set; }
         public bool WorksWeekends { get; set; }
         public bool MultipleShiftAssignments { get; set; }
+        public bool IsGeneralManager { get; set; }
         public List<SkillLocalizedDTO> SkillSet { get; set; }
         public List<ShiftDTO> AssignedShifts { get; set; }
         public EntityWorkerMemberDTO()
