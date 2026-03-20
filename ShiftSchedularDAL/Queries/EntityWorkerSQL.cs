@@ -1,8 +1,10 @@
-﻿namespace ShiftSchedularDAL.Queries
+﻿using ShiftSchedularDAL.DbConstants;
+
+namespace ShiftSchedularDAL.Queries
 {
     public class EntityWorkerSQL
     {
-        public static readonly string GetDistinctEntityWorkersByEntityId = @"
+        public static string GetDistinctEntityWorkersByEntityId => $@"
             SELECT
                 EW.ApplicationUserId AS WorkerId,
                 W.DisplayName AS WorkerName,
@@ -13,7 +15,7 @@
                 EW.WorksWeekends,
                 EW.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds,
-                CASE WHEN EP.RoleId = 1 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsGeneralManager
+                CASE WHEN EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID} THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsGeneralManager
             FROM [dbo].[EntityWorkers] EW
             LEFT JOIN [dbo].[AspNetUsers] W
                 ON W.Id = EW.ApplicationUserId
@@ -28,9 +30,9 @@
             LEFT JOIN [dbo].[EntityPermissions] EP
                 ON EP.ApplicationUserId = EW.ApplicationUserId
                 AND EP.EntityId = @EntityId
-                AND EP.RoleId = 1
+                AND EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID}
             WHERE EW.EntityId = @EntityId
-            {0};
+            {{0}};
         ";
 
         public static readonly string GetDistinctUserBotsByEntityId = @"
