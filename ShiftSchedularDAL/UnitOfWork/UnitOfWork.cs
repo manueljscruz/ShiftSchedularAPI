@@ -402,19 +402,19 @@ namespace ShiftSchedularDAL.UnitOfWork
         private IEntityPermissionRepository _entityPermissionRepository;
         public IEntityPermissionRepository EntityPermissionRepository 
         {
-            get { return _entityPermissionRepository ?? new EntityPermissionRepository(_context, this); } 
+            get { return _entityPermissionRepository = _entityPermissionRepository ?? new EntityPermissionRepository(_context, this); }
         }
 
         private IEntityPermissionRoleRepository _entityPermissionRoleRepository;
         public IEntityPermissionRoleRepository EntityPermissionRoleRepository
         {
-            get { return _entityPermissionRoleRepository ?? new EntityPermissionRoleRepository(_context, this); }
+            get { return _entityPermissionRoleRepository = _entityPermissionRoleRepository ?? new EntityPermissionRoleRepository(_context, this); }
         }
 
         private IEntityPermissionRoleLocalizationRepository _entityPermissionRoleLocalizationRepository;
         public IEntityPermissionRoleLocalizationRepository EntityPermissionRoleLocalizationRepository
         {
-            get { return _entityPermissionRoleLocalizationRepository ?? new EntityPermissionRoleLocalizationRepository(_context, this); }
+            get { return _entityPermissionRoleLocalizationRepository = _entityPermissionRoleLocalizationRepository ?? new EntityPermissionRoleLocalizationRepository(_context, this); }
         }
 
         #endregion

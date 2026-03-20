@@ -6,9 +6,7 @@ namespace ShiftSchedularEntity.Models.QueryModels
     {
         public string WorkerId { get; set; }
         public string WorkerName { get; set; }
-        public bool CanCreateSchedules { get; set; }
         public bool IsBot { get; set; }
-        public bool IsOwner { get; set; }
         public bool PartOfRotation { get; set; }
         public bool WorksWeekDays { get; set; }
         public bool WorksWeekends { get; set; }
@@ -20,9 +18,7 @@ namespace ShiftSchedularEntity.Models.QueryModels
         {
             WorkerId = string.Empty;
             WorkerName = string.Empty;
-            CanCreateSchedules = false;
             IsBot = false;
-            IsOwner = false;
             SkillIds = string.Empty;
         }
     }

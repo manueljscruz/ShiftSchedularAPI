@@ -43,7 +43,6 @@ namespace ShiftSchedularBLL.Service
         public async Task<DashboardEntityViewModel> GetEntityDashboardViewModel(BaseViewModelRequest request)
         {
             DashboardEntityViewModel dashboardEntityViewModel = new DashboardEntityViewModel();
-            bool isOwner = false;
 
             Guid entityId = _generalService.ParseStringToGuid(request.EntityId.ToString());
 
@@ -54,9 +53,6 @@ namespace ShiftSchedularBLL.Service
             List<EntityWorkerMemberDTO> entityWorkerMemberDTOLst = await _entityService.GetEntityMembers(entityId, new List<string> { request.WorkerId });
             EntityWorkerMemberDTO entityWorkerMemberDTO = entityWorkerMemberDTOLst.First();
 
-            // Set Owner flag
-            isOwner = entityWorkerMemberDTO.IsOwner;
-
             // Set skillset
             dashboardEntityViewModel.AssignedEntitySkills = entityWorkerMemberDTO.SkillSet;
 
@@ -64,25 +60,17 @@ namespace ShiftSchedularBLL.Service
             ScheduleViewModelRequestDTO scheduleViewModelRequest = new ScheduleViewModelRequestDTO(entityId, request.WorkerId, DateTime.UtcNow, DateTime.UtcNow.AddDays(7));
             List<ScheduleEntryDTO> scheduleEntryDTOs = await _entityScheduleService.GetScheduleEntries(scheduleViewModelRequest);
 
-            // Show all schedules entries if owner, filter by user if not
-            if (isOwner)
-                dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs;
-            else
-                dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs.Where(i => i.ScheduleParticipants.Any(j => j.Worker.Equals(entityWorkerMemberDTO))).ToList();
+            // TODO: Filter schedule entries based on permission role once permission system is wired
+            dashboardEntityViewModel.ScheduleEntries = scheduleEntryDTOs;
 
             // Get Absences
             PagedModelRequest absencesRequest = new PagedModelRequest(entityId, entityWorkerMemberDTO.WorkerId, 0, 1, 20, false);
             dashboardEntityViewModel.EntityWorkerAbsenceEntries = await _entityWorkerAbsenceService.GetEntityWorkerAbsences(absencesRequest);
 
-            // Get Statistics
-            if (isOwner)
-            {
-                int totalShifts = await _shiftService.GetTotalEntityShifts(entityId);
-                int totalRules = await _entityRuleService.GetTotalEntityRules(entityId);
-                dashboardEntityViewModel.EntityStatistics = new EntityStatisticsDTO(dashboardEntityViewModel.EntityDTO.EntityWorkersCount, totalRules, totalShifts);
-            }
-            else
-                dashboardEntityViewModel.EntityStatistics = new EntityStatisticsDTO(0, 0, 0);
+            // Get Statistics — TODO: scope based on permission role once permission system is wired
+            int totalShifts = await _shiftService.GetTotalEntityShifts(entityId);
+            int totalRules = await _entityRuleService.GetTotalEntityRules(entityId);
+            dashboardEntityViewModel.EntityStatistics = new EntityStatisticsDTO(dashboardEntityViewModel.EntityDTO.EntityWorkersCount, totalRules, totalShifts);
 
             return dashboardEntityViewModel;
         }

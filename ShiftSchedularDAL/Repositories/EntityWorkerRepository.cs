@@ -25,32 +25,6 @@ namespace ShiftSchedularDAL.Repositories
             _entityWorkerDbSet = _context.Set<EntityWorker>();
         }
 
-        #region Get By Worker Id
-
-        /// <summary>
-        /// Gets entities to which the worker belongs to
-        /// </summary>
-        /// <param name="workerId"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<EntityWorkerDTO>> GetByWorkerId(string workerId)
-        {
-            IEnumerable<EntityWorkerDTO> entitiesByWorker;
-
-            if (!string.IsNullOrEmpty(workerId))
-            {
-                Dictionary<string, object> parameters = new Dictionary<string, object>();
-                parameters.Add("@WorkerId", workerId);
-
-                entitiesByWorker = await _sqlRawRepository.ExecuteQuery<EntityWorkerDTO>(EntityWorkerSQL.GetEntityWorkersByWorkerId, parameters);
-
-                return entitiesByWorker;
-            }
-            else
-                return null;
-        }
-
-        #endregion
-
         #region Get By Entity Id
 
         public async Task<IEnumerable<EntityWorker>> GetByEntityId(Guid entityId)

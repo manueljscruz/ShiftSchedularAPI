@@ -435,31 +435,70 @@ namespace ShiftSchedularBLL.Service
         #region Get Entities By Worker Id
 
         /// <summary>
-        /// Get Entities By Worker Id
+        /// Returns a flat list of entities for breadcrumb tree rendering.
+        /// Entities where the worker has an explicit EntityPermission are included with their role.
+        /// All ancestors of those entities are also included with EntityPermissionRoleId = null
+        /// so Angular can reconstruct the full path from root to the worker's entity.
         /// </summary>
-        /// <param name="workerId"></param>
-        /// <returns></returns>
         public async Task<List<EntityWorkerDTO>> GetEntitiesByWorkerId(string workerId)
         {
-            List<EntityWorkerDTO> entityWorkers = new List<EntityWorkerDTO>();
+            if (string.IsNullOrEmpty(workerId))
+                return new List<EntityWorkerDTO>();
 
-            if (!string.IsNullOrEmpty(workerId))
+            try
             {
-                try
-                {
-                    // Get entity worker instances by worker identifier
-                    IEnumerable<EntityWorkerDTO> entityWorkerDTOs = await _unitOfWork.EntityWorkerRepository.GetByWorkerId(workerId);
+                // Step 1: Load all explicit permissions for this worker
+                IEnumerable<EntityPermission> permissions = await _unitOfWork.EntityPermissionRepository.GetByWorkerId(workerId);
 
-                    if (entityWorkerDTOs != null)
-                        entityWorkers = entityWorkerDTOs.ToList();
-                }
-                catch (Exception ex)
+                if (permissions == null || !permissions.Any())
+                    return new List<EntityWorkerDTO>();
+
+                // Step 2: Build a map of EntityId -> role (null = ancestor only)
+                // Role wins over null if the same entity appears in multiple paths
+                Dictionary<Guid, int?> entityRoleMap = new Dictionary<Guid, int?>();
+
+                foreach (EntityPermission permission in permissions)
                 {
-                    string error = ex.Message;
+                    // Register the directly-permitted entity with its role
+                    if (!entityRoleMap.ContainsKey(permission.EntityId) || entityRoleMap[permission.EntityId] == null)
+                        entityRoleMap[permission.EntityId] = permission.EntityPermissionRoleId;
+
+                    // Traverse ancestors and register them with null role if not already present
+                    List<Entity> ancestors = await _unitOfWork.EntityRepository.GetAncestorChain(permission.EntityId);
+                    foreach (Entity ancestor in ancestors)
+                    {
+                        if (!entityRoleMap.ContainsKey(ancestor.EntityId))
+                            entityRoleMap[ancestor.EntityId] = null;
+                    }
                 }
+
+                // Step 3: Batch fetch all entity names and ParentEntityIds in one query
+                List<Entity> allEntities = await _unitOfWork.EntityRepository.GetEntitiesByIds(entityRoleMap.Keys.ToList());
+                Dictionary<Guid, Entity> entityLookup = allEntities.ToDictionary(e => e.EntityId);
+
+                // Step 4: Project to DTOs
+                List<EntityWorkerDTO> result = new List<EntityWorkerDTO>();
+                foreach (KeyValuePair<Guid, int?> entry in entityRoleMap)
+                {
+                    if (entityLookup.TryGetValue(entry.Key, out Entity entity))
+                    {
+                        result.Add(new EntityWorkerDTO
+                        {
+                            EntityId = entity.EntityId,
+                            EntityName = entity.EntityName,
+                            ParentEntityId = entity.ParentEntityId,
+                            EntityPermissionRoleId = entry.Value
+                        });
+                    }
+                }
+
+                return result;
             }
-
-            return entityWorkers;
+            catch (Exception ex)
+            {
+                string error = ex.Message;
+                return new List<EntityWorkerDTO>();
+            }
         }
 
         #endregion
@@ -1040,9 +1079,7 @@ namespace ShiftSchedularBLL.Service
                 {
                     WorkerId = newUserBot.UserBotId.ToString(),
                     WorkerName = newMemberDTO.MemberName,
-                    CanCreateSchedules = false,
                     IsBot = true,
-                    IsOwner = false,
                     DateOfJoin = nowUTCTime,
                     SkillSet = newMemberDTO.AssignedSkills,
                     PartOfRotation = newMemberDTO.PartOfRotation,

@@ -2,32 +2,11 @@
 {
     public class EntityWorkerSQL
     {
-        /// <summary>
-        /// Gets related records between the entity and worker tables
-        /// Where the worker is active
-        /// Currently being used to populate the navbar
-        /// </summary>
-        public static readonly string GetEntityWorkersByWorkerId = @"
-            SELECT 
-                et.EntityId,
-                et.EntityName,
-                etw.IsOwner
-            FROM Entities et
-            LEFT JOIN EntityWorkers etw on et.EntityId = etw.EntityId
-            WHERE 
-                etw.ActiveWorkerStatus = 1
-                AND etw.ApplicationUserId = @WorkerId
-            GROUP BY et.EntityId, et.EntityName, etw.IsOwner"
-            ;
-
-        
         public static readonly string GetDistinctEntityWorkersByEntityId = @"
             SELECT 
                 EW.ApplicationUserId AS WorkerId,
                 W.DisplayName AS WorkerName,
-                EW.CanCreateSchedules,
                 CAST(0 AS BIT) AS IsBot,
-                EW.IsOwner,
                 EW.DateOfJoin,
                 EW.PartOfRotation,
                 EW.WorksWeekDays,
@@ -53,9 +32,7 @@
             SELECT 
                 EUB.UserBotId AS WorkerId,
                 UB.UserDisplayName AS WorkerName,
-                CAST(0 AS BIT) AS CanCreateSchedules,
                 CAST(1 AS BIT) AS IsBot,
-                CAST(0 AS BIT) AS IsOwner,
                 EUB.DateOfJoin,
                 EUB.PartOfRotation,
                 EUB.WorksWeekDays,

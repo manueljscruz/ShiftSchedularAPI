@@ -82,8 +82,6 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.WorksWeekDays, opt => opt.MapFrom(src => src.WorksWeekDays))
                 .ForMember(dest => dest.WorksWeekends, opt => opt.MapFrom(src => src.WorksWeekends))
                 .ForMember(dest => dest.MultipleShiftAssignments, opt => opt.MapFrom(src => src.MultipleShiftAssignments))
-                .ForMember(dest => dest.CanCreateSchedules, opt => opt.MapFrom(src => src.CanCreateSchedules))
-                .ForMember(dest => dest.IsOwner, opt => opt.MapFrom(src => src.IsOwner))
                 .ForMember(dest => dest.DateOfJoin, opt => opt.MapFrom(src => src.DateOfJoin));
 
             CreateMap<AddShiftDTO, Shift>()

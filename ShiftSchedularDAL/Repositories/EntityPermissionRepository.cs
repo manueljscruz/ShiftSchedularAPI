@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
+using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
@@ -60,6 +61,20 @@ namespace ShiftSchedularDAL.Repositories
         {
             return await _entityPermissionDbSet
                 .Where(p => p.EntityId == entityId)
+                .ToListAsync();
+        }
+
+        #endregion
+
+        #region Get By Worker Id
+
+        public async Task<IEnumerable<EntityPermission>> GetByWorkerId(string workerId)
+        {
+            if (string.IsNullOrEmpty(workerId))
+                return Enumerable.Empty<EntityPermission>();
+
+            return await _entityPermissionDbSet
+                .Where(p => p.ApplicationUserId == workerId)
                 .ToListAsync();
         }
 

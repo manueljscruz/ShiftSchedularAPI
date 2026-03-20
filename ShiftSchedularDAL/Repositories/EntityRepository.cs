@@ -64,6 +64,53 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         /// <summary>
+        /// Returns all ancestors of the given entity ordered root-first down to the direct parent.
+        /// The entity itself is NOT included. Returns an empty list for root entities.
+        /// Uses iterative application-level traversal — suitable for shallow hierarchies (max 3-5 levels).
+        /// </summary>
+        public async Task<List<Entity>> GetAncestorChain(Guid entityId)
+        {
+            List<Entity> ancestors = new List<Entity>();
+
+            if (entityId == Guid.Empty)
+                return ancestors;
+
+            Entity current = await _entityDbSet.AsNoTracking()
+                .Select(e => new Entity { EntityId = e.EntityId, EntityName = e.EntityName, ParentEntityId = e.ParentEntityId })
+                .FirstOrDefaultAsync(e => e.EntityId == entityId);
+
+            Guid? parentId = current?.ParentEntityId;
+            while (parentId != null && parentId != Guid.Empty)
+            {
+                Entity parent = await _entityDbSet.AsNoTracking()
+                    .Select(e => new Entity { EntityId = e.EntityId, EntityName = e.EntityName, ParentEntityId = e.ParentEntityId })
+                    .FirstOrDefaultAsync(e => e.EntityId == parentId);
+
+                if (parent == null) break;
+                ancestors.Add(parent);
+                parentId = parent.ParentEntityId;
+            }
+
+            ancestors.Reverse();
+            return ancestors;
+        }
+
+        /// <summary>
+        /// Batch fetches a set of entities by their IDs.
+        /// Returns only EntityId, EntityName, and ParentEntityId — no navigation properties loaded.
+        /// </summary>
+        public async Task<List<Entity>> GetEntitiesByIds(List<Guid> entityIds)
+        {
+            if (entityIds == null || entityIds.Count == 0)
+                return new List<Entity>();
+
+            return await _entityDbSet.AsNoTracking()
+                .Where(e => entityIds.Contains(e.EntityId))
+                .Select(e => new Entity { EntityId = e.EntityId, EntityName = e.EntityName, ParentEntityId = e.ParentEntityId })
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Searches entities by name, includes EntityType with filtered localization
         /// </summary>
         /// <param name="searchQuery">The search query (already normalized/lowercased)</param>
