@@ -43,6 +43,27 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         /// <summary>
+        /// Gets all direct child entities of a given parent entity
+        /// </summary>
+        /// <param name="parentEntityId">The identifier of the parent entity</param>
+        /// <param name="languageCode">Language code for EntityType localization</param>
+        /// <returns>List of child entities with EntityType localization loaded</returns>
+        public async Task<List<Entity>> GetChildEntities(Guid parentEntityId, string languageCode)
+        {
+            Localization localization = await _unitOfWork.LocalizationRepository.GetLocalizationByLanguageCode(languageCode);
+
+            if (localization == null || parentEntityId == Guid.Empty)
+                return new List<Entity>();
+
+            return await _entityDbSet
+                .Include(e => e.EntityType)
+                    .ThenInclude(et => et.EntityTypeLocalizations
+                        .Where(etl => etl.LocalizationId == localization.LocalizationId))
+                .Where(e => e.ParentEntityId == parentEntityId)
+                .ToListAsync();
+        }
+
+        /// <summary>
         /// Searches entities by name, includes EntityType with filtered localization
         /// </summary>
         /// <param name="searchQuery">The search query (already normalized/lowercased)</param>

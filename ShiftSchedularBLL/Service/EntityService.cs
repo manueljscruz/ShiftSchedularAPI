@@ -828,6 +828,33 @@ namespace ShiftSchedularBLL.Service
                     {
                         entityProfileViewModel.EntityTypeLocalizeds = await _entityTypeService.GetAllEntityTypesByLocalization(_languageAccessor.GetLanguageCode());
                     }
+
+                    // Load parent entity if applicable
+                    if (entity.ParentEntityId.HasValue)
+                    {
+                        Entity parentEntity = await _unitOfWork.EntityRepository.GetEntityById(entity.ParentEntityId.Value, _languageAccessor.GetLanguageCode());
+                        if (parentEntity != null)
+                        {
+                            EntityTypeLocalization parentTypeLocalization = parentEntity.EntityType?.EntityTypeLocalizations?.FirstOrDefault();
+                            entityProfileViewModel.ParentEntity = new EntityDTO(entityId: parentEntity.EntityId,
+                                                                                entityName: parentEntity.EntityName,
+                                                                                entityDescription: parentEntity.EntityDescription,
+                                                                                entityTypeLocalized: parentTypeLocalization?.EntityTypeDisplayValue ?? string.Empty,
+                                                                                totalCount: 0);
+                        }
+                    }
+
+                    // Load direct children
+                    List<Entity> children = await _unitOfWork.EntityRepository.GetChildEntities(entity.EntityId, _languageAccessor.GetLanguageCode());
+                    entityProfileViewModel.ChildrenEntities = children.Select(c =>
+                    {
+                        EntityTypeLocalization childTypeLocalization = c.EntityType?.EntityTypeLocalizations?.FirstOrDefault();
+                        return new EntityDTO(entityId: c.EntityId,
+                                            entityName: c.EntityName,
+                                            entityDescription: c.EntityDescription,
+                                            entityTypeLocalized: childTypeLocalization?.EntityTypeDisplayValue ?? string.Empty,
+                                            totalCount: 0);
+                    }).ToList();
                 }
                 catch (Exception ex)
                 {
