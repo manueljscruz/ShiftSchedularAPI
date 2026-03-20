@@ -330,7 +330,8 @@ namespace ShiftSchedularBLL.Service
                                                                     entityName: entity.EntityName,
                                                                     entityDescription: entity.EntityDescription,
                                                                     entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
-                                                                    botsCount + workersCount);
+                                                                    totalCount: botsCount + workersCount,
+                                                                    parentEntityId: entity.ParentEntityId);
 
                 return entityDTO;
             }
@@ -819,7 +820,8 @@ namespace ShiftSchedularBLL.Service
                                                                     entityName: entity.EntityName,
                                                                     entityDescription: entity.EntityDescription,
                                                                     entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
-                                                                    botsCount + workersCount);
+                                                                    totalCount: botsCount + workersCount,
+                                                                    parentEntityId: entity.ParentEntityId);
                     entityProfileViewModel.AllowEdit = true;
 
                     if (entityProfileViewModel.AllowEdit)
