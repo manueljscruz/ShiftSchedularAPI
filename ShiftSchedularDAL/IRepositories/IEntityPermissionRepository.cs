@@ -10,6 +10,7 @@ namespace ShiftSchedularDAL.IRepositories
     public interface IEntityPermissionRepository : IGenericRepository<EntityPermission>
     {
         Task<bool> CanUserCreateEntities(Guid entityId, string workerId);
+        Task<bool> CanUserEditEntity(Guid entityId, string workerId);
         Task<IEnumerable<EntityPermission>> GetByEntityId(Guid entityId);
     }
 }

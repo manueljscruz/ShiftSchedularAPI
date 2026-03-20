@@ -860,7 +860,7 @@ namespace ShiftSchedularBLL.Service
                                                                     entityTypeLocalized: entityTypeLocalization.EntityTypeDisplayValue,
                                                                     totalCount: botsCount + workersCount,
                                                                     parentEntityId: entity.ParentEntityId);
-                    entityProfileViewModel.AllowEdit = true;
+                    entityProfileViewModel.AllowEdit = await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(entityProfileViewModelRequest.EntityId, entityProfileViewModelRequest.WorkerId);
 
                     if (entityProfileViewModel.AllowEdit)
                     {

@@ -336,7 +336,8 @@ namespace ShiftSchedularBLL.Service
 
             EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(pagedModelRequest.WorkerId, pagedModelRequest.EntityId);
 
-            IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(pagedModelRequest.EntityId, pagedModelRequest.WorkerId, true);
+            bool canEdit = await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(pagedModelRequest.EntityId, pagedModelRequest.WorkerId);
+            IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(pagedModelRequest.EntityId, pagedModelRequest.WorkerId, canEdit);
             int totalCount = entityWorkerAbsences.Count();
 
             entityWorkerAbsences = entityWorkerAbsences.OrderBy(i => i.AbsenceStartDate);
