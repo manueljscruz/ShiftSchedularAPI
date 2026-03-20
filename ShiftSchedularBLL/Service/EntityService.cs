@@ -341,6 +341,44 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Get Child Entities
+
+        /// <summary>
+        /// Gets all direct child entities of a given parent entity
+        /// </summary>
+        /// <param name="parentEntityId">Identifier of the parent entity</param>
+        /// <returns>List of child entities as EntityDTOs</returns>
+        public async Task<List<EntityDTO>> GetChildEntities(Guid parentEntityId)
+        {
+            List<EntityDTO> childEntities = new List<EntityDTO>();
+
+            if (parentEntityId == Guid.Empty)
+                return childEntities;
+
+            List<Entity> children = await _unitOfWork.EntityRepository.GetChildEntities(parentEntityId, _languageAccessor.GetLanguageCode());
+
+            foreach (Entity child in children)
+            {
+                int botsCount = await _unitOfWork.EntityUserBotRepository.GetUserBotsByEntityCount(child.EntityId);
+                int workersCount = await _unitOfWork.EntityWorkerRepository.GetTotalCountByEntity(child.EntityId);
+
+                string entityTypeLocalized = child.EntityType?.EntityTypeLocalizations?.FirstOrDefault()?.EntityTypeDisplayValue ?? string.Empty;
+
+                childEntities.Add(new EntityDTO(
+                    entityId: child.EntityId,
+                    entityName: child.EntityName,
+                    entityDescription: child.EntityDescription,
+                    entityTypeLocalized: entityTypeLocalized,
+                    totalCount: botsCount + workersCount,
+                    parentEntityId: child.ParentEntityId
+                ));
+            }
+
+            return childEntities;
+        }
+
+        #endregion
+
         #region Update Entity
 
         /// <summary>

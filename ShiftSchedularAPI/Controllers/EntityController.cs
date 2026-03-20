@@ -389,6 +389,30 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Child Entities
+
+        /// <summary>
+        /// Gets all direct child entities of a given parent entity
+        /// </summary>
+        /// <param name="parentId">Identifier of the parent entity</param>
+        /// <returns>List of child entities</returns>
+        [Authorize]
+        [HttpGet("get-children/{parentId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetChildEntities(Guid parentId)
+        {
+            if (parentId == Guid.Empty)
+            {
+                return BadRequest(EntitiesRelatedMessages.EntityNoIdentifierError);
+            }
+
+            List<EntityDTO> children = await _entityService.GetChildEntities(parentId);
+            return Ok(children);
+        }
+
+        #endregion
+
         #region Convert Bot To User
 
         [Authorize]
