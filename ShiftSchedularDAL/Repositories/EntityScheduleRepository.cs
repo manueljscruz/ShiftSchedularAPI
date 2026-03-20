@@ -183,6 +183,25 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get By Entity Id
+
+        /// <inheritdoc/>
+        public async Task<List<ScheduleEntry>> GetByEntityId(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return new List<ScheduleEntry>();
+
+            return await _scheduleEntriesDbSet
+                .Where(i => i.Shift.EntityId.Equals(entityId))
+                .Include(i => i.ScheduleEntryWorkers)
+                .Include(i => i.ScheduleEntryBots)
+                .Include(i => i.ScheduleEntryWorkerIneligibilities)
+                .Include(i => i.ScheduleEntryBotIneligibilities)
+                .ToListAsync();
+        }
+
+        #endregion
+
         #region Delete Previous Shift Entries
 
         public async Task<bool> DeletePreviousShiftEntries(Guid entityId, Guid shiftId, DateTime dateOfTermination)

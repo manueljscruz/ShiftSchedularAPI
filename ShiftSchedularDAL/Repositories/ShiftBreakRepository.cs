@@ -46,6 +46,16 @@ namespace ShiftSchedularDAL.Repositories
                 return null;
         }
 
+        /// <inheritdoc/>
+        public async Task<IEnumerable<ShiftBreak>> GetByEntityId(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return Enumerable.Empty<ShiftBreak>();
+
+            return await _dbSet
+                .Where(i => i.Shift.EntityId.Equals(entityId))
+                .ToListAsync();
+        }
 
         #endregion
     }

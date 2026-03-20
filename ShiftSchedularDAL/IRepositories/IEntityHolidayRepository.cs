@@ -17,6 +17,14 @@ namespace ShiftSchedularDAL.IRepositories
         Task<IEnumerable<EntityHoliday>> GetEntityHolidays(Guid entityId, string languageCode, bool includeInactive = false, DateTime? startDateSearch = null, DateTime? endDateSearch = null);
 
         /// <summary>
+        /// Retrieves all holidays for a specific entity without localization overhead.
+        /// Intended for bulk operations such as deletion.
+        /// </summary>
+        /// <param name="entityId">The unique identifier of the entity</param>
+        /// <returns>A collection of EntityHoliday records for the specified entity</returns>
+        Task<IEnumerable<EntityHoliday>> GetByEntityId(Guid entityId);
+
+        /// <summary>
         /// Retrieves a specific entity holiday by its unique identifier.
         /// Includes related HolidayCatalog and HolidayBehaviour navigation properties.
         /// </summary>

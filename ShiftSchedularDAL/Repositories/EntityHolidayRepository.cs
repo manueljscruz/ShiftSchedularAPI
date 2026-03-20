@@ -97,6 +97,21 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get By Entity Id
+
+        /// <inheritdoc/>
+        public async Task<IEnumerable<EntityHoliday>> GetByEntityId(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return Enumerable.Empty<EntityHoliday>();
+
+            return await _dbSet
+                .Where(eh => eh.EntityId.Equals(entityId))
+                .ToListAsync();
+        }
+
+        #endregion
+
         #region Get Entity Holiday By Id
 
         /// <summary>

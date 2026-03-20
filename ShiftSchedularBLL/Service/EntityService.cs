@@ -238,7 +238,11 @@ namespace ShiftSchedularBLL.Service
                 IEnumerable<EntityUserBotShiftAssigned> entityUserBotShiftAssigneds = await _unitOfWork.EntityUserBotShiftAssignedsRepository.GetAllByEntityId(entityId);
                 IEnumerable<EntityWorkerAbsence> entityWorkerAbsences = await _unitOfWork.EntityWorkerAbsenceRepository.GetEntityWorkerAbsences(entityId, "", true);
                 IEnumerable<EntityRule> entityRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(entityId);
-                IEnumerable<EntityHoliday> entityHolidays = await _unitOfWork.EntityHolidayRepository.GetEntityHolidays(entityId, _languageAccessor.GetLanguageCode());
+                IEnumerable<EntityHoliday> entityHolidays = await _unitOfWork.EntityHolidayRepository.GetByEntityId(entityId);
+                List<EntityShiftRotation> entityShiftRotations = await _unitOfWork.EntityShiftRotationRepository.GetEntityShiftsRotation(entityId);
+                IEnumerable<Shift> entityShifts = await _unitOfWork.ShiftRepository.GetEntityShifts(entityId);
+                IEnumerable<ShiftBreak> shiftBreaks = await _unitOfWork.ShiftBreakRepository.GetByEntityId(entityId);
+                List<ScheduleEntry> scheduleEntries = await _unitOfWork.EntityScheduleRepository.GetByEntityId(entityId);
 
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -252,12 +256,19 @@ namespace ShiftSchedularBLL.Service
                     await _unitOfWork.EntityWorkerInvitationRepository.DeleteAllByEntity(entityId);
                     await _unitOfWork.EntityPermissionRepository.DeleteRange(entityPermissions);
                     await _unitOfWork.EntityHolidayRepository.DeleteRange(entityHolidays);
-                    foreach (EntityRule entityRule in entityRules)
-                        await _unitOfWork.EntityRuleSpecificationRepository.DeleteRange(entityRule.EntityRuleSpecifications);
+                    await _unitOfWork.EntityRuleSpecificationRepository.DeleteRange(entityRules.SelectMany(i => i.EntityRuleSpecifications));
                     await _unitOfWork.EntityWorkerShiftAssignedsRepository.DeleteRange(entityWorkerShiftAssigneds);
                     await _unitOfWork.EntityUserBotShiftAssignedsRepository.DeleteRange(entityUserBotShiftAssigneds);
                     await _unitOfWork.EntityWorkerAbsenceRepository.DeleteRange(entityWorkerAbsences);
                     await _unitOfWork.EntityRuleRepository.DeleteRange(entityRules);
+                    await _unitOfWork.EntityShiftRotationRepository.DeleteRange(entityShiftRotations);
+                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryBots));
+                    await _unitOfWork.ScheduleEntryBotIneligibilityRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryBotIneligibilities));
+                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryWorkers));
+                    await _unitOfWork.ScheduleEntryWorkerIneligibilityRepository.DeleteRange(scheduleEntries.SelectMany(i => i.ScheduleEntryWorkerIneligibilities));
+                    await _unitOfWork.EntityScheduleRepository.DeleteRange(scheduleEntries);
+                    await _unitOfWork.ShiftBreakRepository.DeleteRange(shiftBreaks);
+                    await _unitOfWork.ShiftRepository.DeleteRange(entityShifts);
                     await _unitOfWork.EntityRepository.Delete(entityInstance.EntityId);
                     await _unitOfWork.CommitAsync();
 

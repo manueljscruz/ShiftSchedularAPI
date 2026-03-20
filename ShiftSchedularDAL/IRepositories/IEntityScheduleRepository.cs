@@ -12,5 +12,13 @@ namespace ShiftSchedularDAL.IRepositories
         Task<List<ScheduleEntry>> GetWorkerScheduleEntries(Guid entityId, DateTime startDateSearch, DateTime endDateSearch, Guid workerId, bool isBot);
         Task<int> GetShiftForwardEntriesCount(Guid entityId, Guid shiftId, DateTime now);
         Task<bool> DeletePreviousShiftEntries(Guid entityId, Guid shiftId, DateTime now);
+
+        /// <summary>
+        /// Retrieves all schedule entries for a specific entity, including all child records.
+        /// Intended for bulk operations such as deletion.
+        /// </summary>
+        /// <param name="entityId">The unique identifier of the entity</param>
+        /// <returns>A collection of ScheduleEntry records with children eagerly loaded</returns>
+        Task<List<ScheduleEntry>> GetByEntityId(Guid entityId);
     }
 }
