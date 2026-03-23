@@ -15,7 +15,10 @@ namespace ShiftSchedularDAL.Queries
                 EW.WorksWeekends,
                 EW.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds,
-                CASE WHEN EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID} THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsGeneralManager
+                CASE WHEN EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID} THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsGeneralManager,
+                ISNULL(EP.EntityPermissionRoleId, 0) AS EntityPermissionRoleId,
+                CAST(ISNULL(EP.CanManageChildren, 0) AS BIT) AS CanManageChildren,
+                CAST(ISNULL(EP.PartOfRoster, 0) AS BIT) AS PartOfRoster
             FROM [dbo].[EntityWorkers] EW
             LEFT JOIN [dbo].[AspNetUsers] W
                 ON W.Id = EW.ApplicationUserId
@@ -32,6 +35,7 @@ namespace ShiftSchedularDAL.Queries
                 AND EP.EntityId = @EntityId
                 AND EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID}
             WHERE EW.EntityId = @EntityId
+            AND EW.IsDeleted = 0
             {{0}};
         ";
 
@@ -46,7 +50,10 @@ namespace ShiftSchedularDAL.Queries
                 EUB.WorksWeekends,
                 EUB.MultipleShiftAssignments,
                 ISNULL(SkillAgg.SkillIds, '') AS SkillIds,
-                CAST(0 AS BIT) AS IsGeneralManager
+                CAST(0 AS BIT) AS IsGeneralManager,
+                0 AS EntityPermissionRoleId,
+                CAST(0 AS BIT) AS CanManageChildren,
+                CAST(0 AS BIT) AS PartOfRoster
             FROM [dbo].[EntityUserBots] EUB
             LEFT JOIN [dbo].[UserBots] UB
                 ON UB.UserBotId = EUB.UserBotId
@@ -59,6 +66,7 @@ namespace ShiftSchedularDAL.Queries
             ) AS SkillAgg
                 ON SkillAgg.UserBotId = EUB.UserBotId
             WHERE EUB.EntityId = @EntityId
+            AND EUB.IsDeleted = 0
             {0};
         ";
 
@@ -72,7 +80,8 @@ namespace ShiftSchedularDAL.Queries
             FROM 
                 [dbo].[EntityWorkers]
             WHERE EntityId = @EntityId
-            GROUP BY 
+            AND IsDeleted = 0
+            GROUP BY
                 EntityId
         ";
 
@@ -82,6 +91,7 @@ namespace ShiftSchedularDAL.Queries
             FROM
                 [dbo].[EntityUserBots]
             WHERE EntityId = @EntityId
+            AND IsDeleted = 0
             GROUP BY
                 EntityId
         ";

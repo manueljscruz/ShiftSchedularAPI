@@ -46,7 +46,21 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task Delete(EntityWorkerInvitation entityWorkerInvitation)
         {
-            EntityWorkerInvitation invitation = await _dbSet.FindAsync(entityWorkerInvitation);
+            EntityWorkerInvitation invitation = await _dbSet.FindAsync(entityWorkerInvitation.EntityId, entityWorkerInvitation.Email);
+            if (invitation != null)
+            {
+                _dbSet.Remove(invitation);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        #endregion
+
+        #region Delete By Composite Key
+
+        public async Task DeleteByCompositeKey(Guid entityId, string email)
+        {
+            EntityWorkerInvitation invitation = await _dbSet.FindAsync(entityId, email);
             if (invitation != null)
             {
                 _dbSet.Remove(invitation);
@@ -79,6 +93,16 @@ namespace ShiftSchedularDAL.Repositories
                 return await _dbSet.Where(i => i.ApplicationUserId.Equals(workerId)).ToListAsync();
             }
             else return Enumerable.Empty<EntityWorkerInvitation>();
+        }
+
+        #endregion
+
+        #region Get By Entity And Worker
+
+        public async Task<EntityWorkerInvitation?> GetByEntityAndWorker(Guid entityId, string workerId)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(i => i.EntityId == entityId && i.ApplicationUserId == workerId);
         }
 
         #endregion

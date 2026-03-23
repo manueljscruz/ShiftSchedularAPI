@@ -6,6 +6,7 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularRL.Resources.Dashboard;
 using ShiftSchedularRL.Resources.Home;
 using System.Web;
@@ -370,6 +371,7 @@ namespace ShiftSchedularAPI.Controllers
         [HttpDelete("delete-entity-member")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeleteEntityMember(DeleteMemberDTO workerData)
         {
@@ -379,8 +381,12 @@ namespace ShiftSchedularAPI.Controllers
             }
 
             BaseResponse<bool> response = await _entityService.DeleteEntityMember(workerData);
+
             if (!response.Success)
             {
+                if (response.NotFound)
+                    return NotFound(response.Message);
+
                 return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
             }
 
@@ -409,6 +415,103 @@ namespace ShiftSchedularAPI.Controllers
 
             List<EntityDTO> children = await _entityService.GetChildEntities(parentId);
             return Ok(children);
+        }
+
+        #endregion
+
+        #region Get Pending Invitations
+
+        [Authorize]
+        [HttpGet("pending-invitations/{workerId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetPendingInvitations(string workerId)
+        {
+            if (string.IsNullOrEmpty(workerId))
+            {
+                return BadRequest(WorkerRelatedMessages.WorkerIdentifierIsEmpty);
+            }
+
+            List<PendingInvitationDTO> invitations = await _entityService.GetPendingInvitations(workerId);
+            return Ok(invitations);
+        }
+
+        #endregion
+
+        #region Accept Invitation
+
+        [Authorize]
+        [HttpPost("accept-invitation")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> AcceptInvitation([FromBody] AcceptDeclineInvitationDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest();
+            }
+
+            BaseResponse<EntityWorkerDTO> response = await _entityService.AcceptInvitation(dto);
+
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
+            return Ok(response);
+        }
+
+        #endregion
+
+        #region Decline Invitation
+
+        [Authorize]
+        [HttpPost("decline-invitation")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeclineInvitation([FromBody] AcceptDeclineInvitationDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest();
+            }
+
+            BaseResponse<bool> response = await _entityService.DeclineInvitation(dto);
+
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
+            return Ok(response);
+        }
+
+        #endregion
+
+        #region Update Member Permission
+
+        [Authorize]
+        [HttpPut("update-member-permission")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateMemberPermission([FromBody] UpdateMemberPermissionDTO dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest();
+            }
+
+            BaseResponse<bool> response = await _entityService.UpdateMemberPermission(dto);
+
+            if (!response.Success)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+            }
+
+            return Ok(response);
         }
 
         #endregion

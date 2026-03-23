@@ -2,6 +2,7 @@ using AutoMapper;
 using AutoMapper.Execution;
 using Azure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Org.BouncyCastle.Utilities;
 using ShiftSchedularBLL.IService;
@@ -35,6 +36,8 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityTypeService _entityTypeService;
         private readonly IGeneralService _generalService;
         private readonly ILanguageAccessor _languageAccessor;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
         #region Constructor
 
@@ -46,7 +49,9 @@ namespace ShiftSchedularBLL.Service
             IShiftService shiftService,
             IEntityTypeService entityTypeService,
             IGeneralService generalService,
-            ILanguageAccessor languageAccessor)
+            ILanguageAccessor languageAccessor,
+            IEmailService emailService,
+            IConfiguration configuration)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -57,6 +62,8 @@ namespace ShiftSchedularBLL.Service
             _entityTypeService = entityTypeService;
             _generalService = generalService;
             _languageAccessor = languageAccessor;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         #endregion
@@ -1125,10 +1132,20 @@ namespace ShiftSchedularBLL.Service
                 PartOfRotation = newMemberDTO.PartOfRotation,
                 WorksWeekDays = newMemberDTO.WorksWeekDays,
                 WorksWeekends = newMemberDTO.WorksWeekends,
-                MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments
+                MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments,
+                EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId
             };
 
             await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
+
+            // Send notification email — fire and forget (errors are swallowed in EmailService)
+            string frontendUrl = _configuration.GetValue<string>("FrontendUrl") ?? string.Empty;
+            if (!string.IsNullOrEmpty(frontendUrl))
+            {
+                string invitationsLink = $"{frontendUrl}/dashboard/my-invitations";
+                string displayName = possibleWorker?.DisplayName ?? newMemberDTO.MemberEmail;
+                _ = _emailService.SendInvitationEmail(newMemberDTO.MemberEmail, displayName, invitationsLink);
+            }
 
             response.Result = true;
             response.Message = EntityWorkerRelatedMessages.AddNewMemberInvitationSuccessful;
@@ -1474,7 +1491,11 @@ namespace ShiftSchedularBLL.Service
                     {
                         Guid userId = _generalService.ParseStringToGuid(workerMemberDTO.WorkerId);
 
-                        EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(workerMemberDTO.WorkerId, workerMemberDTO.EntityId);
+                        // Use the simple lookup (no navigation-property includes) to avoid
+                        // silent null returns caused by unmapped/failing ThenInclude chains
+                        EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository
+                            .GetSimpleByWorkerAndEntity(workerMemberDTO.WorkerId, workerMemberDTO.EntityId);
+
                         if (entityWorker != null)
                         {
                             // Check if the worker is not part of rotation and remove specifics
@@ -1484,11 +1505,15 @@ namespace ShiftSchedularBLL.Service
                             // Remove Entity Worker Skills
                             await _unitOfWork.EntityWorkerSkillRepository.DeleteAllByEntityIdAndUserId(workerMemberDTO.EntityId, userId);
 
-                            // Remove Entity Worker Instance
-                            await _unitOfWork.EntityWorkerRepository.Delete(userId);
+                            // Remove Entity Worker Instance (composite key — must use both EntityId and WorkerId)
+                            await _unitOfWork.EntityWorkerRepository.DeleteByEntityAndWorker(workerMemberDTO.EntityId, workerMemberDTO.WorkerId);
+
+                            // Remove Entity Permission record
+                            await _unitOfWork.EntityPermissionRepository.DeleteByEntityAndWorker(workerMemberDTO.EntityId, workerMemberDTO.WorkerId);
                         }
                         else
                         {
+                            response.NotFound = true;
                             response.Message = EntityWorkerRelatedMessages.MemberNotFound;
                             return response;
                         }
@@ -1645,6 +1670,212 @@ namespace ShiftSchedularBLL.Service
             }
 
             return response;
+        }
+
+        #endregion
+
+        #region Update Member Permission
+
+        public async Task<BaseResponse<bool>> UpdateMemberPermission(UpdateMemberPermissionDTO dto)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            try
+            {
+                EntityPermission permission = await _unitOfWork.EntityPermissionRepository
+                    .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+
+                if (permission == null)
+                {
+                    permission = new EntityPermission
+                    {
+                        EntityId = dto.EntityId,
+                        ApplicationUserId = dto.WorkerId,
+                    };
+                    await _unitOfWork.EntityPermissionRepository.Add(permission);
+                }
+
+                permission.EntityPermissionRoleId = dto.EntityPermissionRoleId;
+                permission.CanManageChildren = dto.CanManageChildren;
+                permission.PartOfRoster = dto.PartOfRoster;
+
+                await _unitOfWork.SaveChangesAsync();
+                response.Success = true;
+                response.Result = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                return response;
+            }
+        }
+
+        #endregion
+
+        #region Get Pending Invitations
+
+        public async Task<List<PendingInvitationDTO>> GetPendingInvitations(string workerId)
+        {
+            List<PendingInvitationDTO> result = new List<PendingInvitationDTO>();
+
+            if (string.IsNullOrEmpty(workerId))
+                return result;
+
+            IEnumerable<EntityWorkerInvitation> invitations = await _unitOfWork.EntityWorkerInvitationRepository.GetAllByWorker(workerId);
+
+            foreach (EntityWorkerInvitation inv in invitations)
+            {
+                Entity entity = await _unitOfWork.EntityRepository.GetById(inv.EntityId);
+                if (entity != null)
+                {
+                    result.Add(new PendingInvitationDTO
+                    {
+                        EntityId = inv.EntityId,
+                        EntityName = entity.EntityName,
+                        InviteDate = inv.InviteDate,
+                        EntityPermissionRoleId = inv.EntityPermissionRoleId
+                    });
+                }
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Accept Invitation
+
+        public async Task<BaseResponse<EntityWorkerDTO>> AcceptInvitation(AcceptDeclineInvitationDTO dto)
+        {
+            BaseResponse<EntityWorkerDTO> response = new BaseResponse<EntityWorkerDTO>();
+
+            EntityWorkerInvitation invitation = await _unitOfWork.EntityWorkerInvitationRepository
+                .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+
+            if (invitation == null)
+            {
+                response.Message = "Invitation not found.";
+                return response;
+            }
+
+            bool alreadyMember = await _unitOfWork.EntityWorkerRepository.IsWorkerInEntity(dto.EntityId, dto.WorkerId);
+            if (alreadyMember)
+            {
+                response.Message = EntityWorkerRelatedMessages.AddNewMemberAlreadyInEntity;
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                // 1. Create EntityWorker
+                EntityWorker entityWorker = new EntityWorker
+                {
+                    EntityId = dto.EntityId,
+                    ApplicationUserId = dto.WorkerId,
+                    DateOfJoin = DateTime.UtcNow,
+                    PartOfRotation = invitation.PartOfRotation,
+                    WorksWeekDays = invitation.WorksWeekDays,
+                    WorksWeekends = invitation.WorksWeekends,
+                    MultipleShiftAssignments = invitation.MultipleShiftAssignments
+                };
+                await _unitOfWork.GetGenericRepository<EntityWorker>().Add(entityWorker);
+
+                // 2. Create EntityWorkerSkill records from comma-separated SkillsetIds
+                if (!string.IsNullOrEmpty(invitation.SkillsetIds))
+                {
+                    foreach (string skillIdStr in invitation.SkillsetIds.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        if (int.TryParse(skillIdStr.Trim(), out int skillId))
+                        {
+                            EntityWorkerSkill workerSkill = new EntityWorkerSkill
+                            {
+                                ApplicationUserId = dto.WorkerId,
+                                EntityId = dto.EntityId,
+                                SkillId = skillId
+                            };
+                            await _unitOfWork.EntityWorkerSkillRepository.Add(workerSkill);
+                        }
+                    }
+                }
+
+                // 3. Create EntityPermission
+                EntityPermission permission = await _unitOfWork.EntityPermissionRepository
+                    .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+
+                if (permission == null)
+                {
+                    permission = new EntityPermission
+                    {
+                        EntityId = dto.EntityId,
+                        ApplicationUserId = dto.WorkerId,
+                        EntityPermissionRoleId = invitation.EntityPermissionRoleId,
+                        CanManageChildren = false,
+                        PartOfRoster = false
+                    };
+                    await _unitOfWork.EntityPermissionRepository.Add(permission);
+                }
+                else
+                {
+                    permission.EntityPermissionRoleId = invitation.EntityPermissionRoleId;
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                // 4. Delete invitation
+                await _unitOfWork.EntityWorkerInvitationRepository.DeleteByCompositeKey(invitation.EntityId, invitation.Email);
+
+                await _unitOfWork.CommitAsync();
+
+                // 5. Fetch entity to build the return DTO for immediate sidebar access
+                Entity entity = await _unitOfWork.EntityRepository.GetById(dto.EntityId);
+                response.Success = true;
+                response.Result = new EntityWorkerDTO
+                {
+                    EntityId = dto.EntityId,
+                    EntityName = entity?.EntityName ?? string.Empty,
+                    ParentEntityId = entity?.ParentEntityId,
+                    EntityPermissionRoleId = invitation.EntityPermissionRoleId
+                };
+                return response;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = ex.Message;
+                return response;
+            }
+        }
+
+        #endregion
+
+        #region Decline Invitation
+
+        public async Task<BaseResponse<bool>> DeclineInvitation(AcceptDeclineInvitationDTO dto)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            EntityWorkerInvitation invitation = await _unitOfWork.EntityWorkerInvitationRepository
+                .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+
+            if (invitation == null)
+            {
+                response.Message = "Invitation not found.";
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.EntityWorkerInvitationRepository.DeleteByCompositeKey(invitation.EntityId, invitation.Email);
+                response.Success = true;
+                response.Result = true;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                return response;
+            }
         }
 
         #endregion

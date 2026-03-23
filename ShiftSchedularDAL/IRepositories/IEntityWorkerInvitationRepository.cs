@@ -37,11 +37,28 @@ namespace ShiftSchedularDAL.IRepositories
         Task Delete(EntityWorkerInvitation entityWorkerInvitation);
 
         /// <summary>
+        /// Delete Entity Worker Invitation by composite key (EntityId + Email)
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task DeleteByCompositeKey(Guid entityId, string email);
+
+        /// <summary>
         /// Deletes all invitation given by an entity
         /// Used when the entity has chosen to be erased
         /// </summary>
         /// <param name="entityId"></param>
         /// <returns></returns>
         Task DeleteAllByEntity(Guid entityId);
+
+        /// <summary>
+        /// Gets an invitation by entity and worker (ApplicationUserId)
+        /// Used for accept/decline operations when the invited user is already registered
+        /// </summary>
+        /// <param name="entityId"></param>
+        /// <param name="workerId"></param>
+        /// <returns></returns>
+        Task<EntityWorkerInvitation?> GetByEntityAndWorker(Guid entityId, string workerId);
     }
 }

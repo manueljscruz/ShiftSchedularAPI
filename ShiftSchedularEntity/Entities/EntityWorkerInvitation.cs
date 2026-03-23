@@ -46,6 +46,8 @@ namespace ShiftSchedularEntity.Entities
 
         public bool MultipleShiftAssignments { get; set; }
 
+        public int EntityPermissionRoleId { get; set; }
+
         #region Navigation Properties
 
         public virtual Entity? Entity { get; set; }

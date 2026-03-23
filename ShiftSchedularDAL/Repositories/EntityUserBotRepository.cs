@@ -66,7 +66,7 @@ namespace ShiftSchedularDAL.Repositories
 
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctUserBotsByEntityId, string.Empty);
 

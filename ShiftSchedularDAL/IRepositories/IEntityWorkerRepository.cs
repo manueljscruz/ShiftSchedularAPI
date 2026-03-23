@@ -15,5 +15,7 @@ namespace ShiftSchedularDAL.IRepositories
         Task<int> GetTotalCountByEntity(Guid entityId);
         Task<string> GetEntityOwnerId(Guid entityId);
         Task<bool> IsMemberOwner(Guid entityId, string workerId);
+        Task DeleteByEntityAndWorker(Guid entityId, string workerId);
+        Task<EntityWorker?> GetSimpleByWorkerAndEntity(string workerId, Guid entityId);
     }
 }

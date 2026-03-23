@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Queries;
@@ -93,7 +94,7 @@ namespace ShiftSchedularDAL.Repositories
 
                 Dictionary<string, object> parameters = new Dictionary<string, object>();
 
-                parameters.Add("@EntityId", entityId);
+                parameters.Add("@EntityId", entityIdBytes);
 
                 string query = string.Format(EntityWorkerSQL.GetDistinctEntityWorkersByEntityId, string.Empty);
 
@@ -214,6 +215,47 @@ namespace ShiftSchedularDAL.Repositories
 
             return await _entityWorkerDbSet.AnyAsync(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
 
+        }
+
+        #endregion
+
+        #region Get Simple By Worker And Entity
+
+        /// <summary>
+        /// Fetches the EntityWorker record without any navigation-property includes.
+        /// Use for operations that only need the row itself (e.g. delete), to avoid
+        /// exception-swallowing caused by missing or unmapped navigation properties
+        /// in GetByWorkerAndEntity.
+        /// </summary>
+        public async Task<EntityWorker?> GetSimpleByWorkerAndEntity(string workerId, Guid entityId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityWorkerDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkers] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
+                    new SqlParameter("@entityId", System.Data.SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
+        #region Delete By Entity And Worker
+
+        public async Task DeleteByEntityAndWorker(Guid entityId, string workerId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            EntityWorker entityWorker = await _entityWorkerDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkers] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
+                    new SqlParameter("@entityId", System.Data.SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .FirstOrDefaultAsync();
+            if (entityWorker != null)
+            {
+                _entityWorkerDbSet.Remove(entityWorker);
+                await _unitOfWork.SaveChangesAsync();
+            }
         }
 
         #endregion

@@ -32,6 +32,21 @@ namespace ShiftSchedularIL.Services
 
         #endregion
 
+        #region Send Invitation Email
+
+        public async Task SendInvitationEmail(string toEmail, string displayName, string invitationsLink)
+        {
+            string body = EmailMessages.INVITATION_EMAIL;
+
+            body = body.Replace("[UserName]", displayName)
+                       .Replace("[InvitationsLink]", invitationsLink)
+                       .Replace("[Year]", DateTime.UtcNow.Year.ToString());
+
+            await SendEmail(new List<string> { toEmail }, new List<string>(), "You have a new invitation - Shift Scheduler", body);
+        }
+
+        #endregion
+
         #region Send Forgot Password Email
 
         public async Task SendForgotPasswordEmail(string subject, ApplicationUser user, string strLink)

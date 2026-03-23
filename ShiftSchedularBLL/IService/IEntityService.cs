@@ -2,6 +2,7 @@
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
+using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
 using System.Threading.Tasks;
 
@@ -25,5 +26,9 @@ namespace ShiftSchedularBLL.IService
         Task<PagedList<EntityWorkerMemberDTO>> GetEntityMembers(Guid entityId, List<string> workers, MemberListFilterDTO memberListFilterDTO, int nextPage = 0, int itemsPerPage = 0);
         Task<BaseResponse<EntityWorkerMemberDTO>> ConvertBotToUser(ConvertBotToUserDTO convertBotToUserDTO);
         Task<List<EntityDTO>> GetChildEntities(Guid parentEntityId);
+        Task<BaseResponse<bool>> UpdateMemberPermission(UpdateMemberPermissionDTO dto);
+        Task<List<PendingInvitationDTO>> GetPendingInvitations(string workerId);
+        Task<BaseResponse<EntityWorkerDTO>> AcceptInvitation(AcceptDeclineInvitationDTO dto);
+        Task<BaseResponse<bool>> DeclineInvitation(AcceptDeclineInvitationDTO dto);
     }
 }

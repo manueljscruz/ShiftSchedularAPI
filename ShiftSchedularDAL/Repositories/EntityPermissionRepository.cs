@@ -80,5 +80,30 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Get By Entity And Worker
+
+        public async Task<EntityPermission?> GetByEntityAndWorker(Guid entityId, string workerId)
+        {
+            return await _entityPermissionDbSet
+                .FirstOrDefaultAsync(p => p.EntityId == entityId && p.ApplicationUserId == workerId);
+        }
+
+        #endregion
+
+        #region Delete By Entity And Worker
+
+        public async Task DeleteByEntityAndWorker(Guid entityId, string workerId)
+        {
+            EntityPermission permission = await _entityPermissionDbSet
+                .FirstOrDefaultAsync(p => p.EntityId == entityId && p.ApplicationUserId == workerId);
+            if (permission != null)
+            {
+                _entityPermissionDbSet.Remove(permission);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
+
+        #endregion
+
     }
 }
