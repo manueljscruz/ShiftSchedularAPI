@@ -8,6 +8,7 @@ using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.QueryModels;
+using System.Data;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -208,13 +209,16 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<bool> IsWorkerInEntity(Guid entityId, string workerId)
         {
-            if (string.IsNullOrEmpty(entityId.ToString()) || string.IsNullOrEmpty(workerId))
-            {
+            if (string.IsNullOrEmpty(workerId))
                 return false;
-            }
 
-            return await _entityWorkerDbSet.AnyAsync(i => i.EntityId.Equals(entityId) && i.ApplicationUserId.Equals(workerId));
-
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityWorkerDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkers] WHERE EntityId = @entityId AND ApplicationUserId = @workerId AND IsDeleted = 0",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .AnyAsync();
         }
 
         #endregion
@@ -235,6 +239,22 @@ namespace ShiftSchedularDAL.Repositories
                     "SELECT * FROM [dbo].[EntityWorkers] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
                     new SqlParameter("@entityId", System.Data.SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
                     new SqlParameter("@workerId", workerId))
+                .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
+        #region Find By Worker And Entity (includes soft-deleted)
+
+        public async Task<EntityWorker?> FindByWorkerAndEntity(string workerId, Guid entityId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityWorkerDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkers] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync();
         }
 

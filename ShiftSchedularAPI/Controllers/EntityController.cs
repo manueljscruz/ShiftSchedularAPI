@@ -107,6 +107,19 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        [HttpPost("get-all-entity-members")]
+        public async Task<IActionResult> GetAllEntityMembers(SingleIdentifierDTO singleIdentifierDTO)
+        {
+            if (singleIdentifierDTO == null)
+            {
+                return BadRequest();
+            }
+
+            var results = await _entityService.GetEntityMembers(singleIdentifierDTO.Identifier, new List<string>());
+
+            return Ok(results);
+        }
+
         #region Get Entity Dashboard View Model
 
         [Authorize]

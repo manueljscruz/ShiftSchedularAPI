@@ -60,5 +60,16 @@ namespace ShiftSchedularDAL.IRepositories
         /// <param name="workerId"></param>
         /// <returns></returns>
         Task<EntityWorkerInvitation?> GetByEntityAndWorker(Guid entityId, string workerId);
+
+        /// <summary>
+        /// Returns true if there is already a pending (non-deleted) invitation for this entity/email pair.
+        /// </summary>
+        Task<bool> HasPendingInvitation(Guid entityId, string email);
+
+        /// <summary>
+        /// Finds an invitation by (EntityId, Email) regardless of IsDeleted status.
+        /// Used to detect soft-deleted rows before re-inviting.
+        /// </summary>
+        Task<EntityWorkerInvitation?> FindByEntityAndEmail(Guid entityId, string email);
     }
 }

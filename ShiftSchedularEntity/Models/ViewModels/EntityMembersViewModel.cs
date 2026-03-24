@@ -10,6 +10,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
         public List<SkillLocalizedDTO> EntityUsedSkills { get; set; }
         public IEnumerable<ShiftDTO> Shifts { get; set; }
         public PagedList<EntityWorkerMemberDTO> EntityMembers { get; set; }
+        public List<EntityPermissionRoleDTO> EntityPermissionRoles { get; set; }
 
         public EntityMembersViewModel()
         {
@@ -17,6 +18,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
             EntityUsedSkills = new List<SkillLocalizedDTO>();
             Shifts = new List<ShiftDTO>();
             EntityMembers = PagedList<EntityWorkerMemberDTO>.CreateEmpty();
+            EntityPermissionRoles = new List<EntityPermissionRoleDTO>();
         }
     }
 }

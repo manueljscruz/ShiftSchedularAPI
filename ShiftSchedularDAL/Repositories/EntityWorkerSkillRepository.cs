@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using System.Data;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -32,6 +34,19 @@ namespace ShiftSchedularDAL.Repositories
             }
         }
 
+
+        public async Task<EntityWorkerSkill?> FindByWorkerEntityAndSkill(string workerId, Guid entityId, int skillId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityWorkerSkillsDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkerSkills] WHERE ApplicationUserId = @workerId AND EntityId = @entityId AND SkillId = @skillId",
+                    new SqlParameter("@workerId", workerId),
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@skillId", skillId))
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
+        }
 
         public Task<bool> DeleteAllByEntityIdAndUserId(Guid entityId, Guid userId)
         {

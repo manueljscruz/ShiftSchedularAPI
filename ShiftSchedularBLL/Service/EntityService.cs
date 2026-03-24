@@ -522,7 +522,10 @@ namespace ShiftSchedularBLL.Service
         {
             EntityMembersViewModel viewModel = new EntityMembersViewModel();
 
-            viewModel.Skills = await _skillService.GetAllSkillsByLocalization(_languageAccessor.GetLanguageCode());
+            string lcode = _languageAccessor.GetLanguageCode();
+            if (lcode.Contains("-")) lcode = lcode.Split('-')[0];
+
+            viewModel.Skills = await _skillService.GetAllSkillsByLocalization(lcode);
 
             viewModel.EntityUsedSkills = await GetEntitySkills(memberListModelRequest);
 
@@ -531,6 +534,13 @@ namespace ShiftSchedularBLL.Service
             viewModel.EntityMembers = await GetEntityMembers(memberListModelRequest.EntityId, new List<string>(), memberListModelRequest.MemberFilters ?? new MemberListFilterDTO(), memberListModelRequest.NextPage, memberListModelRequest.ItemsPerPage);
 
             viewModel.EntityOwnerId = await _unitOfWork.EntityWorkerRepository.GetEntityOwnerId(memberListModelRequest.EntityId);
+
+            var roleLocalizations = await _unitOfWork.EntityPermissionRoleLocalizationRepository.GetAllByLanguageCode(lcode);
+            viewModel.EntityPermissionRoles = roleLocalizations.Select(r => new EntityPermissionRoleDTO
+            {
+                EntityPermissionRoleId = r.EntityPermissionRoleId,
+                EntityPermissionRoleDisplayValue = r.EntityPermissionRoleDisplayValue
+            }).ToList();
 
             return viewModel;
         }
@@ -1122,21 +1132,49 @@ namespace ShiftSchedularBLL.Service
 
             string skillsAggregated = newMemberDTO.AssignedSkills.Select(i => i.SkillId).Aggregate("", (i, j) => i + "," + j);
 
-            EntityWorkerInvitation entityWorkerInvitation = new EntityWorkerInvitation
-            {
-                EntityId = newMemberDTO.DestinationEntityId,
-                Email = newMemberDTO.MemberEmail,
-                ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null,
-                InviteDate = nowUTCTime,
-                SkillsetIds = skillsAggregated,
-                PartOfRotation = newMemberDTO.PartOfRotation,
-                WorksWeekDays = newMemberDTO.WorksWeekDays,
-                WorksWeekends = newMemberDTO.WorksWeekends,
-                MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments,
-                EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId
-            };
+            // Check for any existing invitation (including soft-deleted) to avoid PK violation
+            EntityWorkerInvitation existingInvitation = await _unitOfWork.EntityWorkerInvitationRepository
+                .FindByEntityAndEmail(newMemberDTO.DestinationEntityId, newMemberDTO.MemberEmail);
 
-            await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
+            if (existingInvitation != null)
+            {
+                if (!existingInvitation.IsDeleted)
+                {
+                    response.Message = "An invitation has already been sent to this email for this entity.";
+                    return response;
+                }
+
+                // Reactivate the soft-deleted invitation with updated fields
+                existingInvitation.IsDeleted = false;
+                existingInvitation.DeletedAt = null;
+                existingInvitation.DeletedById = null;
+                existingInvitation.ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null;
+                existingInvitation.InviteDate = nowUTCTime;
+                existingInvitation.SkillsetIds = skillsAggregated;
+                existingInvitation.PartOfRotation = newMemberDTO.PartOfRotation;
+                existingInvitation.WorksWeekDays = newMemberDTO.WorksWeekDays;
+                existingInvitation.WorksWeekends = newMemberDTO.WorksWeekends;
+                existingInvitation.MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments;
+                existingInvitation.EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId;
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                EntityWorkerInvitation entityWorkerInvitation = new EntityWorkerInvitation
+                {
+                    EntityId = newMemberDTO.DestinationEntityId,
+                    Email = newMemberDTO.MemberEmail,
+                    ApplicationUserId = possibleWorker != null ? possibleWorker.Id : null,
+                    InviteDate = nowUTCTime,
+                    SkillsetIds = skillsAggregated,
+                    PartOfRotation = newMemberDTO.PartOfRotation,
+                    WorksWeekDays = newMemberDTO.WorksWeekDays,
+                    WorksWeekends = newMemberDTO.WorksWeekends,
+                    MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments,
+                    EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId
+                };
+                await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
+            }
 
             // Send notification email — fire and forget (errors are swallowed in EmailService)
             string frontendUrl = _configuration.GetValue<string>("FrontendUrl") ?? string.Empty;
@@ -1769,42 +1807,82 @@ namespace ShiftSchedularBLL.Service
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                // 1. Create EntityWorker
-                EntityWorker entityWorker = new EntityWorker
-                {
-                    EntityId = dto.EntityId,
-                    ApplicationUserId = dto.WorkerId,
-                    DateOfJoin = DateTime.UtcNow,
-                    PartOfRotation = invitation.PartOfRotation,
-                    WorksWeekDays = invitation.WorksWeekDays,
-                    WorksWeekends = invitation.WorksWeekends,
-                    MultipleShiftAssignments = invitation.MultipleShiftAssignments
-                };
-                await _unitOfWork.GetGenericRepository<EntityWorker>().Add(entityWorker);
+                // 1. Create or reactivate EntityWorker
+                EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository
+                    .FindByWorkerAndEntity(dto.WorkerId, dto.EntityId);
 
-                // 2. Create EntityWorkerSkill records from comma-separated SkillsetIds
+                if (entityWorker != null)
+                {
+                    entityWorker.IsDeleted = false;
+                    entityWorker.DeletedAt = null;
+                    entityWorker.DeletedById = null;
+                    entityWorker.DateOfJoin = DateTime.UtcNow;
+                    entityWorker.PartOfRotation = invitation.PartOfRotation;
+                    entityWorker.WorksWeekDays = invitation.WorksWeekDays;
+                    entityWorker.WorksWeekends = invitation.WorksWeekends;
+                    entityWorker.MultipleShiftAssignments = invitation.MultipleShiftAssignments;
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                else
+                {
+                    entityWorker = new EntityWorker
+                    {
+                        EntityId = dto.EntityId,
+                        ApplicationUserId = dto.WorkerId,
+                        DateOfJoin = DateTime.UtcNow,
+                        PartOfRotation = invitation.PartOfRotation,
+                        WorksWeekDays = invitation.WorksWeekDays,
+                        WorksWeekends = invitation.WorksWeekends,
+                        MultipleShiftAssignments = invitation.MultipleShiftAssignments
+                    };
+                    await _unitOfWork.GetGenericRepository<EntityWorker>().Add(entityWorker);
+                }
+
+                // 2. Create or reactivate EntityWorkerSkill records
                 if (!string.IsNullOrEmpty(invitation.SkillsetIds))
                 {
                     foreach (string skillIdStr in invitation.SkillsetIds.Split(',', StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (int.TryParse(skillIdStr.Trim(), out int skillId))
                         {
-                            EntityWorkerSkill workerSkill = new EntityWorkerSkill
+                            EntityWorkerSkill existingSkill = await _unitOfWork.EntityWorkerSkillRepository
+                                .FindByWorkerEntityAndSkill(dto.WorkerId, dto.EntityId, skillId);
+
+                            if (existingSkill != null)
                             {
-                                ApplicationUserId = dto.WorkerId,
-                                EntityId = dto.EntityId,
-                                SkillId = skillId
-                            };
-                            await _unitOfWork.EntityWorkerSkillRepository.Add(workerSkill);
+                                existingSkill.IsDeleted = false;
+                                existingSkill.DeletedAt = null;
+                                existingSkill.DeletedById = null;
+                                await _unitOfWork.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                await _unitOfWork.EntityWorkerSkillRepository.Add(new EntityWorkerSkill
+                                {
+                                    ApplicationUserId = dto.WorkerId,
+                                    EntityId = dto.EntityId,
+                                    SkillId = skillId
+                                });
+                            }
                         }
                     }
                 }
 
-                // 3. Create EntityPermission
+                // 3. Create or reactivate EntityPermission
                 EntityPermission permission = await _unitOfWork.EntityPermissionRepository
-                    .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+                    .FindByEntityAndWorker(dto.EntityId, dto.WorkerId);
 
-                if (permission == null)
+                if (permission != null)
+                {
+                    permission.IsDeleted = false;
+                    permission.DeletedAt = null;
+                    permission.DeletedById = null;
+                    permission.EntityPermissionRoleId = invitation.EntityPermissionRoleId;
+                    permission.CanManageChildren = false;
+                    permission.PartOfRoster = false;
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                else
                 {
                     permission = new EntityPermission
                     {
@@ -1815,11 +1893,6 @@ namespace ShiftSchedularBLL.Service
                         PartOfRoster = false
                     };
                     await _unitOfWork.EntityPermissionRepository.Add(permission);
-                }
-                else
-                {
-                    permission.EntityPermissionRoleId = invitation.EntityPermissionRoleId;
-                    await _unitOfWork.SaveChangesAsync();
                 }
 
                 // 4. Delete invitation

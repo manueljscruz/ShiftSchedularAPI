@@ -9,5 +9,6 @@ namespace ShiftSchedularDAL.IRepositories
 {
     public interface IEntityPermissionRoleLocalizationRepository : IGenericRepository<EntityPermissionRoleLocalization>
     {
+        Task<List<EntityPermissionRoleLocalization>> GetAllByLanguageCode(string lcode);
     }
 }

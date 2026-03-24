@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
+using System.Data;
 
 namespace ShiftSchedularDAL.Repositories
 {
@@ -101,8 +103,45 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<EntityWorkerInvitation?> GetByEntityAndWorker(Guid entityId, string workerId)
         {
+            byte[] entityIdBytes = entityId.ToByteArray();
             return await _dbSet
-                .FirstOrDefaultAsync(i => i.EntityId == entityId && i.ApplicationUserId == workerId);
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkerInvitations] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
+        #region Has Pending Invitation
+
+        public async Task<bool> HasPendingInvitation(Guid entityId, string email)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _dbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkerInvitations] WHERE EntityId = @entityId AND Email = @email AND IsDeleted = 0",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@email", email))
+                .AnyAsync();
+        }
+
+        #endregion
+
+        #region Find By Entity And Email
+
+        public async Task<EntityWorkerInvitation?> FindByEntityAndEmail(Guid entityId, string email)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _dbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityWorkerInvitations] WHERE EntityId = @entityId AND Email = @email",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@email", email))
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
         }
 
         #endregion

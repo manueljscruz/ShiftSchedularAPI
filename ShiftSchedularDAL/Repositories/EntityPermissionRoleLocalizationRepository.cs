@@ -23,5 +23,13 @@ namespace ShiftSchedularDAL.Repositories
             _unitOfWork = unitOfWork;
             _entityPermissionRoleDbSet = _context.Set<EntityPermissionRoleLocalization>();
         }
+
+        public async Task<List<EntityPermissionRoleLocalization>> GetAllByLanguageCode(string lcode)
+        {
+            return await _entityPermissionRoleDbSet
+                .Include(r => r.Localization)
+                .Where(r => r.Localization.LocalizationCode == lcode)
+                .ToListAsync();
+        }
     }
 }

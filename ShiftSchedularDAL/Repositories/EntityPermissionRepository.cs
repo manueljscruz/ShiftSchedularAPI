@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using ShiftSchedularDAL.Data;
 using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.IRepositories;
@@ -6,6 +7,7 @@ using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,8 +86,29 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task<EntityPermission?> GetByEntityAndWorker(Guid entityId, string workerId)
         {
+            byte[] entityIdBytes = entityId.ToByteArray();
             return await _entityPermissionDbSet
-                .FirstOrDefaultAsync(p => p.EntityId == entityId && p.ApplicationUserId == workerId);
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityPermissions] WHERE EntityId = @entityId AND ApplicationUserId = @workerId AND IsDeleted = 0",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
+        #region Find By Entity And Worker (includes soft-deleted)
+
+        public async Task<EntityPermission?> FindByEntityAndWorker(Guid entityId, string workerId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityPermissionDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityPermissions] WHERE EntityId = @entityId AND ApplicationUserId = @workerId",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
         }
 
         #endregion
@@ -94,8 +117,13 @@ namespace ShiftSchedularDAL.Repositories
 
         public async Task DeleteByEntityAndWorker(Guid entityId, string workerId)
         {
+            byte[] entityIdBytes = entityId.ToByteArray();
             EntityPermission permission = await _entityPermissionDbSet
-                .FirstOrDefaultAsync(p => p.EntityId == entityId && p.ApplicationUserId == workerId);
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityPermissions] WHERE EntityId = @entityId AND ApplicationUserId = @workerId AND IsDeleted = 0",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId))
+                .FirstOrDefaultAsync();
             if (permission != null)
             {
                 _entityPermissionDbSet.Remove(permission);

@@ -14,6 +14,7 @@ namespace ShiftSchedularDAL.IRepositories
         Task<IEnumerable<EntityPermission>> GetByEntityId(Guid entityId);
         Task<IEnumerable<EntityPermission>> GetByWorkerId(string workerId);
         Task<EntityPermission?> GetByEntityAndWorker(Guid entityId, string workerId);
+        Task<EntityPermission?> FindByEntityAndWorker(Guid entityId, string workerId);
         Task DeleteByEntityAndWorker(Guid entityId, string workerId);
     }
 }

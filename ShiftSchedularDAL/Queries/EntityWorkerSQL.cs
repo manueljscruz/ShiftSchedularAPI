@@ -33,7 +33,7 @@ namespace ShiftSchedularDAL.Queries
             LEFT JOIN [dbo].[EntityPermissions] EP
                 ON EP.ApplicationUserId = EW.ApplicationUserId
                 AND EP.EntityId = @EntityId
-                AND EP.EntityPermissionRoleId = {EntityPermisisonRoleConstants.GENERAL_MANAGER_ID}
+                AND EP.IsDeleted = 0
             WHERE EW.EntityId = @EntityId
             AND EW.IsDeleted = 0
             {{0}};
