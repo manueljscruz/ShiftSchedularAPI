@@ -26,5 +26,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public List<ShiftDTO> AssignedShifts { get; set; }
 
         public int EntityPermissionRoleId { get; set; }
+
+        public bool PartOfRoster { get; set; }
     }
 }

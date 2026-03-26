@@ -57,6 +57,18 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Is General Manager
+
+        public async Task<bool> IsGeneralManager(Guid entityId, string workerId)
+        {
+            return await _entityPermissionDbSet
+                .AnyAsync(p => p.EntityId == entityId
+                    && p.ApplicationUserId == workerId
+                    && p.EntityPermissionRoleId == EntityPermisisonRoleConstants.GENERAL_MANAGER_ID);
+        }
+
+        #endregion
+
         #region Get By Entity Id
 
         public async Task<IEnumerable<EntityPermission>> GetByEntityId(Guid entityId)

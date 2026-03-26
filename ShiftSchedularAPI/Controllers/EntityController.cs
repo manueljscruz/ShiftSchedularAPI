@@ -305,15 +305,14 @@ namespace ShiftSchedularAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteEntityById(SingleIdentifierDTO singleIdentifierDTO)
+        public async Task<IActionResult> DeleteEntityById(DeleteEntityDTO deleteEntityDTO)
         {
-            if(singleIdentifierDTO.Identifier == Guid.Empty)
+            if(deleteEntityDTO.EntityId == Guid.Empty || string.IsNullOrEmpty(deleteEntityDTO.WorkerId))
             {
                 return BadRequest();
             }
 
-            // string entityId = HttpUtility.UrlDecode(id);
-            BaseResponse<bool> response = await _entityService.DeleteEntityById(singleIdentifierDTO.Identifier);
+            BaseResponse<bool> response = await _entityService.DeleteEntityById(deleteEntityDTO.EntityId, deleteEntityDTO.WorkerId);
 
             if (!response.Success)
             {

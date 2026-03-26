@@ -11,6 +11,7 @@ namespace ShiftSchedularDAL.IRepositories
     {
         Task<bool> CanUserCreateEntities(Guid entityId, string workerId);
         Task<bool> CanUserEditEntity(Guid entityId, string workerId);
+        Task<bool> IsGeneralManager(Guid entityId, string workerId);
         Task<IEnumerable<EntityPermission>> GetByEntityId(Guid entityId);
         Task<IEnumerable<EntityPermission>> GetByWorkerId(string workerId);
         Task<EntityPermission?> GetByEntityAndWorker(Guid entityId, string workerId);

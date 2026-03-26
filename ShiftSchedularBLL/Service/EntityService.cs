@@ -1,13 +1,8 @@
 using AutoMapper;
-using AutoMapper.Execution;
-using Azure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using Org.BouncyCastle.Utilities;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
-using ShiftSchedularDAL.Queries;
 using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
@@ -21,7 +16,6 @@ using ShiftSchedularRL.Resources.Dashboard;
 using ShiftSchedularRL.Resources.Home;
 using ShiftSchedularRL.Resources.MemberManagement;
 using ShiftSchedularRL.Resources.Shared;
-using System.Collections;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -215,13 +209,20 @@ namespace ShiftSchedularBLL.Service
         /// </summary>
         /// <param name="entityId">Identifier of the entity</param>
         /// <returns></returns>
-        public async Task<BaseResponse<bool>> DeleteEntityById(Guid entityId)
+        public async Task<BaseResponse<bool>> DeleteEntityById(Guid entityId, string workerId)
         {
             BaseResponse<bool> response = new BaseResponse<bool>();
 
             // if entity identifier is different than null
             if (entityId != Guid.Empty)
             {
+                bool isGM = await _unitOfWork.EntityPermissionRepository.IsGeneralManager(entityId, workerId);
+                if (!isGM)
+                {
+                    response.Message = "You do not have permission to delete this entity.";
+                    return response;
+                }
+
                 Entity entityInstance = await _unitOfWork.EntityRepository.GetEntityById(entityId, _languageAccessor.GetLanguageCode());
 
                 if (entityInstance == null)
@@ -917,6 +918,7 @@ namespace ShiftSchedularBLL.Service
                                                                     totalCount: botsCount + workersCount,
                                                                     parentEntityId: entity.ParentEntityId);
                     entityProfileViewModel.AllowEdit = await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(entityProfileViewModelRequest.EntityId, entityProfileViewModelRequest.WorkerId);
+                    entityProfileViewModel.AllowDelete = await _unitOfWork.EntityPermissionRepository.IsGeneralManager(entityProfileViewModelRequest.EntityId, entityProfileViewModelRequest.WorkerId);
 
                     if (entityProfileViewModel.AllowEdit)
                     {
@@ -1156,6 +1158,7 @@ namespace ShiftSchedularBLL.Service
                 existingInvitation.WorksWeekends = newMemberDTO.WorksWeekends;
                 existingInvitation.MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments;
                 existingInvitation.EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId;
+                existingInvitation.PartOfRoster = newMemberDTO.PartOfRoster;
                 await _unitOfWork.SaveChangesAsync();
             }
             else
@@ -1171,7 +1174,8 @@ namespace ShiftSchedularBLL.Service
                     WorksWeekDays = newMemberDTO.WorksWeekDays,
                     WorksWeekends = newMemberDTO.WorksWeekends,
                     MultipleShiftAssignments = newMemberDTO.MultipleShiftAssignments,
-                    EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId
+                    EntityPermissionRoleId = newMemberDTO.EntityPermissionRoleId,
+                    PartOfRoster = newMemberDTO.PartOfRoster
                 };
                 await _unitOfWork.EntityWorkerInvitationRepository.Add(entityWorkerInvitation);
             }
@@ -1879,7 +1883,7 @@ namespace ShiftSchedularBLL.Service
                     permission.DeletedById = null;
                     permission.EntityPermissionRoleId = invitation.EntityPermissionRoleId;
                     permission.CanManageChildren = false;
-                    permission.PartOfRoster = false;
+                    permission.PartOfRoster = invitation.PartOfRoster;
                     await _unitOfWork.SaveChangesAsync();
                 }
                 else
@@ -1890,7 +1894,7 @@ namespace ShiftSchedularBLL.Service
                         ApplicationUserId = dto.WorkerId,
                         EntityPermissionRoleId = invitation.EntityPermissionRoleId,
                         CanManageChildren = false,
-                        PartOfRoster = false
+                        PartOfRoster = invitation.PartOfRoster
                     };
                     await _unitOfWork.EntityPermissionRepository.Add(permission);
                 }

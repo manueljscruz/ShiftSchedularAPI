@@ -48,6 +48,8 @@ namespace ShiftSchedularEntity.Entities
 
         public int EntityPermissionRoleId { get; set; }
 
+        public bool PartOfRoster { get; set; }
+
         #region Navigation Properties
 
         public virtual Entity? Entity { get; set; }
