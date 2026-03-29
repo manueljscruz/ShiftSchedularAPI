@@ -11,6 +11,8 @@ namespace ShiftSchedularEntity.Models.ViewModels
         public IEnumerable<ShiftDTO> Shifts { get; set; }
         public PagedList<EntityWorkerMemberDTO> EntityMembers { get; set; }
         public List<EntityPermissionRoleDTO> EntityPermissionRoles { get; set; }
+        public int CurrentUserPermissionRoleId { get; set; }
+        public bool CurrentUserCanManageChildren { get; set; }
 
         public EntityMembersViewModel()
         {

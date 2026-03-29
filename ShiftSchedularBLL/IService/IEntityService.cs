@@ -4,6 +4,7 @@ using ShiftSchedularEntity.Models.DataTransferObjects;
 using ShiftSchedularEntity.Models.DataTransferObjects.Incoming;
 using ShiftSchedularEntity.Models.DataTransferObjects.Outgoing;
 using ShiftSchedularEntity.Models.ViewModels;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ShiftSchedularBLL.IService
@@ -30,5 +31,7 @@ namespace ShiftSchedularBLL.IService
         Task<List<PendingInvitationDTO>> GetPendingInvitations(string workerId);
         Task<BaseResponse<EntityWorkerDTO>> AcceptInvitation(AcceptDeclineInvitationDTO dto);
         Task<BaseResponse<bool>> DeclineInvitation(AcceptDeclineInvitationDTO dto);
+        Task<List<EntityDTO>> GetUmbrellaEntities(Guid entityId);
+        Task<BaseResponse<bool>> TransferCopyMembers(TransferMembersDTO dto, string requesterId);
     }
 }

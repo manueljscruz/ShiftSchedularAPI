@@ -125,6 +125,23 @@ namespace ShiftSchedularDAL.Repositories
 
         #endregion
 
+        #region Find By Entity, Worker And Role (includes soft-deleted)
+
+        public async Task<EntityPermission?> FindByEntityWorkerAndRole(Guid entityId, string workerId, int roleId)
+        {
+            byte[] entityIdBytes = entityId.ToByteArray();
+            return await _entityPermissionDbSet
+                .FromSqlRaw(
+                    "SELECT * FROM [dbo].[EntityPermissions] WHERE EntityId = @entityId AND ApplicationUserId = @workerId AND EntityPermissionRoleId = @roleId",
+                    new SqlParameter("@entityId", SqlDbType.Binary) { Value = entityIdBytes, Size = 16 },
+                    new SqlParameter("@workerId", workerId),
+                    new SqlParameter("@roleId", roleId))
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync();
+        }
+
+        #endregion
+
         #region Delete By Entity And Worker
 
         public async Task DeleteByEntityAndWorker(Guid entityId, string workerId)

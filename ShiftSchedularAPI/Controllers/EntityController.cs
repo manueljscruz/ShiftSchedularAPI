@@ -528,6 +528,46 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Get Umbrella Entities
+
+        [Authorize]
+        [HttpGet("get-umbrella/{entityId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetUmbrellaEntities(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return BadRequest();
+
+            List<EntityDTO> entities = await _entityService.GetUmbrellaEntities(entityId);
+            return Ok(entities);
+        }
+
+        #endregion
+
+        #region Transfer / Copy Members
+
+        [Authorize]
+        [HttpPost("transfer-copy-members")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> TransferCopyMembers([FromBody] TransferMembersDTO dto)
+        {
+            if (dto == null)
+                return BadRequest();
+
+            string requesterId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            BaseResponse<bool> response = await _entityService.TransferCopyMembers(dto, requesterId);
+
+            if (!response.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+
+            return Ok(response);
+        }
+
+        #endregion
+
         #region Convert Bot To User
 
         [Authorize]

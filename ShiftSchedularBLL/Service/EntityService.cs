@@ -543,6 +543,12 @@ namespace ShiftSchedularBLL.Service
                 EntityPermissionRoleDisplayValue = r.EntityPermissionRoleDisplayValue
             }).ToList();
 
+            var currentUserPermission = await _unitOfWork.EntityPermissionRepository
+                .GetByEntityAndWorker(memberListModelRequest.EntityId, memberListModelRequest.WorkerId);
+
+            viewModel.CurrentUserPermissionRoleId = currentUserPermission?.EntityPermissionRoleId ?? 0;
+            viewModel.CurrentUserCanManageChildren = currentUserPermission?.CanManageChildren ?? false;
+
             return viewModel;
         }
 
@@ -1723,22 +1729,73 @@ namespace ShiftSchedularBLL.Service
             BaseResponse<bool> response = new BaseResponse<bool>();
             try
             {
-                EntityPermission permission = await _unitOfWork.EntityPermissionRepository
+                EntityPermission existing = await _unitOfWork.EntityPermissionRepository
                     .GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
 
-                if (permission == null)
+                if (existing == null)
                 {
-                    permission = new EntityPermission
-                    {
-                        EntityId = dto.EntityId,
-                        ApplicationUserId = dto.WorkerId,
-                    };
-                    await _unitOfWork.EntityPermissionRepository.Add(permission);
-                }
+                    // No active record — check for a soft-deleted record with the target role
+                    EntityPermission softDeleted = await _unitOfWork.EntityPermissionRepository
+                        .FindByEntityWorkerAndRole(dto.EntityId, dto.WorkerId, dto.EntityPermissionRoleId);
 
-                permission.EntityPermissionRoleId = dto.EntityPermissionRoleId;
-                permission.CanManageChildren = dto.CanManageChildren;
-                permission.PartOfRoster = dto.PartOfRoster;
+                    if (softDeleted != null)
+                    {
+                        softDeleted.IsDeleted = false;
+                        softDeleted.DeletedAt = null;
+                        softDeleted.DeletedById = null;
+                        softDeleted.CanManageChildren = dto.CanManageChildren;
+                        softDeleted.PartOfRoster = dto.PartOfRoster;
+                    }
+                    else
+                    {
+                        await _unitOfWork.EntityPermissionRepository.Add(new EntityPermission
+                        {
+                            EntityId = dto.EntityId,
+                            ApplicationUserId = dto.WorkerId,
+                            EntityPermissionRoleId = dto.EntityPermissionRoleId,
+                            CanManageChildren = dto.CanManageChildren,
+                            PartOfRoster = dto.PartOfRoster,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+                else if (existing.EntityPermissionRoleId == dto.EntityPermissionRoleId)
+                {
+                    // Same role — update non-PK fields in place
+                    existing.CanManageChildren = dto.CanManageChildren;
+                    existing.PartOfRoster = dto.PartOfRoster;
+                }
+                else
+                {
+                    // Role changed — EntityPermissionRoleId is part of the PK so it cannot be updated in-place.
+                    // Soft-delete the old record, then reactivate or insert the new role record.
+                    existing.IsDeleted = true;
+                    existing.DeletedAt = DateTime.UtcNow;
+
+                    EntityPermission targetRole = await _unitOfWork.EntityPermissionRepository
+                        .FindByEntityWorkerAndRole(dto.EntityId, dto.WorkerId, dto.EntityPermissionRoleId);
+
+                    if (targetRole != null)
+                    {
+                        targetRole.IsDeleted = false;
+                        targetRole.DeletedAt = null;
+                        targetRole.DeletedById = null;
+                        targetRole.CanManageChildren = dto.CanManageChildren;
+                        targetRole.PartOfRoster = dto.PartOfRoster;
+                    }
+                    else
+                    {
+                        await _unitOfWork.EntityPermissionRepository.Add(new EntityPermission
+                        {
+                            EntityId = dto.EntityId,
+                            ApplicationUserId = dto.WorkerId,
+                            EntityPermissionRoleId = dto.EntityPermissionRoleId,
+                            CanManageChildren = dto.CanManageChildren,
+                            PartOfRoster = dto.PartOfRoster,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
 
                 await _unitOfWork.SaveChangesAsync();
                 response.Success = true;
@@ -1953,6 +2010,279 @@ namespace ShiftSchedularBLL.Service
                 response.Message = ex.Message;
                 return response;
             }
+        }
+
+        #endregion
+
+        #region Get Umbrella Entities
+
+        public async Task<List<EntityDTO>> GetUmbrellaEntities(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return new List<EntityDTO>();
+
+            Guid rootId = await _unitOfWork.EntityRepository.GetRootEntityId(entityId);
+
+            // BFS from root down the full subtree
+            List<Entity> result = new List<Entity>();
+            Queue<Guid> queue = new Queue<Guid>();
+            queue.Enqueue(rootId);
+
+            while (queue.Count > 0)
+            {
+                Guid current = queue.Dequeue();
+                Entity node = await _unitOfWork.EntityRepository.GetById(current);
+                if (node != null)
+                    result.Add(node);
+
+                List<Entity> children = await _unitOfWork.EntityRepository.GetChildEntities(current, "en");
+                foreach (Entity child in children)
+                    queue.Enqueue(child.EntityId);
+            }
+
+            // Exclude the requesting entity itself (you can't transfer to your own entity)
+            return result
+                .Where(e => e.EntityId != entityId)
+                .Select(e => new EntityDTO(e.EntityId, e.EntityName, e.EntityDescription, string.Empty, 0, e.ParentEntityId))
+                .ToList();
+        }
+
+        #endregion
+
+        #region Transfer / Copy Members
+
+        public async Task<BaseResponse<bool>> TransferCopyMembers(TransferMembersDTO dto, string requesterId)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if (dto == null || dto.Members == null || dto.Members.Count == 0)
+            {
+                response.Message = "No members provided.";
+                return response;
+            }
+
+            if (dto.SourceEntityId == Guid.Empty || dto.DestinationEntityId == Guid.Empty)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNoIdentifierError;
+                return response;
+            }
+
+            // Umbrella check: both entities must share the same root
+            Guid sourceRoot = await _unitOfWork.EntityRepository.GetRootEntityId(dto.SourceEntityId);
+            Guid destRoot = await _unitOfWork.EntityRepository.GetRootEntityId(dto.DestinationEntityId);
+
+            if (sourceRoot != destRoot)
+            {
+                response.Message = "Transfer is only allowed between entities within the same umbrella.";
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                foreach (MemberTransferItemDTO member in dto.Members)
+                {
+                    if (member.IsBot)
+                    {
+                        Guid userBotId = _generalService.ParseStringToGuid(member.WorkerId);
+                        if (userBotId == Guid.Empty) continue;
+
+                        // Check if bot already active in destination
+                        EntityUserBot existingBot = await _unitOfWork.EntityUserBotRepository
+                            .GetEntityUserBotByEntityAndId(dto.DestinationEntityId, userBotId);
+                        if (existingBot != null) continue;  // already there, skip
+
+                        // Get source bot details
+                        UserBot sourceBot = await _unitOfWork.UserBotRepository.GetById(userBotId);
+                        if (sourceBot == null) continue;
+
+                        if (dto.IsTransfer)
+                        {
+                            // Move: reassign the existing EntityUserBot to the destination entity
+                            EntityUserBot sourceEntityBot = await _unitOfWork.EntityUserBotRepository
+                                .GetEntityUserBotByEntityAndId(dto.SourceEntityId, userBotId);
+                            if (sourceEntityBot == null) continue;
+
+                            // Delete source entity-bot link + skills
+                            await _unitOfWork.EntityUserBotSkillRepository.DeleteAllByEntityIdAndUserBotId(dto.SourceEntityId, userBotId);
+                            await _unitOfWork.EntityUserBotRepository.DeleteEntityUserBot(dto.SourceEntityId, userBotId);
+
+                            // Add to destination
+                            EntityUserBot destEntityBot = new EntityUserBot
+                            {
+                                EntityId = dto.DestinationEntityId,
+                                UserBotId = userBotId,
+                                DateOfJoin = DateTime.UtcNow,
+                                PartOfRotation = member.PartOfRotation,
+                                WorksWeekDays = member.WorksWeekDays,
+                                WorksWeekends = member.WorksWeekends,
+                                MultipleShiftAssignments = member.MultipleShiftAssignments,
+                                ActiveWorkerStatus = sourceEntityBot.ActiveWorkerStatus
+                            };
+                            await _unitOfWork.EntityUserBotRepository.Add(destEntityBot);
+                        }
+                        else
+                        {
+                            // Copy: create a new UserBot record (bots are entity-specific)
+                            UserBot newBot = new UserBot
+                            {
+                                UserDisplayName = !string.IsNullOrEmpty(member.WorkerName)
+                                    ? member.WorkerName
+                                    : sourceBot.UserDisplayName
+                            };
+                            newBot = await _unitOfWork.UserBotRepository.Add(newBot);
+
+                            EntityUserBot destEntityBot = new EntityUserBot
+                            {
+                                EntityId = dto.DestinationEntityId,
+                                UserBotId = newBot.UserBotId,
+                                DateOfJoin = DateTime.UtcNow,
+                                PartOfRotation = member.PartOfRotation,
+                                WorksWeekDays = member.WorksWeekDays,
+                                WorksWeekends = member.WorksWeekends,
+                                MultipleShiftAssignments = member.MultipleShiftAssignments,
+                                ActiveWorkerStatus = true
+                            };
+                            await _unitOfWork.EntityUserBotRepository.Add(destEntityBot);
+
+                            foreach (SkillLocalizedDTO skill in member.AssignedSkills)
+                            {
+                                await _unitOfWork.EntityUserBotSkillRepository.Add(new EntityUserBotSkill
+                                {
+                                    EntityId = dto.DestinationEntityId,
+                                    UserBotId = newBot.UserBotId,
+                                    SkillId = skill.SkillId
+                                });
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Human member
+                        bool alreadyInDest = await _unitOfWork.EntityWorkerRepository
+                            .IsWorkerInEntity(dto.DestinationEntityId, member.WorkerId);
+                        if (alreadyInDest) continue;  // already active there, skip
+
+                        // 1. EntityWorker — reactivate or insert
+                        EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository
+                            .FindByWorkerAndEntity(member.WorkerId, dto.DestinationEntityId);
+
+                        if (entityWorker != null)
+                        {
+                            entityWorker.IsDeleted = false;
+                            entityWorker.DeletedAt = null;
+                            entityWorker.DeletedById = null;
+                            entityWorker.DateOfJoin = DateTime.UtcNow;
+                            entityWorker.PartOfRotation = member.PartOfRotation;
+                            entityWorker.WorksWeekDays = member.WorksWeekDays;
+                            entityWorker.WorksWeekends = member.WorksWeekends;
+                            entityWorker.MultipleShiftAssignments = member.MultipleShiftAssignments;
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            await _unitOfWork.GetGenericRepository<EntityWorker>().Add(new EntityWorker
+                            {
+                                EntityId = dto.DestinationEntityId,
+                                ApplicationUserId = member.WorkerId,
+                                DateOfJoin = DateTime.UtcNow,
+                                PartOfRotation = member.PartOfRotation,
+                                WorksWeekDays = member.WorksWeekDays,
+                                WorksWeekends = member.WorksWeekends,
+                                MultipleShiftAssignments = member.MultipleShiftAssignments
+                            });
+                        }
+
+                        // 2. EntityWorkerSkill — reactivate or insert
+                        foreach (SkillLocalizedDTO skill in member.AssignedSkills)
+                        {
+                            EntityWorkerSkill existingSkill = await _unitOfWork.EntityWorkerSkillRepository
+                                .FindByWorkerEntityAndSkill(member.WorkerId, dto.DestinationEntityId, skill.SkillId);
+
+                            if (existingSkill != null)
+                            {
+                                existingSkill.IsDeleted = false;
+                                existingSkill.DeletedAt = null;
+                                existingSkill.DeletedById = null;
+                                await _unitOfWork.SaveChangesAsync();
+                            }
+                            else
+                            {
+                                await _unitOfWork.EntityWorkerSkillRepository.Add(new EntityWorkerSkill
+                                {
+                                    ApplicationUserId = member.WorkerId,
+                                    EntityId = dto.DestinationEntityId,
+                                    SkillId = skill.SkillId
+                                });
+                            }
+                        }
+
+                        // 3. EntityPermission — reactivate or insert
+                        EntityPermission permission = await _unitOfWork.EntityPermissionRepository
+                            .FindByEntityAndWorker(dto.DestinationEntityId, member.WorkerId);
+
+                        if (permission != null)
+                        {
+                            permission.IsDeleted = false;
+                            permission.DeletedAt = null;
+                            permission.DeletedById = null;
+                            permission.EntityPermissionRoleId = member.EntityPermissionRoleId;
+                            permission.CanManageChildren = member.CanManageChildren;
+                            permission.PartOfRoster = member.PartOfRoster;
+                            await _unitOfWork.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            await _unitOfWork.EntityPermissionRepository.Add(new EntityPermission
+                            {
+                                EntityId = dto.DestinationEntityId,
+                                ApplicationUserId = member.WorkerId,
+                                EntityPermissionRoleId = member.EntityPermissionRoleId,
+                                CanManageChildren = member.CanManageChildren,
+                                PartOfRoster = member.PartOfRoster
+                            });
+                        }
+
+                        // 4. If transfer (move): remove from source entity
+                        if (dto.IsTransfer)
+                        {
+                            Guid workerGuid = _generalService.ParseStringToGuid(member.WorkerId);
+                            EntityWorker sourceWorker = await _unitOfWork.EntityWorkerRepository
+                                .GetSimpleByWorkerAndEntity(member.WorkerId, dto.SourceEntityId);
+
+                            if (sourceWorker != null)
+                            {
+                                if (!sourceWorker.PartOfRotation)
+                                    await _unitOfWork.EntityWorkerShiftAssignedsRepository
+                                        .DeleteAllByEntityIdAndUserId(dto.SourceEntityId, workerGuid);
+
+                                await _unitOfWork.EntityWorkerSkillRepository
+                                    .DeleteAllByEntityIdAndUserId(dto.SourceEntityId, workerGuid);
+                                await _unitOfWork.EntityWorkerRepository
+                                    .DeleteByEntityAndWorker(dto.SourceEntityId, member.WorkerId);
+                                await _unitOfWork.EntityPermissionRepository
+                                    .DeleteByEntityAndWorker(dto.SourceEntityId, member.WorkerId);
+                            }
+                        }
+                    }
+                }
+
+                await _unitOfWork.CommitAsync();
+                response.Success = true;
+                response.Result = true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = ex.Message;
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
         }
 
         #endregion

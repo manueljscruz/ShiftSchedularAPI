@@ -9,5 +9,6 @@ namespace ShiftSchedularDAL.IRepositories
         Task<List<Entity>> GetChildEntities(Guid parentEntityId, string languageCode);
         Task<List<Entity>> GetAncestorChain(Guid entityId);
         Task<List<Entity>> GetEntitiesByIds(List<Guid> entityIds);
+        Task<Guid> GetRootEntityId(Guid entityId);
     }
 }

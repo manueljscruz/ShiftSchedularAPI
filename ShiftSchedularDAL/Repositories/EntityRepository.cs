@@ -116,6 +116,19 @@ namespace ShiftSchedularDAL.Repositories
         /// <param name="searchQuery">The search query (already normalized/lowercased)</param>
         /// <param name="localizationId">The localization ID for the TypeDisplay</param>
         /// <returns>List of matching entities with their EntityType loaded</returns>
+        /// <summary>
+        /// Walks up the ancestor chain and returns the root entity ID.
+        /// Returns entityId itself if it has no parent (it is already the root).
+        /// </summary>
+        public async Task<Guid> GetRootEntityId(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return Guid.Empty;
+
+            List<Entity> ancestors = await GetAncestorChain(entityId);
+            return ancestors.Count > 0 ? ancestors[0].EntityId : entityId;
+        }
+
         public async Task<List<Entity>> SearchEntitiesByName(string searchQuery, int localizationId)
         {
             return await _entityDbSet
