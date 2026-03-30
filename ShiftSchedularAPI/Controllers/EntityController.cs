@@ -594,5 +594,47 @@ namespace ShiftSchedularAPI.Controllers
         #endregion
 
         #endregion
+
+        #region Config Import
+
+        [Authorize]
+        [HttpGet("import-candidates/{entityId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetImportCandidates(Guid entityId)
+        {
+            if (entityId == Guid.Empty)
+                return BadRequest();
+
+            string requesterId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            BaseResponse<ImportCandidatesDTO> response = await _entityService.GetImportCandidates(entityId, requesterId);
+
+            if (!response.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("import-config")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> ImportConfig([FromBody] ImportConfigDTO dto)
+        {
+            if (dto == null)
+                return BadRequest();
+
+            string requesterId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            BaseResponse<int> response = await _entityService.ImportConfigFromParent(dto, requesterId);
+
+            if (!response.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+
+            return Ok(response);
+        }
+
+        #endregion
     }
 }

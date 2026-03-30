@@ -8,6 +8,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
         public bool AllowEdit { get; set; }
         public List<BusinessAspectLocalizedDTO> BusinessAspectsLocalizeds { get; set; }
         public List<RuleTypeLocalizedDTO> RuleTypeLocalizeds { get; set; }
+        public Guid? ParentEntityId { get; set; }
         // Add Templates here
 
         public EntityRuleViewModel()

@@ -2287,6 +2287,254 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Config Import
+
+        public async Task<BaseResponse<ImportCandidatesDTO>> GetImportCandidates(Guid entityId, string requesterId)
+        {
+            BaseResponse<ImportCandidatesDTO> response = new BaseResponse<ImportCandidatesDTO>();
+
+            if (entityId == Guid.Empty)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNoIdentifierError;
+                return response;
+            }
+
+            Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityId);
+            if (entity == null || entity.ParentEntityId == null || entity.ParentEntityId == Guid.Empty)
+            {
+                response.Message = "Entity has no parent to import from.";
+                return response;
+            }
+
+            Guid parentId = entity.ParentEntityId.Value;
+            ImportCandidatesDTO candidates = new ImportCandidatesDTO();
+
+            // Load parent's shifts
+            IEnumerable<Shift> parentShifts = await _unitOfWork.ShiftRepository.GetEntityShifts(parentId);
+            foreach (Shift shift in parentShifts)
+                candidates.Shifts.Add(new ShiftSimpleDTO { ShiftId = shift.ShiftId, ShiftName = shift.ShiftName });
+
+            // Load parent's rules with localized names
+            IEnumerable<EntityRule> parentRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(parentId);
+            IEnumerable<RuleTypeLocalization> ruleTypeLocalizations = await _unitOfWork.RuleTypeLocalizationRepository.GetRuleTypesByLocalization(_languageAccessor.GetLanguageCode());
+            foreach (EntityRule rule in parentRules)
+            {
+                string ruleTypeName = ruleTypeLocalizations
+                    .FirstOrDefault(r => r.RuleTypeId == rule.RuleTypeId)?.RuleTypeDisplayValue ?? rule.RuleTypeId.ToString();
+                candidates.Rules.Add(new EntityRuleSimpleDTO
+                {
+                    EntityRuleId = rule.EntityRuleId,
+                    RuleTypeId = rule.RuleTypeId,
+                    RuleTypeName = ruleTypeName
+                });
+            }
+
+            // Load parent's holidays with localized catalog names
+            IEnumerable<EntityHoliday> parentHolidays = await _unitOfWork.EntityHolidayRepository.GetByEntityId(parentId);
+            IEnumerable<HolidayCatalogLocalization> catalogLocalizations = await _unitOfWork.HolidayCatalogLocalizationRepository.GetHolidayCatalogsByLocalization(_languageAccessor.GetLanguageCode());
+            foreach (EntityHoliday holiday in parentHolidays)
+            {
+                string displayName = holiday.HolidayCatalogId.HasValue
+                    ? catalogLocalizations.FirstOrDefault(c => c.HolidayCatalogId == holiday.HolidayCatalogId.Value)?.LocalizedName ?? holiday.CustomHolidayName
+                    : holiday.CustomHolidayName;
+                candidates.Holidays.Add(new EntityHolidaySimpleDTO
+                {
+                    EntityHolidayId = holiday.EntityHolidayId,
+                    HolidayDisplayName = displayName,
+                    HolidayCatalogId = holiday.HolidayCatalogId,
+                    CustomDay = holiday.CustomDay,
+                    CustomMonth = holiday.CustomMonth
+                });
+            }
+
+            response.Result = candidates;
+            response.Success = true;
+            return response;
+        }
+
+        public async Task<BaseResponse<int>> ImportConfigFromParent(ImportConfigDTO dto, string requesterId)
+        {
+            BaseResponse<int> response = new BaseResponse<int>();
+
+            if (dto == null || dto.DestinationEntityId == Guid.Empty)
+            {
+                response.Message = EntitiesRelatedMessages.EntityNoIdentifierError;
+                return response;
+            }
+
+            if (!dto.ShiftIds.Any() && !dto.RuleIds.Any() && !dto.HolidayIds.Any())
+            {
+                response.Message = "No items selected for import.";
+                return response;
+            }
+
+            Entity destEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(dto.DestinationEntityId);
+            if (destEntity == null || destEntity.ParentEntityId == null || destEntity.ParentEntityId == Guid.Empty)
+            {
+                response.Message = "Destination entity has no parent.";
+                return response;
+            }
+
+            Guid parentId = destEntity.ParentEntityId.Value;
+            int count = 0;
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                // ── SHIFTS ───────────────────────────────────────────────
+                if (dto.ShiftIds.Any())
+                {
+                    IEnumerable<Shift> parentShifts = await _unitOfWork.ShiftRepository.GetEntityShifts(parentId);
+                    IEnumerable<Shift> destShifts = await _unitOfWork.ShiftRepository.GetEntityShifts(dto.DestinationEntityId);
+                    HashSet<string> existingShiftNames = new HashSet<string>(
+                        destShifts.Select(s => s.ShiftName.ToLowerInvariant()));
+
+                    foreach (Guid shiftId in dto.ShiftIds)
+                    {
+                        Shift source = parentShifts.FirstOrDefault(s => s.ShiftId == shiftId);
+                        if (source == null) continue; // security: must belong to parent
+
+                        if (existingShiftNames.Contains(source.ShiftName.ToLowerInvariant()))
+                            continue; // conflict — skip
+
+                        Guid newShiftId = Guid.NewGuid();
+                        Shift newShift = new Shift
+                        {
+                            ShiftId = newShiftId,
+                            EntityId = dto.DestinationEntityId,
+                            ShiftName = source.ShiftName,
+                            ShiftAlias = source.ShiftAlias,
+                            ShiftDescription = source.ShiftDescription,
+                            ShiftStartHour = source.ShiftStartHour,
+                            ShiftDuration = source.ShiftDuration,
+                            ShiftColorHex = source.ShiftColorHex
+                        };
+                        await _unitOfWork.GetGenericRepository<Shift>().Add(newShift);
+
+                        // Copy breaks (already loaded via GetEntityShifts eager load)
+                        if (source.ShiftBreaks != null)
+                        {
+                            foreach (ShiftBreak brk in source.ShiftBreaks)
+                            {
+                                await _unitOfWork.GetGenericRepository<ShiftBreak>().Add(new ShiftBreak
+                                {
+                                    ShiftBreakId = Guid.NewGuid(),
+                                    ShiftId = newShiftId,
+                                    ShiftBreakTypeId = brk.ShiftBreakTypeId,
+                                    ShiftBreakStartTime = brk.ShiftBreakStartTime,
+                                    ShiftBreakDuration = brk.ShiftBreakDuration,
+                                    IncludedInShift = brk.IncludedInShift,
+                                    IsTimeFlexible = brk.IsTimeFlexible
+                                });
+                            }
+                        }
+
+                        existingShiftNames.Add(source.ShiftName.ToLowerInvariant());
+                        count++;
+                    }
+                }
+
+                // ── RULES ────────────────────────────────────────────────
+                if (dto.RuleIds.Any())
+                {
+                    IEnumerable<EntityRule> parentRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(parentId);
+                    IEnumerable<EntityRule> destRules = await _unitOfWork.EntityRuleRepository.GetEntityRules(dto.DestinationEntityId);
+                    HashSet<int> existingRuleTypeIds = new HashSet<int>(destRules.Select(r => r.RuleTypeId));
+
+                    foreach (Guid ruleId in dto.RuleIds)
+                    {
+                        EntityRule source = parentRules.FirstOrDefault(r => r.EntityRuleId == ruleId);
+                        if (source == null) continue; // security: must belong to parent
+
+                        if (existingRuleTypeIds.Contains(source.RuleTypeId))
+                            continue; // conflict — skip
+
+                        Guid newRuleId = Guid.NewGuid();
+                        await _unitOfWork.GetGenericRepository<EntityRule>().Add(new EntityRule
+                        {
+                            EntityRuleId = newRuleId,
+                            EntityId = dto.DestinationEntityId,
+                            RuleTypeId = source.RuleTypeId,
+                            RuleTypeDescription = source.RuleTypeDescription
+                        });
+
+                        // Copy specifications
+                        IEnumerable<EntityRuleSpecification> specs = await _unitOfWork.EntityRuleSpecificationRepository.GetEntityRuleSpecifications(ruleId);
+                        foreach (EntityRuleSpecification spec in specs)
+                        {
+                            await _unitOfWork.GetGenericRepository<EntityRuleSpecification>().Add(new EntityRuleSpecification
+                            {
+                                EntityRuleId = newRuleId,
+                                SpecificationId = spec.SpecificationId,
+                                SpecificationValue = spec.SpecificationValue,
+                                AspectReferenceId = spec.AspectReferenceId,
+                                BusinessAspectId = spec.BusinessAspectId,
+                                AspectReferenceId2 = spec.AspectReferenceId2,
+                                BusinessAspectId2 = spec.BusinessAspectId2
+                            });
+                        }
+
+                        existingRuleTypeIds.Add(source.RuleTypeId);
+                        count++;
+                    }
+                }
+
+                // ── HOLIDAYS ─────────────────────────────────────────────
+                if (dto.HolidayIds.Any())
+                {
+                    IEnumerable<EntityHoliday> parentHolidays = await _unitOfWork.EntityHolidayRepository.GetByEntityId(parentId);
+                    IEnumerable<EntityHoliday> destHolidays = await _unitOfWork.EntityHolidayRepository.GetByEntityId(dto.DestinationEntityId);
+
+                    foreach (Guid holidayId in dto.HolidayIds)
+                    {
+                        EntityHoliday source = parentHolidays.FirstOrDefault(h => h.EntityHolidayId == holidayId);
+                        if (source == null) continue; // security: must belong to parent
+
+                        // Conflict check
+                        bool conflict = source.HolidayCatalogId.HasValue
+                            ? destHolidays.Any(h => h.HolidayCatalogId.HasValue && h.HolidayCatalogId == source.HolidayCatalogId)
+                            : destHolidays.Any(h => !h.HolidayCatalogId.HasValue && h.CustomDay == source.CustomDay && h.CustomMonth == source.CustomMonth);
+
+                        if (conflict) continue;
+
+                        await _unitOfWork.GetGenericRepository<EntityHoliday>().Add(new EntityHoliday
+                        {
+                            EntityHolidayId = Guid.NewGuid(),
+                            EntityId = dto.DestinationEntityId,
+                            HolidayCatalogId = source.HolidayCatalogId,
+                            HolidayBehaviourId = source.HolidayBehaviourId,
+                            CustomHolidayName = source.CustomHolidayName,
+                            CustomDay = source.CustomDay,
+                            CustomMonth = source.CustomMonth,
+                            OperatingStartTime = source.OperatingStartTime,
+                            OperatingEndTime = source.OperatingEndTime,
+                            IsActive = source.IsActive,
+                            Notes = source.Notes
+                        });
+                        count++;
+                    }
+                }
+
+                await _unitOfWork.CommitAsync();
+                response.Result = count;
+                response.Success = true;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = ex.Message;
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
+        }
+
+        #endregion
+
         #endregion
     }
 }

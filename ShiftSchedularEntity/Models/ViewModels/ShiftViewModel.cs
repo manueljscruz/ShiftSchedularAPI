@@ -10,6 +10,7 @@ namespace ShiftSchedularEntity.Models.ViewModels
         public bool AllowEdit { get; set; }
         public List<ShiftBreakTemplateDTO> ShiftBreakTemplates { get; set; }
         public List<ShiftTemplateDTO> ShiftTemplates { get; set; }
+        public Guid? ParentEntityId { get; set; }
 
         // public List<>
 

@@ -473,6 +473,7 @@ namespace ShiftSchedularBLL.Service
                 Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(entityRuleViewModelRequestDTO.EntityId);
                 EntityWorker entityWorkerInstance = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(entityRuleViewModelRequestDTO.WorkerId, entityRuleViewModelRequestDTO.EntityId);
                 entityRuleViewModel.AllowEdit = await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(entityRuleViewModelRequestDTO.EntityId, entityRuleViewModelRequestDTO.WorkerId);
+                entityRuleViewModel.ParentEntityId = entity?.ParentEntityId;
 
                 // If it can change data
                 if (entityRuleViewModel.AllowEdit) // entityWorkerInstance.IsOwner

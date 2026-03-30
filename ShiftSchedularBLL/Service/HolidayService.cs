@@ -703,7 +703,14 @@ namespace ShiftSchedularBLL.Service
                     viewModel.IsOwner = await _unitOfWork.EntityWorkerRepository.IsMemberOwner(
                         viewModelRequestDTO.EntityId,
                         viewModelRequestDTO.WorkerId);
+                    viewModel.AllowEdit = await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(
+                        viewModelRequestDTO.EntityId,
+                        viewModelRequestDTO.WorkerId);
                 }
+
+                // Populate parent entity info for config import
+                Entity entity = await _unitOfWork.GetGenericRepository<Entity>().GetById(viewModelRequestDTO.EntityId);
+                viewModel.ParentEntityId = entity?.ParentEntityId;
 
                 // Get Holiday Types Localized
                 IEnumerable<HolidayTypeLocalization> holidayTypeLocalizations =

@@ -33,5 +33,7 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> DeclineInvitation(AcceptDeclineInvitationDTO dto);
         Task<List<EntityDTO>> GetUmbrellaEntities(Guid entityId);
         Task<BaseResponse<bool>> TransferCopyMembers(TransferMembersDTO dto, string requesterId);
+        Task<BaseResponse<ImportCandidatesDTO>> GetImportCandidates(Guid entityId, string requesterId);
+        Task<BaseResponse<int>> ImportConfigFromParent(ImportConfigDTO dto, string requesterId);
     }
 }
