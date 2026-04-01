@@ -48,17 +48,17 @@ namespace ShiftSchedularDAL.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public Task<bool> DeleteAllByEntityIdAndUserId(Guid entityId, Guid userId)
+        public async Task<bool> DeleteAllByEntityIdAndUserId(Guid entityId, Guid userId)
         {
             if(entityId != Guid.Empty && userId != Guid.Empty)
             {
-                IEnumerable<EntityWorkerSkill> entityWorkerSkills = _entityWorkerSkillsDbSet
-                    .Where(x => x.EntityId.Equals(entityId) && x.ApplicationUserId.Equals(userId));
-                _entityWorkerSkillsDbSet.RemoveRange(entityWorkerSkills);
-                _unitOfWork.SaveChangesAsync();
-                return Task.FromResult(true);
+                string userIdStr = userId.ToString();
+                await _entityWorkerSkillsDbSet
+                    .Where(x => x.EntityId == entityId && x.ApplicationUserId == userIdStr)
+                    .ExecuteDeleteAsync();
+                return true;
             }
-            else return Task.FromResult(false);
+            else return false;
         }
     }
 }

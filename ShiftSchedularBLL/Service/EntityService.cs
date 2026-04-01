@@ -1365,7 +1365,7 @@ namespace ShiftSchedularBLL.Service
                     await _unitOfWork.EntityUserBotSkillRepository.DeleteAllByEntityIdAndUserBotId(userBotData.EntityId, userBotId);
 
                     List<EntityUserBotSkill> entityUserBotSkills = new List<EntityUserBotSkill>();
-                    foreach (SkillLocalizedDTO skillLocalizedDTO in userBotData.AssignedSkills)
+                    foreach (SkillLocalizedDTO skillLocalizedDTO in userBotData.AssignedSkills.DistinctBy(s => s.SkillId))
                     {
                         entityUserBotSkills.Add(new EntityUserBotSkill
                         {
@@ -1404,9 +1404,13 @@ namespace ShiftSchedularBLL.Service
             BaseResponse<bool> response = new BaseResponse<bool>();
 
             Guid userId = _generalService.ParseStringToGuid(editMemberDTO.WorkerId);
-            EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetByWorkerAndEntity(editMemberDTO.WorkerId, editMemberDTO.EntityId);
+            EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetSimpleByWorkerAndEntity(editMemberDTO.WorkerId, editMemberDTO.EntityId);
             if (entityWorker != null)
             {
+                try
+                {
+
+                
                 entityWorker.WorksWeekDays = editMemberDTO.WorksWeekDays;
                 entityWorker.WorksWeekends = editMemberDTO.WorksWeekends;
                 entityWorker.MultipleShiftAssignments = editMemberDTO.MultipleShiftAssignments;
@@ -1449,7 +1453,7 @@ namespace ShiftSchedularBLL.Service
                 await _unitOfWork.EntityWorkerSkillRepository.DeleteAllByEntityIdAndUserId(editMemberDTO.EntityId, _generalService.ParseStringToGuid(editMemberDTO.WorkerId));
                 List<EntityWorkerSkill> entityUserBotSkills = new List<EntityWorkerSkill>();
 
-                foreach (SkillLocalizedDTO skillLocalizedDTO in editMemberDTO.AssignedSkills)
+                foreach (SkillLocalizedDTO skillLocalizedDTO in editMemberDTO.AssignedSkills.DistinctBy(s => s.SkillId))
                 {
                     entityUserBotSkills.Add(new EntityWorkerSkill
                     {
@@ -1463,6 +1467,11 @@ namespace ShiftSchedularBLL.Service
 
                 response.Success = true;
                 response.Result = true;
+                }
+                catch (Exception ex)
+                {
+                    string strErr = ex.Message;
+                }
             }
             else
             {

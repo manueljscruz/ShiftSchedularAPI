@@ -80,7 +80,7 @@ namespace ShiftSchedularBLL.Service
                         EntityId = viewModelRequest.EntityId
                     };
                     EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
-                    viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data;
+                    viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data.Where(m => m.IsBot || m.PartOfRoster);
                 }
 
 

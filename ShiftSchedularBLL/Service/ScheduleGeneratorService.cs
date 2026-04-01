@@ -113,6 +113,8 @@ namespace ShiftSchedularBLL.Service
                         else
                             entityWorkerMemberDTOs = await _entityService.GetEntityMembers(createEntityScheduleDTO.EntityId, createEntityScheduleDTO.FilteredMembers);
 
+                        entityWorkerMemberDTOs = entityWorkerMemberDTOs.Where(m => m.IsBot || m.PartOfRoster).ToList();
+
                         // Get Entity Skills
                         entitySkills = await _entityService.GetEntitySkills(new BaseViewModelRequest
                         {
