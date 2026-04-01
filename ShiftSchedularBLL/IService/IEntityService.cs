@@ -36,5 +36,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<ImportCandidatesDTO>> GetImportCandidates(Guid entityId, string requesterId);
         Task<BaseResponse<int>> ImportConfigFromParent(ImportConfigDTO dto, string requesterId);
         Task<BaseResponse<bool>> SetMemberDateToExit(MemberExitDTO dto);
+        Task<BaseResponse<bool>> CancelMemberExit(MemberExitDTO dto);
     }
 }

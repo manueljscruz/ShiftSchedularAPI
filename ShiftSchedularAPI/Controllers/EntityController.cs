@@ -656,5 +656,24 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        #region Cancel Member Exit
+
+        [Authorize]
+        [HttpPost("cancel-member-exit")]
+        public async Task<IActionResult> CancelMemberExit([FromBody] MemberExitDTO dto)
+        {
+            if (dto == null || dto.EntityId == Guid.Empty)
+                return BadRequest();
+
+            BaseResponse<bool> response = await _entityService.CancelMemberExit(dto);
+
+            if (!response.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+
+            return Ok(response);
+        }
+
+        #endregion
     }
 }

@@ -1705,6 +1705,65 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Cancel Member Exit
+
+        public async Task<BaseResponse<bool>> CancelMemberExit(MemberExitDTO dto)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Success = false;
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (string.IsNullOrEmpty(dto.WorkerId) || dto.EntityId == Guid.Empty)
+            {
+                response.Message = EntityWorkerRelatedMessages.MemberIdentifierEmpty;
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                if (dto.IsBot)
+                {
+                    Guid botId = _generalService.ParseStringToGuid(dto.WorkerId);
+                    EntityUserBot entityUserBot = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotByEntityAndId(dto.EntityId, botId);
+                    if (entityUserBot != null)
+                    {
+                        entityUserBot.DateOfExit = DateTime.MinValue;
+                        await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
+                    }
+                }
+                else
+                {
+                    EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetSimpleByWorkerAndEntity(dto.WorkerId, dto.EntityId);
+                    if (entityWorker != null)
+                    {
+                        entityWorker.DateToExit = DateTime.MinValue;
+                        await _unitOfWork.EntityWorkerRepository.Update(entityWorker);
+                    }
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+                response.Success = true;
+                response.Result = true;
+                response.Message = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = ex.Message;
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
+            }
+
+            return response;
+        }
+
+        #endregion
+
         #region Convert Bot To User
 
         public async Task<BaseResponse<EntityWorkerMemberDTO>> ConvertBotToUser(ConvertBotToUserDTO convertBotToUserDTO)
