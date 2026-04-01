@@ -44,7 +44,7 @@ namespace ShiftSchedularDAL.Repositories
             if (scheduleEntryId != Guid.Empty)
             {
                 ScheduleEntryBots scheduleEntryBotInstance = await _dbSet.Where(i => i.ScheduleEntryId.Equals(scheduleEntryId) && i.UserBotId.Equals(botId)).FirstOrDefaultAsync();
-                
+
                 if(scheduleEntryBotInstance != null)
                 {
                     _dbSet.Remove(scheduleEntryBotInstance);
@@ -57,6 +57,16 @@ namespace ShiftSchedularDAL.Repositories
         }
 
         #endregion
+
+        public async Task<int> DeleteFutureBotParticipations(Guid entityId, Guid botId, DateTime cutoffDate)
+        {
+            return await _dbSet
+                .Where(seb =>
+                    seb.UserBotId == botId &&
+                    seb.ScheduleEntry.ScheduleStartDate.Date > cutoffDate.Date &&
+                    seb.ScheduleEntry.Shift.EntityId == entityId)
+                .ExecuteDeleteAsync();
+        }
 
     }
 }

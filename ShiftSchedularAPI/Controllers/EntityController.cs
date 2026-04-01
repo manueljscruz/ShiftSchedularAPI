@@ -636,5 +636,25 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        #region Set Member Date To Exit
+
+        [Authorize]
+        [HttpPost("set-member-date-to-exit")]
+        public async Task<IActionResult> SetMemberDateToExit([FromBody] MemberExitDTO dto)
+        {
+            if (dto == null || dto.EntityId == Guid.Empty)
+                return BadRequest();
+
+            dto.ActingUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            BaseResponse<bool> response = await _entityService.SetMemberDateToExit(dto);
+
+            if (!response.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, response.Message);
+
+            return Ok(response);
+        }
+
+        #endregion
     }
 }

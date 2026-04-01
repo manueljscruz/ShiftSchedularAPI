@@ -61,7 +61,7 @@ namespace ShiftSchedularDAL.Repositories
             if(scheduleEntryId != Guid.Empty)
             {
                 ScheduleEntryWorkers scheduleEntryWorkerInstance = await _dbSet.Where(i => i.ScheduleEntryId.Equals(scheduleEntryId) && i.ApplicationUserId.Equals(applicationUserId)).FirstOrDefaultAsync();
-            
+
                 if(scheduleEntryWorkerInstance != null)
                 {
                     _dbSet.Remove(scheduleEntryWorkerInstance);
@@ -71,6 +71,16 @@ namespace ShiftSchedularDAL.Repositories
             }
 
             return false;
+        }
+
+        public async Task<int> DeleteFutureWorkerParticipations(Guid entityId, string workerId, DateTime cutoffDate)
+        {
+            return await _dbSet
+                .Where(sew =>
+                    sew.ApplicationUserId == workerId &&
+                    sew.ScheduleEntry.ScheduleStartDate.Date > cutoffDate.Date &&
+                    sew.ScheduleEntry.Shift.EntityId == entityId)
+                .ExecuteDeleteAsync();
         }
 
 

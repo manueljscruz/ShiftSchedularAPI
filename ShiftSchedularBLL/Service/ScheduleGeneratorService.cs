@@ -1121,6 +1121,7 @@ namespace ShiftSchedularBLL.Service
             filteredWorkers = FilterBySkillRequirements(filteredWorkers, entityRulesDTO, scheduleEntryDTO, forceNoSkill);
             filteredWorkers = FilterByRotation(filteredWorkers, scheduleEntryDTO, isShiftRotation);
             filteredWorkers = FilterByAvailability(filteredWorkers, isWeekend);
+            filteredWorkers = FilterByDateToExit(filteredWorkers, scheduleEntryDTO.ScheduleStartDate);
             filteredWorkers = FilterByIneligibility(filteredWorkers, scheduleEntryDTO, scheduleEntryIneligibilities);
             filteredWorkers = FilterOutAlreadyParticipating(filteredWorkers, scheduleEntryDTO);
 
@@ -1174,6 +1175,18 @@ namespace ShiftSchedularBLL.Service
 
             // Include only rotation workers or explicitly assigned to this shift
             return workers.Where(w => w.PartOfRotation || w.AssignedShifts.Any(s => s.ShiftId.Equals(scheduleEntry.ShiftId)));
+        }
+
+        #endregion
+
+        #region Aux : Filter By Date To Exit
+
+        private IEnumerable<EntityWorkerMemberDTO> FilterByDateToExit(
+            IEnumerable<EntityWorkerMemberDTO> workers,
+            DateTime cycleDate)
+        {
+            return workers.Where(w =>
+                w.DateToExit == DateTime.MinValue || cycleDate.Date <= w.DateToExit.Date);
         }
 
         #endregion

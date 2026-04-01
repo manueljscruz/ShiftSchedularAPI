@@ -17,6 +17,7 @@ namespace ShiftSchedularEntity.Models.QueryModels
         public int EntityPermissionRoleId { get; set; }
         public bool CanManageChildren { get; set; }
         public bool PartOfRoster { get; set; }
+        public DateTime DateToExit { get; set; }
 
         public EntityWorkerMemberModel()
         {

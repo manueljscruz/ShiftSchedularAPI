@@ -7,5 +7,6 @@ namespace ShiftSchedularDAL.IRepositories
         Task<IEnumerable<ScheduleEntryBots>> GetScheduleEntryBots(Guid scheduleEntryId);
         Task<bool> ParticipantExists(Guid scheduleEntryId, Guid workerId);
         Task<bool> DeleteScheduleEntryBot(Guid scheduleEntryId, Guid botId);
+        Task<int> DeleteFutureBotParticipations(Guid entityId, Guid botId, DateTime cutoffDate);
     }
 }

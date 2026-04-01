@@ -86,7 +86,8 @@ namespace ShiftSchedularIL.Mappers
                 .ForMember(dest => dest.IsGeneralManager, opt => opt.MapFrom(src => src.IsGeneralManager))
                 .ForMember(dest => dest.EntityPermissionRoleId, opt => opt.MapFrom(src => src.EntityPermissionRoleId))
                 .ForMember(dest => dest.CanManageChildren, opt => opt.MapFrom(src => src.CanManageChildren))
-                .ForMember(dest => dest.PartOfRoster, opt => opt.MapFrom(src => src.PartOfRoster));
+                .ForMember(dest => dest.PartOfRoster, opt => opt.MapFrom(src => src.PartOfRoster))
+                .ForMember(dest => dest.DateToExit, opt => opt.MapFrom(src => src.DateToExit));
 
             CreateMap<AddShiftDTO, Shift>()
                 .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src => src.ShiftName))

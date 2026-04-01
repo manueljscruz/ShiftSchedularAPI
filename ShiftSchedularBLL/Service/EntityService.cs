@@ -1268,6 +1268,18 @@ namespace ShiftSchedularBLL.Service
                             response = await UpdateEntityMemberData(updateEntityMemberDTO);
                         }
 
+                        if (response.Success && updateEntityMemberDTO.DateToExit.HasValue)
+                        {
+                            await ApplyExitLogicAsync(new MemberExitDTO
+                            {
+                                WorkerId = updateEntityMemberDTO.WorkerId,
+                                EntityId = updateEntityMemberDTO.EntityId,
+                                IsBot = updateEntityMemberDTO.IsBot,
+                                DateToExit = updateEntityMemberDTO.DateToExit.Value,
+                                ActingUserId = updateEntityMemberDTO.ActingUserId ?? string.Empty
+                            });
+                        }
+
                         if (response.Success)
                         {
                             await _unitOfWork.CommitAsync();
@@ -1588,6 +1600,104 @@ namespace ShiftSchedularBLL.Service
                 {
                     _unitOfWork.Dispose();
                 }
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Apply Exit Logic (no own transaction)
+
+        private async Task ApplyExitLogicAsync(MemberExitDTO dto)
+        {
+            bool isImmediate = dto.DateToExit.Date <= DateTime.UtcNow.Date;
+
+            if (dto.IsBot)
+            {
+                Guid botId = _generalService.ParseStringToGuid(dto.WorkerId);
+                EntityUserBot entityUserBot = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotByEntityAndId(dto.EntityId, botId);
+                if (entityUserBot != null)
+                {
+                    entityUserBot.DateOfExit = dto.DateToExit;
+                    await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
+
+                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteFutureBotParticipations(dto.EntityId, botId, dto.DateToExit);
+
+                    if (isImmediate)
+                    {
+                        entityUserBot.IsDeleted = true;
+                        entityUserBot.DeletedAt = DateTime.UtcNow;
+                        entityUserBot.DeletedById = dto.ActingUserId;
+                        await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
+                    }
+                }
+            }
+            else
+            {
+                EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetSimpleByWorkerAndEntity(dto.WorkerId, dto.EntityId);
+                if (entityWorker != null)
+                {
+                    entityWorker.DateToExit = dto.DateToExit;
+                    await _unitOfWork.EntityWorkerRepository.Update(entityWorker);
+
+                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteFutureWorkerParticipations(dto.EntityId, dto.WorkerId, dto.DateToExit);
+
+                    if (isImmediate)
+                    {
+                        entityWorker.IsDeleted = true;
+                        entityWorker.DeletedAt = DateTime.UtcNow;
+                        entityWorker.DeletedById = dto.ActingUserId;
+                        await _unitOfWork.EntityWorkerRepository.Update(entityWorker);
+
+                        EntityPermission entityPermission = await _unitOfWork.EntityPermissionRepository.GetByEntityAndWorker(dto.EntityId, dto.WorkerId);
+                        if (entityPermission != null)
+                        {
+                            entityPermission.IsDeleted = true;
+                            entityPermission.DeletedAt = DateTime.UtcNow;
+                            entityPermission.DeletedById = dto.ActingUserId;
+                            await _unitOfWork.EntityPermissionRepository.Update(entityPermission);
+                        }
+                    }
+                }
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        #endregion
+
+        #region Set Member Date To Exit
+
+        public async Task<BaseResponse<bool>> SetMemberDateToExit(MemberExitDTO dto)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+            response.Success = false;
+            response.Message = SharedMessages.UnexpectedError;
+
+            if (string.IsNullOrEmpty(dto.WorkerId) || dto.EntityId == Guid.Empty)
+            {
+                response.Message = EntityWorkerRelatedMessages.MemberIdentifierEmpty;
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+                await ApplyExitLogicAsync(dto);
+                await _unitOfWork.CommitAsync();
+                response.Success = true;
+                response.Result = true;
+                response.Message = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = ex.Message;
+            }
+            finally
+            {
+                _unitOfWork.Dispose();
             }
 
             return response;

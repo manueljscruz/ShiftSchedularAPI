@@ -14,5 +14,7 @@ namespace ShiftSchedularEntity.Models.DataTransferObjects.Incoming
         public bool WorksWeekends { get; set; }
         public bool MultipleShiftAssignments { get; set; }
         public List<ShiftDTO> AssignedShifts { get; set; }
+        public DateTime? DateToExit { get; set; }
+        public string? ActingUserId { get; set; }
     }
 }
