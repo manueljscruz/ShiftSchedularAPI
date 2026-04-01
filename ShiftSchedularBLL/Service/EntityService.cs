@@ -1611,7 +1611,8 @@ namespace ShiftSchedularBLL.Service
 
         private async Task ApplyExitLogicAsync(MemberExitDTO dto)
         {
-            bool isImmediate = dto.DateToExit.Date <= DateTime.UtcNow.Date;
+            DateTime exitDate = dto.DateToExit!.Value;
+            bool isImmediate = exitDate.Date <= DateTime.UtcNow.Date;
 
             if (dto.IsBot)
             {
@@ -1619,10 +1620,10 @@ namespace ShiftSchedularBLL.Service
                 EntityUserBot entityUserBot = await _unitOfWork.EntityUserBotRepository.GetEntityUserBotByEntityAndId(dto.EntityId, botId);
                 if (entityUserBot != null)
                 {
-                    entityUserBot.DateOfExit = dto.DateToExit;
+                    entityUserBot.DateOfExit = exitDate;
                     await _unitOfWork.EntityUserBotRepository.Update(entityUserBot);
 
-                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteFutureBotParticipations(dto.EntityId, botId, dto.DateToExit);
+                    await _unitOfWork.ScheduleEntryBotsRepository.DeleteFutureBotParticipations(dto.EntityId, botId, exitDate);
 
                     if (isImmediate)
                     {
@@ -1638,10 +1639,10 @@ namespace ShiftSchedularBLL.Service
                 EntityWorker entityWorker = await _unitOfWork.EntityWorkerRepository.GetSimpleByWorkerAndEntity(dto.WorkerId, dto.EntityId);
                 if (entityWorker != null)
                 {
-                    entityWorker.DateToExit = dto.DateToExit;
+                    entityWorker.DateToExit = exitDate;
                     await _unitOfWork.EntityWorkerRepository.Update(entityWorker);
 
-                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteFutureWorkerParticipations(dto.EntityId, dto.WorkerId, dto.DateToExit);
+                    await _unitOfWork.EntityScheduleWorkersRepository.DeleteFutureWorkerParticipations(dto.EntityId, dto.WorkerId, exitDate);
 
                     if (isImmediate)
                     {
