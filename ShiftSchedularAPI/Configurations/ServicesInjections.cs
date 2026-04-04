@@ -73,6 +73,8 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<IGenericRepository<HolidayType>, GenericRepository<HolidayType>>();
             services.AddScoped<IGenericRepository<HolidayBehaviour>, GenericRepository<HolidayBehaviour>>();
             services.AddScoped<IGenericRepository<HolidayCatalog>, GenericRepository<HolidayCatalog>>();
+            // Repositories - Notifications
+            services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
 
             #endregion
 
@@ -103,6 +105,7 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<IEntityDashboardService, EntityDashboardService>();
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IHolidayService, HolidayService>();
+            services.AddScoped<INotificationService, NotificationService>();
 
             // Infrastructure Services
             services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));

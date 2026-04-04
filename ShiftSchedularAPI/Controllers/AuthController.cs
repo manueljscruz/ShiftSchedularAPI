@@ -217,6 +217,32 @@ namespace ShiftSchedularAPI.Controllers
 
         #endregion
 
+        #region Change Password
+
+        [Authorize]
+        [HttpPost("change-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDTO request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            string userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            BaseResponse<bool> response = await _authService.ChangePassword(userId, request);
+
+            if (response.Success)
+                return Ok(response);
+
+            return BadRequest(response.Message);
+        }
+
+        #endregion
+
         #region Logout
 
         [Authorize]

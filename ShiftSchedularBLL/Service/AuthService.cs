@@ -317,5 +317,46 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Change Password
+
+        public async Task<BaseResponse<bool>> ChangePassword(string userId, ChangePasswordRequestDTO request)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            try
+            {
+                ApplicationUser user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    response.Message = WorkerRelatedMessages.WorkerLoginEmailNotFoundError;
+                    return response;
+                }
+
+                IdentityResult result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+                if (result.Succeeded)
+                {
+                    response.Success = true;
+                    response.Result = true;
+                    response.Message = "Password changed successfully.";
+                    _logger.LogInformation("Password changed successfully for user: {UserId}", userId);
+                }
+                else
+                {
+                    response.Message = string.Join(" ", result.Errors.Select(e => e.Description));
+                    _logger.LogWarning("Password change failed for user: {UserId}. Errors: {Errors}", userId, response.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for user: {UserId}", userId);
+                response.Message = ex.Message;
+            }
+
+            return response;
+        }
+
+        #endregion
+
     }
 }

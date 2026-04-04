@@ -42,5 +42,6 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<EntityWorkerShiftAssigned> EntityWorkerShiftAssigneds { get; set; } 
         public virtual ICollection<ScheduleEntryWorkerIneligibility> ScheduleEntryWorkerIneligibilities { get; set; } 
         public virtual ICollection<EntityPermission> EntityPermissions { get; set; }
+        public virtual ICollection<UserNotification> UserNotifications { get; set; }
     }
 }

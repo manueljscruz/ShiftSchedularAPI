@@ -417,6 +417,12 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _entityPermissionRoleLocalizationRepository = _entityPermissionRoleLocalizationRepository ?? new EntityPermissionRoleLocalizationRepository(_context, this); }
         }
 
+        private IUserNotificationRepository _userNotificationRepository;
+        public IUserNotificationRepository UserNotificationRepository
+        {
+            get { return _userNotificationRepository = _userNotificationRepository ?? new UserNotificationRepository(_context, this); }
+        }
+
         #endregion
 
         #region Constructor

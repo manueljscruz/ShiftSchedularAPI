@@ -74,6 +74,11 @@ namespace ShiftSchedularDAL.Data
         public DbSet<EntityPermissionRole> EntityPermissionRoles { get; set; }
         public DbSet<EntityPermissionRoleLocalization> EntityPermissionRoleLocalizations { get; set; }
 
+        // Notifications
+        public DbSet<NotificationType> NotificationTypes { get; set; }
+        public DbSet<NotificationTypeLocalization> NotificationTypeLocalizations { get; set; }
+        public DbSet<UserNotification> UserNotifications { get; set; }
+
         #endregion
 
         #region Save Changes
@@ -1133,6 +1138,139 @@ namespace ShiftSchedularDAL.Data
                 .HasIndex(ewa => ewa.IsDeleted)
                 .HasFilter("IsDeleted = 0")
                 .HasDatabaseName("IX_EntityWorkerAbsences_IsDeleted");
+
+            #endregion
+
+            #region Notification Configuration
+
+            // NotificationType
+            modelBuilder.Entity<NotificationType>()
+                .HasKey(nt => nt.NotificationTypeId);
+
+            modelBuilder.Entity<NotificationType>()
+                .Property(nt => nt.NotificationTypeCode)
+                .HasMaxLength(100)
+                .IsRequired();
+
+            // NotificationTypeLocalization
+            modelBuilder.Entity<NotificationTypeLocalization>()
+                .HasKey(ntl => new { ntl.LocalizationId, ntl.NotificationTypeId});
+
+            modelBuilder.Entity<NotificationTypeLocalization>()
+                .HasOne(ntl => ntl.NotificationType)
+                .WithMany(nt => nt.NotificationTypeLocalizations)
+                .HasForeignKey(ntl => ntl.NotificationTypeId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<NotificationTypeLocalization>()
+                .HasOne(ntl => ntl.Localization)
+                .WithMany(l => l.NotificationTypeLocalizations)
+                .HasForeignKey(ntl => ntl.LocalizationId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // UserNotification
+            modelBuilder.Entity<UserNotification>()
+                .HasKey(un => un.UserNotificationId);
+
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.User)
+                .WithMany(u => u.UserNotifications)
+                .HasForeignKey(un => un.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.NotificationType)
+                .WithMany(nt => nt.UserNotifications)
+                .HasForeignKey(un => un.NotificationTypeId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserNotification>()
+                .HasIndex(un => un.UserId)
+                .HasDatabaseName("IX_UserNotifications_UserId");
+
+            modelBuilder.Entity<UserNotification>()
+                .HasIndex(un => new { un.UserId, un.IsRead })
+                .HasDatabaseName("IX_UserNotifications_UserId_IsRead");
+
+            // Seed data — NotificationTypes and their localizations
+            modelBuilder.Entity<NotificationType>().HasData(
+                new NotificationType { NotificationTypeId = 1, NotificationTypeCode = NotificationTypeCodes.InvitationReceived },
+                new NotificationType { NotificationTypeId = 2, NotificationTypeCode = NotificationTypeCodes.AbsenceApproved },
+                new NotificationType { NotificationTypeId = 3, NotificationTypeCode = NotificationTypeCodes.AbsenceDeclined },
+                new NotificationType { NotificationTypeId = 4, NotificationTypeCode = NotificationTypeCodes.ScheduleAssigned },
+                new NotificationType { NotificationTypeId = 5, NotificationTypeCode = NotificationTypeCodes.ExitDateSet }
+            );
+
+            // Seed localizations keyed by LocalizationId (1=en, 2=fr, 3=es, 4=de, 5=it, 6=pt)
+            // Inner tuple: (NotificationTypeDisplayValue, MessageTemplate)
+            var notificationLocalizations = new Dictionary<int, Dictionary<int, (string DisplayValue, string MessageTemplate)>>
+            {
+                [1] = new Dictionary<int, (string, string)>
+                {
+                    [1] = ("Invitation Received",       "You have been invited to join {0}."),
+                    [2] = ("Invitation reçue",           "Vous avez été invité à rejoindre {0}."),
+                    [3] = ("Invitación recibida",        "Has sido invitado a unirte a {0}."),
+                    [4] = ("Einladung erhalten",         "Sie wurden eingeladen, {0} beizutreten."),
+                    [5] = ("Invito ricevuto",            "Sei stato invitato a unirti a {0}."),
+                    [6] = ("Convite recebido",           "Você foi convidado para se juntar a {0}.")
+                },
+                [2] = new Dictionary<int, (string, string)>
+                {
+                    [1] = ("Absence Approved",          "Your absence request has been approved."),
+                    [2] = ("Absence approuvée",          "Votre demande d'absence a été approuvée."),
+                    [3] = ("Ausencia aprobada",          "Tu solicitud de ausencia ha sido aprobada."),
+                    [4] = ("Abwesenheit genehmigt",      "Ihr Abwesenheitsantrag wurde genehmigt."),
+                    [5] = ("Assenza approvata",          "La tua richiesta di assenza è stata approvata."),
+                    [6] = ("Ausência aprovada",          "A sua solicitação de ausência foi aprovada.")
+                },
+                [3] = new Dictionary<int, (string, string)>
+                {
+                    [1] = ("Absence Declined",          "Your absence request has been declined."),
+                    [2] = ("Absence refusée",            "Votre demande d'absence a été refusée."),
+                    [3] = ("Ausencia rechazada",         "Tu solicitud de ausencia ha sido rechazada."),
+                    [4] = ("Abwesenheit abgelehnt",      "Ihr Abwesenheitsantrag wurde abgelehnt."),
+                    [5] = ("Assenza rifiutata",          "La tua richiesta di assenza è stata rifiutata."),
+                    [6] = ("Ausência recusada",          "A sua solicitação de ausência foi recusada.")
+                },
+                [4] = new Dictionary<int, (string, string)>
+                {
+                    [1] = ("Shift Assigned",            "You have been assigned to a shift at {0}."),
+                    [2] = ("Quart attribué",             "Vous avez été affecté à un quart de travail chez {0}."),
+                    [3] = ("Turno asignado",             "Has sido asignado a un turno en {0}."),
+                    [4] = ("Schicht zugewiesen",         "Sie wurden einer Schicht bei {0} zugeteilt."),
+                    [5] = ("Turno assegnato",            "Sei stato assegnato a un turno presso {0}."),
+                    [6] = ("Turno atribuído",            "Você foi atribuído a um turno em {0}.")
+                },
+                [5] = new Dictionary<int, (string, string)>
+                {
+                    [1] = ("Exit Date Set",             "Your exit date at {0} has been scheduled."),
+                    [2] = ("Date de sortie fixée",       "Votre date de sortie de {0} a été planifiée."),
+                    [3] = ("Fecha de salida establecida","Tu fecha de salida en {0} ha sido programada."),
+                    [4] = ("Austrittsdatum festgelegt",  "Ihr Austrittsdatum bei {0} wurde festgelegt."),
+                    [5] = ("Data di uscita stabilita",   "La tua data di uscita da {0} è stata pianificata."),
+                    [6] = ("Data de saída definida",     "A sua data de saída em {0} foi agendada.")
+                }
+            };
+
+            var localizationSeeds = new List<NotificationTypeLocalization>();
+            foreach (var (typeId, localizationDictionary) in notificationLocalizations)
+            {
+                foreach (var (localizationId, (displayValue, messageTemplate)) in localizationDictionary)
+                {
+                    localizationSeeds.Add(new NotificationTypeLocalization
+                    {
+                        NotificationTypeId = typeId,
+                        LocalizationId = localizationId,
+                        NotificationTypeDisplayValue = displayValue,
+                        MessageTemplate = messageTemplate
+                    });
+                }
+            }
+            modelBuilder.Entity<NotificationTypeLocalization>().HasData(localizationSeeds);
 
             #endregion
         }

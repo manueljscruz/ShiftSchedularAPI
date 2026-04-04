@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Azure;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.IdentityModel.Tokens;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
@@ -31,6 +32,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEntityRuleService _entityRuleService;
         private readonly IEntityService _entityService;
         private readonly ILanguageAccessor _languageAccessor;
+        private readonly INotificationService _notificationService;
 
         #endregion
 
@@ -43,10 +45,12 @@ namespace ShiftSchedularBLL.Service
             IEntityRuleService entityRuleService,
             IEntityService entityService,
             IEntityWorkerAbsenceService entityWorkerAbsenceService,
-            ILanguageAccessor languageAccessor)
+            ILanguageAccessor languageAccessor,
+            INotificationService notificationService)
         {
             _mapper = mapper;
             _generalService = generalService;
+            _notificationService = notificationService;
             _unitOfWork = unitOfWork;
             _shiftService = shiftService;
             _entityRuleService = entityRuleService;
@@ -75,14 +79,15 @@ namespace ShiftSchedularBLL.Service
                 {
                     viewModel.Shifts = await _shiftService.GetEntityShifts(viewModelRequest.EntityId);
                     viewModel.EntityRules = await _entityRuleService.GetEntityRules(viewModelRequest.EntityId, _languageAccessor.GetLanguageCode());
-                    MemberPagedModelRequestDTO baseRequest = new MemberPagedModelRequestDTO
-                    {
-                        EntityId = viewModelRequest.EntityId
-                    };
-                    EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
-                    viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data.Where(m => m.IsBot || m.PartOfRoster);
                 }
 
+                MemberPagedModelRequestDTO baseRequest = new MemberPagedModelRequestDTO
+                {
+                    EntityId = viewModelRequest.EntityId
+                };
+
+                EntityMembersViewModel entityMembersViewModel = await _entityService.GetEntitiesMembersViewModel(baseRequest);
+                viewModel.EntityWorkerMembers = entityMembersViewModel.EntityMembers.Data.Where(m => m.IsBot || m.PartOfRoster);
 
                 // Get all Schedules from the date selection
                 viewModel.ScheduleEntries = await GetScheduleEntries(viewModelRequest);
@@ -255,6 +260,13 @@ namespace ShiftSchedularBLL.Service
                 };
 
                 await _unitOfWork.EntityScheduleWorkersRepository.Add(scheduleEntryWorker);
+
+                // Fire-and-forget notification to the assigned worker
+                _ = _notificationService.CreateNotification(
+                    workerToBeAssigned.WorkerId,
+                    ShiftSchedularEntity.Entities.NotificationTypeCodes.ScheduleAssigned,
+                    contextData: entity.EntityName,
+                    relatedEntityId: scheduleEntry.ScheduleEntryId.ToString());
             }
 
             // Return Schedule entry in DTO format

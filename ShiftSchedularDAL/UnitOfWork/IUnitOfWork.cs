@@ -48,6 +48,7 @@ namespace ShiftSchedularDAL.UnitOfWork
         IEntityPermissionRepository EntityPermissionRepository { get; }
         IEntityPermissionRoleRepository EntityPermissionRoleRepository { get; }
         IEntityPermissionRoleLocalizationRepository EntityPermissionRoleLocalizationRepository { get; }
+        IUserNotificationRepository UserNotificationRepository { get; }
 
         IGenericRepository<T> GetGenericRepository<T>() where T : class;
 

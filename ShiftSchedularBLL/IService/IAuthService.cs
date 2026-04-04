@@ -12,5 +12,6 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> ForgotPassword(ForgotPasswordRequestDTO request, string originRequest);
         Task<BaseResponse<bool>> ResetPassword(ResetPasswordRequestDTO request);
         Task<BaseResponse<bool>> ResendConfirmationEmail(ResendConfirmationEmailDTO request, string frontendUrl);
+        Task<BaseResponse<bool>> ChangePassword(string userId, ChangePasswordRequestDTO request);
     }
 }

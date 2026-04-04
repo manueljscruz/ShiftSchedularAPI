@@ -32,6 +32,7 @@ namespace ShiftSchedularBLL.Service
         private readonly ILanguageAccessor _languageAccessor;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly INotificationService _notificationService;
 
         #region Constructor
 
@@ -45,7 +46,8 @@ namespace ShiftSchedularBLL.Service
             IGeneralService generalService,
             ILanguageAccessor languageAccessor,
             IEmailService emailService,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -58,6 +60,7 @@ namespace ShiftSchedularBLL.Service
             _languageAccessor = languageAccessor;
             _emailService = emailService;
             _configuration = configuration;
+            _notificationService = notificationService;
         }
 
         #endregion
@@ -1199,6 +1202,16 @@ namespace ShiftSchedularBLL.Service
             response.Message = EntityWorkerRelatedMessages.AddNewMemberInvitationSuccessful;
             response.Success = true;
 
+            // Fire-and-forget notification to the invited user (only if they have an account)
+            if (possibleWorker != null)
+            {
+                _ = _notificationService.CreateNotification(
+                    possibleWorker.Id,
+                    NotificationTypeCodes.InvitationReceived,
+                    contextData: (await _unitOfWork.GetGenericRepository<Entity>().GetById(newMemberDTO.DestinationEntityId))?.EntityName,
+                    relatedEntityId: newMemberDTO.DestinationEntityId.ToString());
+            }
+
             return response;
         }
 
@@ -1690,6 +1703,17 @@ namespace ShiftSchedularBLL.Service
                 response.Success = true;
                 response.Result = true;
                 response.Message = string.Empty;
+
+                // Fire-and-forget notification to the affected worker (real users only, not bots)
+                if (!dto.IsBot)
+                {
+                    Entity exitEntity = await _unitOfWork.GetGenericRepository<Entity>().GetById(dto.EntityId);
+                    _ = _notificationService.CreateNotification(
+                        dto.WorkerId,
+                        NotificationTypeCodes.ExitDateSet,
+                        contextData: exitEntity?.EntityName,
+                        relatedEntityId: dto.EntityId.ToString());
+                }
             }
             catch (Exception ex)
             {

@@ -25,6 +25,7 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<HolidayBehaviourLocalization> HolidayBehaviourLocalizations { get; set; }
         public virtual ICollection<HolidayCatalogLocalization> HolidayCatalogLocalizations { get; set; }
         public virtual ICollection<EntityPermissionRoleLocalization> EntityPermissionRoleLocalizations { get; set; }
+        public virtual ICollection<NotificationTypeLocalization> NotificationTypeLocalizations { get; set; }
 
         #endregion
 

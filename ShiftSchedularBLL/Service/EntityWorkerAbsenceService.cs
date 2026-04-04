@@ -20,6 +20,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILanguageAccessor _languageAccessor;
+        private readonly INotificationService _notificationService;
 
         #region Constructor
 
@@ -27,13 +28,15 @@ namespace ShiftSchedularBLL.Service
            IGeneralService generalService,
            UserManager<ApplicationUser> userManager,
            IMapper mapper,
-           ILanguageAccessor languageAccessor)
+           ILanguageAccessor languageAccessor,
+           INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _generalService = generalService;
             _userManager = userManager;
             _mapper = mapper;
             _languageAccessor = languageAccessor;
+            _notificationService = notificationService;
         }
 
         #endregion
@@ -95,6 +98,15 @@ namespace ShiftSchedularBLL.Service
                 response.Result = await this.GetEntityWorkerAbsenceById(entityWorkerAbsence.EntityWorkerAbsenceId, _languageAccessor.GetLanguageCode());
                 response.Success = true;
                 response.Message = AbsenceRelatedMessages.AbsenceDecisionApprovalSubmitted;
+
+                // Fire-and-forget notification to the worker
+                string notifTypeCode = absenceApprovalDecisionDTO.AbsenceDecision
+                    ? ShiftSchedularEntity.Entities.NotificationTypeCodes.AbsenceApproved
+                    : ShiftSchedularEntity.Entities.NotificationTypeCodes.AbsenceDeclined;
+                _ = _notificationService.CreateNotification(
+                    entityWorkerAbsence.ApplicationUserId,
+                    notifTypeCode,
+                    relatedEntityId: entityWorkerAbsence.EntityWorkerAbsenceId.ToString());
             }
 
             return response;
