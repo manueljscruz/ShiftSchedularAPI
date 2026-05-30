@@ -1,4 +1,5 @@
-﻿using ShiftSchedularEntity.Models.ViewModels;
+﻿using ShiftSchedularEntity.Models.DataTransferObjects.Admin;
+using ShiftSchedularEntity.Models.ViewModels;
 
 namespace ShiftSchedularBLL.IService
 {
@@ -6,5 +7,6 @@ namespace ShiftSchedularBLL.IService
     {
         Task<HomeViewModel> GetHomeViewModel(string localizationCode);
         Task SendEmailTest(string email);
+        Task<AdminDashboardViewModel> GetAdminDashboardViewModel();
     }
 }

@@ -47,5 +47,15 @@ namespace ShiftSchedularAPI.Controllers
 
             return Ok();
         }
+
+        [HttpGet("admin-dashboard")]
+        [Authorize(Roles = "Admin")]
+        [EnableRateLimiting("general")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAdminDashboard()
+        {
+            var vm = await _homeService.GetAdminDashboardViewModel();
+            return Ok(vm);
+        }
     }
 }

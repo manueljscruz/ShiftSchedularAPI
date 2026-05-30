@@ -109,7 +109,8 @@ namespace ShiftSchedularBLL.Service
                         loginResponseDTO.Result = new LoginResponseDTO
                         {
                             User = _mapper.Map<UserDTO>(user),
-                            EmailConfirmed = false
+                            EmailConfirmed = false,
+                            IsAdmin = false
                         };
                         return loginResponseDTO;
                     }
@@ -144,7 +145,8 @@ namespace ShiftSchedularBLL.Service
                     {
                         User = _mapper.Map<UserDTO>(user),
                         TokenResponseDTO = new TokenResponseDTO(new JwtSecurityTokenHandler().WriteToken(token), refreshToken, token.ValidTo),
-                        EmailConfirmed = true
+                        EmailConfirmed = true,
+                        IsAdmin = userRoles.Contains("Admin")
                     };
                     loginResponseDTO.Success = true;
                 }

@@ -56,7 +56,7 @@ namespace ShiftSchedularAPI.Controllers
                 return Ok(new LoginResponseDTO
                 {
                     User = response.Result.User,
-                    EmailConfirmed = response.Result.EmailConfirmed
+                    EmailConfirmed = response.Result.EmailConfirmed,
                 });
             }
 
@@ -80,7 +80,8 @@ namespace ShiftSchedularAPI.Controllers
             return Ok(new LoginResponseDTO
             {
                 User = response.Result.User,
-                EmailConfirmed = response.Result.EmailConfirmed
+                EmailConfirmed = response.Result.EmailConfirmed,
+                IsAdmin = response.Result.IsAdmin
             });
         }
 

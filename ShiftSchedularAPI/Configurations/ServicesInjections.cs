@@ -1,4 +1,6 @@
-﻿using ShiftSchedularBLL.IService;
+﻿using ShiftSchedularBLL.Admin;
+using ShiftSchedularBLL.Admin.Handlers;
+using ShiftSchedularBLL.IService;
 using ShiftSchedularBLL.Service;
 using ShiftSchedularDAL.IRepositories;
 using ShiftSchedularDAL.Repositories;
@@ -106,6 +108,17 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IHolidayService, HolidayService>();
             services.AddScoped<INotificationService, NotificationService>();
+
+            // Admin Type Handlers (keyed by typeKey used in AdminTypesController)
+            services.AddKeyedScoped<IAdminTypeHandler, SkillTypeHandler>("skills");
+            services.AddKeyedScoped<IAdminTypeHandler, GenderTypeHandler>("genders");
+            services.AddKeyedScoped<IAdminTypeHandler, EntityTypeTypeHandler>("entity-types");
+            services.AddKeyedScoped<IAdminTypeHandler, AbsenceTypeTypeHandler>("absence-types");
+            services.AddKeyedScoped<IAdminTypeHandler, ShiftBreakTypeTypeHandler>("shift-break-types");
+            services.AddKeyedScoped<IAdminTypeHandler, HolidayTypeTypeHandler>("holiday-types");
+            services.AddKeyedScoped<IAdminTypeHandler, LocalizationTypeHandler>("localizations");
+            services.AddKeyedScoped<IAdminTypeHandler, BusinessAspectTypeHandler>("business-aspects");
+            services.AddKeyedScoped<IAdminTypeHandler, EntityPermissionRoleTypeHandler>("entity-permission-roles");
 
             // Infrastructure Services
             services.AddAutoMapper(Assembly.GetAssembly(typeof(ApplicationMapper)));
