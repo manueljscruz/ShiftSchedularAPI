@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using ShiftSchedularBLL.IService;
 using ShiftSchedularDAL.DbConstants;
 using ShiftSchedularDAL.UnitOfWork;
@@ -33,6 +34,7 @@ namespace ShiftSchedularBLL.Service
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
         private readonly INotificationService _notificationService;
+        private readonly ILogger<EntityService> _logger;
 
         #region Constructor
 
@@ -47,7 +49,8 @@ namespace ShiftSchedularBLL.Service
             ILanguageAccessor languageAccessor,
             IEmailService emailService,
             IConfiguration configuration,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            ILogger<EntityService> logger)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -61,6 +64,7 @@ namespace ShiftSchedularBLL.Service
             _emailService = emailService;
             _configuration = configuration;
             _notificationService = notificationService;
+            _logger = logger;
         }
 
         #endregion
@@ -175,6 +179,39 @@ namespace ShiftSchedularBLL.Service
                         };
 
                         await _unitOfWork.EntityPermissionRepository.Add(entityPermission);
+
+                        // Provision a Free subscription plan for the new Entity, if the catalog has one configured.
+                        // This must not block Entity creation - it is secondary to the Entity itself existing.
+                        try
+                        {
+                            IEnumerable<SubscriptionPlanDurationPrice> plans = await _unitOfWork.SubscriptionPlanDurationPriceRepository.GetAllWithDetails();
+                            SubscriptionPlanDurationPrice freePlan = plans.FirstOrDefault(p => p.IsActive
+                                && p.SubscriptionPlanType != null
+                                && string.Equals(p.SubscriptionPlanType.SubscriptionPlanTypeName, "Free", StringComparison.OrdinalIgnoreCase));
+
+                            if (freePlan != null)
+                            {
+                                EntitySubscriptionPlan freeSubscription = new EntitySubscriptionPlan
+                                {
+                                    EntitySubscriptionPlanId = Guid.NewGuid(),
+                                    EntityId = entity.EntityId,
+                                    SubscriptionPlanDurationPriceId = freePlan.SubscriptionPlanDurationPriceId,
+                                    StartDate = nowUtcTime,
+                                    EndDate = null,
+                                    Status = "Active"
+                                };
+
+                                await _unitOfWork.GetGenericRepository<EntitySubscriptionPlan>().Add(freeSubscription);
+                            }
+                            else
+                            {
+                                _logger.LogWarning("No active Free subscription plan found in catalog - skipping auto-provisioning for entity {EntityId}", entity.EntityId);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Failed to auto-provision Free subscription plan for entity {EntityId}", entity.EntityId);
+                        }
 
                         await _unitOfWork.CommitAsync();
 
