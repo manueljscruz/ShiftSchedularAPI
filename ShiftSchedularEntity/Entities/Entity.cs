@@ -60,6 +60,10 @@ namespace ShiftSchedularEntity.Entities
         public virtual Entity? ParentEntity { get; set; }
         public virtual ICollection<Entity> ChildrenEntities { get; set; }
         public virtual ICollection<EntityPermission> EntityPermissions { get; set; }
+        public virtual ICollection<EntitySubscriptionPlan> EntitySubscriptionPlans { get; set; }
+        public virtual ICollection<PaymentMethod> PaymentMethods { get; set; }
+        public virtual ICollection<EntityBillingProfile> EntityBillingProfiles { get; set; }
+
         #endregion
     }
 }

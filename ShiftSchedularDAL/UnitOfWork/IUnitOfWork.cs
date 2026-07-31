@@ -49,6 +49,17 @@ namespace ShiftSchedularDAL.UnitOfWork
         IEntityPermissionRoleRepository EntityPermissionRoleRepository { get; }
         IEntityPermissionRoleLocalizationRepository EntityPermissionRoleLocalizationRepository { get; }
         IUserNotificationRepository UserNotificationRepository { get; }
+        ISubscriptionPlanTypeRepository SubscriptionPlanTypeRepository { get; }
+        ISubscriptionPlanTypeLocalizationRepository SubscriptionPlanTypeLocalizationRepository { get; }
+        ISubscriptionDurationTypeRepository SubscriptionDurationTypeRepository { get; }
+        ISubscriptionDurationTypeLocalizationRepository SubscriptionDurationTypeLocalizationRepository { get; }
+        IPaymentMethodTypeRepository PaymentMethodTypeRepository { get; }
+        IPaymentMethodTypeLocalizationRepository PaymentMethodTypeLocalizationRepository { get; }
+        IPaymentMethodTypeCountryRepository PaymentMethodTypeCountryRepository { get; }
+        ISubscriptionPlanDurationPriceRepository SubscriptionPlanDurationPriceRepository { get; }
+        ICampaignRepository CampaignRepository { get; }
+        ICampaignLocalizationRepository CampaignLocalizationRepository { get; }
+        ICampaignSubscriptionPlanRepository CampaignSubscriptionPlanRepository { get; }
 
         IGenericRepository<T> GetGenericRepository<T>() where T : class;
 

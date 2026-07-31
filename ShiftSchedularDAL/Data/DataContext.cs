@@ -79,6 +79,27 @@ namespace ShiftSchedularDAL.Data
         public DbSet<NotificationTypeLocalization> NotificationTypeLocalizations { get; set; }
         public DbSet<UserNotification> UserNotifications { get; set; }
 
+        // Subscriptions & Billing
+        public DbSet<SubscriptionPlanType> SubscriptionPlanTypes { get; set; }
+        public DbSet<SubscriptionPlanTypeLocalization> SubscriptionPlanTypeLocalizations { get; set; }
+        public DbSet<SubscriptionDurationType> SubscriptionDurationTypes { get; set; }
+        public DbSet<SubscriptionDurationTypeLocalization> SubscriptionDurationTypeLocalizations { get; set; }
+        public DbSet<SubscriptionPlanDurationPrice> SubscriptionPlanDurationPrices { get; set; }
+        public DbSet<Campaign> Campaigns { get; set; }
+        public DbSet<CampaignLocalization> CampaignLocalizations { get; set; }
+        public DbSet<CampaignSubscriptionPlan> CampaignSubscriptionPlans { get; set; }
+        public DbSet<EntitySubscriptionPlan> EntitySubscriptionPlans { get; set; }
+        public DbSet<SubscriptionBillingRecord> SubscriptionBillingRecords { get; set; }
+        public DbSet<EntitySubscriptionPayment> EntitySubscriptionPayments { get; set; }
+        public DbSet<PaymentMethodType> PaymentMethodTypes { get; set; }
+        public DbSet<PaymentMethodTypeCountry> PaymentMethodTypeCountries { get; set; }
+        public DbSet<PaymentMethodTypeLocalization> PaymentMethodTypeLocalizations { get; set; }
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
+        public DbSet<ScheduleGeneration> ScheduleGenerations { get; set; }
+        public DbSet<PaymentWebhookEvent> PaymentWebhookEvents { get; set; }
+        public DbSet<EntityBillingProfile> EntityBillingProfiles { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+
         #endregion
 
         #region Save Changes
@@ -1271,6 +1292,292 @@ namespace ShiftSchedularDAL.Data
                 }
             }
             modelBuilder.Entity<NotificationTypeLocalization>().HasData(localizationSeeds);
+
+            #endregion
+
+            #region Subscription & Billing Configuration
+
+            // SubscriptionPlanType
+            modelBuilder.Entity<SubscriptionPlanType>()
+                .HasKey(spt => spt.SubscriptionPlanTypeId);
+
+            // SubscriptionPlanTypeLocalization
+            modelBuilder.Entity<SubscriptionPlanTypeLocalization>()
+                .HasKey(sptl => new { sptl.SubscriptionPlanTypeId, sptl.LocalizationId });
+
+            modelBuilder.Entity<SubscriptionPlanTypeLocalization>()
+                .HasOne(sptl => sptl.SubscriptionPlanType)
+                .WithMany(spt => spt.SubscriptionPlanTypeLocalizations)
+                .HasForeignKey(sptl => sptl.SubscriptionPlanTypeId);
+
+            modelBuilder.Entity<SubscriptionPlanTypeLocalization>()
+                .HasOne(sptl => sptl.Localization)
+                .WithMany(l => l.SubscriptionPlanTypeLocalizations)
+                .HasForeignKey(sptl => sptl.LocalizationId);
+
+            // SubscriptionDurationType
+            modelBuilder.Entity<SubscriptionDurationType>()
+                .HasKey(sdt => sdt.SubscriptionDurationTypeId);
+
+            // SubscriptionDurationTypeLocalization
+            modelBuilder.Entity<SubscriptionDurationTypeLocalization>()
+                .HasKey(sdtl => new { sdtl.SubscriptionDurationTypeId, sdtl.LocalizationId });
+
+            modelBuilder.Entity<SubscriptionDurationTypeLocalization>()
+                .HasOne(sdtl => sdtl.SubscriptionDurationType)
+                .WithMany(sdt => sdt.SubscriptionDurationTypeLocalizations)
+                .HasForeignKey(sdtl => sdtl.SubscriptionDurationTypeId);
+
+            modelBuilder.Entity<SubscriptionDurationTypeLocalization>()
+                .HasOne(sdtl => sdtl.Localization)
+                .WithMany(l => l.SubscriptionDurationTypeLocalizations)
+                .HasForeignKey(sdtl => sdtl.LocalizationId);
+
+            // SubscriptionPlanDurationPrice — one row per tier+duration combination, priced/visible independently
+            modelBuilder.Entity<SubscriptionPlanDurationPrice>()
+                .HasKey(spdp => spdp.SubscriptionPlanDurationPriceId);
+
+            modelBuilder.Entity<SubscriptionPlanDurationPrice>()
+                .HasIndex(spdp => new { spdp.SubscriptionPlanTypeId, spdp.SubscriptionDurationTypeId })
+                .IsUnique()
+                .HasDatabaseName("IX_SubscriptionPlanDurationPrices_PlanType_DurationType");
+
+            modelBuilder.Entity<SubscriptionPlanDurationPrice>()
+                .HasOne(spdp => spdp.SubscriptionPlanType)
+                .WithMany(spt => spt.SubscriptionPlanDurationPrices)
+                .HasForeignKey(spdp => spdp.SubscriptionPlanTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SubscriptionPlanDurationPrice>()
+                .HasOne(spdp => spdp.SubscriptionDurationType)
+                .WithMany(sdt => sdt.SubscriptionPlanDurationPrices)
+                .HasForeignKey(spdp => spdp.SubscriptionDurationTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Campaign
+            modelBuilder.Entity<Campaign>()
+                .HasKey(c => c.CampaignId);
+
+            // CampaignLocalization
+            modelBuilder.Entity<CampaignLocalization>()
+                .HasKey(cl => new { cl.CampaignId, cl.LocalizationId });
+
+            modelBuilder.Entity<CampaignLocalization>()
+                .HasOne(cl => cl.Campaign)
+                .WithMany(c => c.CampaignLocalizations)
+                .HasForeignKey(cl => cl.CampaignId);
+
+            modelBuilder.Entity<CampaignLocalization>()
+                .HasOne(cl => cl.Localization)
+                .WithMany(l => l.CampaignLocalizations)
+                .HasForeignKey(cl => cl.LocalizationId);
+
+            // CampaignSubscriptionPlan — pure junction table (campaign <-> eligible plan+duration combination)
+            modelBuilder.Entity<CampaignSubscriptionPlan>()
+                .HasKey(csp => new { csp.CampaignId, csp.SubscriptionPlanDurationPriceId });
+
+            modelBuilder.Entity<CampaignSubscriptionPlan>()
+                .HasOne(csp => csp.Campaign)
+                .WithMany(c => c.CampaignSchedulePlans)
+                .HasForeignKey(csp => csp.CampaignId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CampaignSubscriptionPlan>()
+                .HasOne(csp => csp.SubscriptionPlanDurationPrice)
+                .WithMany(spdp => spdp.CampaignSubscriptionPlans)
+                .HasForeignKey(csp => csp.SubscriptionPlanDurationPriceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // PaymentMethodType
+            modelBuilder.Entity<PaymentMethodType>()
+                .HasKey(pmt => pmt.PaymentMethodTypeId);
+
+            // PaymentMethodTypeCountry
+            modelBuilder.Entity<PaymentMethodTypeCountry>()
+                .HasKey(pmtc => new { pmtc.PaymentMethodTypeId, pmtc.CountryCode });
+
+            modelBuilder.Entity<PaymentMethodTypeCountry>()
+                .HasOne(pmtc => pmtc.PaymentMethodType)
+                .WithMany(pmt => pmt.PaymentMethodTypeCountries)
+                .HasForeignKey(pmtc => pmtc.PaymentMethodTypeId);
+
+            // PaymentMethodTypeLocalization
+            modelBuilder.Entity<PaymentMethodTypeLocalization>()
+                .HasKey(pmtl => new { pmtl.PaymentMethodTypeId, pmtl.LocalizationId });
+
+            modelBuilder.Entity<PaymentMethodTypeLocalization>()
+                .HasOne(pmtl => pmtl.PaymentMethodType)
+                .WithMany(pmt => pmt.PaymentMethodTypeLocalizations)
+                .HasForeignKey(pmtl => pmtl.PaymentMethodTypeId);
+
+            modelBuilder.Entity<PaymentMethodTypeLocalization>()
+                .HasOne(pmtl => pmtl.Localization)
+                .WithMany(l => l.PaymentMethodTypeLocalizations)
+                .HasForeignKey(pmtl => pmtl.LocalizationId);
+
+            // PaymentMethod
+            modelBuilder.Entity<PaymentMethod>()
+                .HasKey(pm => pm.PaymentMethodId);
+
+            modelBuilder.Entity<PaymentMethod>()
+                .HasOne(pm => pm.Entity)
+                .WithMany(e => e.PaymentMethods)
+                .HasForeignKey(pm => pm.EntityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PaymentMethod>()
+                .HasOne(pm => pm.PaymentMethodType)
+                .WithMany(pmt => pmt.PaymentMethods)
+                .HasForeignKey(pm => pm.PaymentMethodTypeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // EntitySubscriptionPlan
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasKey(esp => esp.EntitySubscriptionPlanId);
+
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasOne(esp => esp.Entity)
+                .WithMany(e => e.EntitySubscriptionPlans)
+                .HasForeignKey(esp => esp.EntityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasOne(esp => esp.SubscriptionPlanDurationPrice)
+                .WithMany(spdp => spdp.EntitySubscriptionPlans)
+                .HasForeignKey(esp => esp.SubscriptionPlanDurationPriceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasOne(esp => esp.Campaign)
+                .WithMany(c => c.EntitySubscriptionPlans)
+                .HasForeignKey(esp => esp.CampaignId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasOne(esp => esp.PreviousSubscriptionPlan)
+                .WithMany()
+                .HasForeignKey(esp => esp.PreviousSubscriptionPlanId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // SubscriptionBillingRecord
+            modelBuilder.Entity<SubscriptionBillingRecord>()
+                .HasKey(sbr => sbr.SubscriptionBillingRecordId);
+
+            modelBuilder.Entity<SubscriptionBillingRecord>()
+                .HasOne(sbr => sbr.EntitySubscriptionPlan)
+                .WithMany(esp => esp.SubscriptionBillingRecords)
+                .HasForeignKey(sbr => sbr.EntitySubscriptionPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // EntitySubscriptionPayment — Restrict on all FKs to avoid multiple cascade paths converging on EntitySubscriptionPlan
+            modelBuilder.Entity<EntitySubscriptionPayment>()
+                .HasKey(esp => esp.EntitySubscriptionPaymentId);
+
+            modelBuilder.Entity<EntitySubscriptionPayment>()
+                .HasOne(esp => esp.EntitySubscriptionPlan)
+                .WithMany(esp => esp.EntitySubscriptionPayments)
+                .HasForeignKey(esp => esp.EntitySubscriptionPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntitySubscriptionPayment>()
+                .HasOne(esp => esp.BillingRecord)
+                .WithMany(sbr => sbr.EntitySubscriptionPayments)
+                .HasForeignKey(esp => esp.BillingRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<EntitySubscriptionPayment>()
+                .HasOne(esp => esp.PaymentMethod)
+                .WithMany(pm => pm.EntitySubscriptionPayments)
+                .HasForeignKey(esp => esp.PaymentMethodId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ScheduleGeneration
+            modelBuilder.Entity<ScheduleGeneration>()
+                .HasKey(sg => sg.ScheduleGenerationId);
+
+            modelBuilder.Entity<ScheduleGeneration>()
+                .HasOne(sg => sg.EntitySubscriptionPlan)
+                .WithMany(esp => esp.ScheduleGenerations)
+                .HasForeignKey(sg => sg.EntitySubscriptionPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // PaymentWebhookEvent — no required FK; events are stored before being matched/processed
+            modelBuilder.Entity<PaymentWebhookEvent>()
+                .HasKey(pwe => pwe.WebhookEventId);
+
+            modelBuilder.Entity<PaymentWebhookEvent>()
+                .HasIndex(pwe => pwe.GatewayEventId)
+                .IsUnique()
+                .HasDatabaseName("IX_PaymentWebhookEvents_GatewayEventId");
+
+            modelBuilder.Entity<PaymentWebhookEvent>()
+                .HasOne(pwe => pwe.EntitySubscriptionPayment)
+                .WithMany(esp => esp.PaymentWebhookEvents)
+                .HasForeignKey(pwe => pwe.EntitySubscriptionPaymentId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // EntityBillingProfile
+            modelBuilder.Entity<EntityBillingProfile>()
+                .HasKey(ebp => ebp.EntityBillingProfileId);
+
+            modelBuilder.Entity<EntityBillingProfile>()
+                .HasOne(ebp => ebp.Entity)
+                .WithMany(e => e.EntityBillingProfiles)
+                .HasForeignKey(ebp => ebp.EntityId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Invoice
+            modelBuilder.Entity<Invoice>()
+                .HasKey(i => i.InvoiceId);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.SubscriptionBillingRecord)
+                .WithMany(sbr => sbr.Invoices)
+                .HasForeignKey(i => i.SubscriptionBillingRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.EntityBillingProfile)
+                .WithMany(ebp => ebp.Invoices)
+                .HasForeignKey(i => i.EntityBillingProfileId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes — main lookup columns queried by the billing/subscription flows
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasIndex(esp => esp.EntityId)
+                .HasDatabaseName("IX_EntitySubscriptionPlans_EntityId");
+
+            modelBuilder.Entity<EntitySubscriptionPlan>()
+                .HasIndex(esp => new { esp.EntityId, esp.Status })
+                .HasDatabaseName("IX_EntitySubscriptionPlans_EntityId_Status");
+
+            modelBuilder.Entity<PaymentMethod>()
+                .HasIndex(pm => pm.EntityId)
+                .HasDatabaseName("IX_PaymentMethods_EntityId");
+
+            modelBuilder.Entity<EntityBillingProfile>()
+                .HasIndex(ebp => ebp.EntityId)
+                .HasDatabaseName("IX_EntityBillingProfiles_EntityId");
+
+            modelBuilder.Entity<SubscriptionBillingRecord>()
+                .HasIndex(sbr => sbr.EntitySubscriptionPlanId)
+                .HasDatabaseName("IX_SubscriptionBillingRecords_EntitySubscriptionPlanId");
+
+            modelBuilder.Entity<EntitySubscriptionPayment>()
+                .HasIndex(esp => esp.BillingRecordId)
+                .HasDatabaseName("IX_EntitySubscriptionPayments_BillingRecordId");
+
+            modelBuilder.Entity<ScheduleGeneration>()
+                .HasIndex(sg => sg.EntitySubscriptionPlanId)
+                .HasDatabaseName("IX_ScheduleGenerations_EntitySubscriptionPlanId");
+
+            modelBuilder.Entity<Invoice>()
+                .HasIndex(i => i.SubscriptionBillingRecordId)
+                .HasDatabaseName("IX_Invoices_SubscriptionBillingRecordId");
 
             #endregion
         }

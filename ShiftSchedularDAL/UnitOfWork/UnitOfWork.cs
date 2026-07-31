@@ -423,6 +423,72 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _userNotificationRepository = _userNotificationRepository ?? new UserNotificationRepository(_context, this); }
         }
 
+        private ISubscriptionPlanTypeRepository _subscriptionPlanTypeRepository;
+        public ISubscriptionPlanTypeRepository SubscriptionPlanTypeRepository
+        {
+            get { return _subscriptionPlanTypeRepository = _subscriptionPlanTypeRepository ?? new SubscriptionPlanTypeRepository(_context, this); }
+        }
+
+        private ISubscriptionPlanTypeLocalizationRepository _subscriptionPlanTypeLocalizationRepository;
+        public ISubscriptionPlanTypeLocalizationRepository SubscriptionPlanTypeLocalizationRepository
+        {
+            get { return _subscriptionPlanTypeLocalizationRepository = _subscriptionPlanTypeLocalizationRepository ?? new SubscriptionPlanTypeLocalizationRepository(_context, this); }
+        }
+
+        private ISubscriptionDurationTypeRepository _subscriptionDurationTypeRepository;
+        public ISubscriptionDurationTypeRepository SubscriptionDurationTypeRepository
+        {
+            get { return _subscriptionDurationTypeRepository = _subscriptionDurationTypeRepository ?? new SubscriptionDurationTypeRepository(_context, this); }
+        }
+
+        private ISubscriptionDurationTypeLocalizationRepository _subscriptionDurationTypeLocalizationRepository;
+        public ISubscriptionDurationTypeLocalizationRepository SubscriptionDurationTypeLocalizationRepository
+        {
+            get { return _subscriptionDurationTypeLocalizationRepository = _subscriptionDurationTypeLocalizationRepository ?? new SubscriptionDurationTypeLocalizationRepository(_context, this); }
+        }
+
+        private IPaymentMethodTypeRepository _paymentMethodTypeRepository;
+        public IPaymentMethodTypeRepository PaymentMethodTypeRepository
+        {
+            get { return _paymentMethodTypeRepository = _paymentMethodTypeRepository ?? new PaymentMethodTypeRepository(_context, this); }
+        }
+
+        private IPaymentMethodTypeLocalizationRepository _paymentMethodTypeLocalizationRepository;
+        public IPaymentMethodTypeLocalizationRepository PaymentMethodTypeLocalizationRepository
+        {
+            get { return _paymentMethodTypeLocalizationRepository = _paymentMethodTypeLocalizationRepository ?? new PaymentMethodTypeLocalizationRepository(_context, this); }
+        }
+
+        private IPaymentMethodTypeCountryRepository _paymentMethodTypeCountryRepository;
+        public IPaymentMethodTypeCountryRepository PaymentMethodTypeCountryRepository
+        {
+            get { return _paymentMethodTypeCountryRepository = _paymentMethodTypeCountryRepository ?? new PaymentMethodTypeCountryRepository(_context, this); }
+        }
+
+        private ISubscriptionPlanDurationPriceRepository _subscriptionPlanDurationPriceRepository;
+        public ISubscriptionPlanDurationPriceRepository SubscriptionPlanDurationPriceRepository
+        {
+            get { return _subscriptionPlanDurationPriceRepository = _subscriptionPlanDurationPriceRepository ?? new SubscriptionPlanDurationPriceRepository(_context, this); }
+        }
+
+        private ICampaignRepository _campaignRepository;
+        public ICampaignRepository CampaignRepository
+        {
+            get { return _campaignRepository = _campaignRepository ?? new CampaignRepository(_context, this); }
+        }
+
+        private ICampaignLocalizationRepository _campaignLocalizationRepository;
+        public ICampaignLocalizationRepository CampaignLocalizationRepository
+        {
+            get { return _campaignLocalizationRepository = _campaignLocalizationRepository ?? new CampaignLocalizationRepository(_context, this); }
+        }
+
+        private ICampaignSubscriptionPlanRepository _campaignSubscriptionPlanRepository;
+        public ICampaignSubscriptionPlanRepository CampaignSubscriptionPlanRepository
+        {
+            get { return _campaignSubscriptionPlanRepository = _campaignSubscriptionPlanRepository ?? new CampaignSubscriptionPlanRepository(_context, this); }
+        }
+
         #endregion
 
         #region Constructor

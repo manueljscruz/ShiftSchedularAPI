@@ -26,6 +26,10 @@ namespace ShiftSchedularEntity.Entities
         public virtual ICollection<HolidayCatalogLocalization> HolidayCatalogLocalizations { get; set; }
         public virtual ICollection<EntityPermissionRoleLocalization> EntityPermissionRoleLocalizations { get; set; }
         public virtual ICollection<NotificationTypeLocalization> NotificationTypeLocalizations { get; set; }
+        public virtual ICollection<SubscriptionPlanTypeLocalization> SubscriptionPlanTypeLocalizations { get; set; }
+        public virtual ICollection<SubscriptionDurationTypeLocalization> SubscriptionDurationTypeLocalizations { get; set; }
+        public virtual ICollection<PaymentMethodTypeLocalization> PaymentMethodTypeLocalizations { get; set; }
+        public virtual ICollection<CampaignLocalization> CampaignLocalizations { get; set; }
 
         #endregion
 

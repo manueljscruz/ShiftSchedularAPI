@@ -108,6 +108,11 @@ namespace ShiftSchedularAPI.Configurations
             services.AddScoped<ISearchService, SearchService>();
             services.AddScoped<IHolidayService, HolidayService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<ISubscriptionPlanTypeService, SubscriptionPlanTypeService>();
+            services.AddScoped<ISubscriptionDurationTypeService, SubscriptionDurationTypeService>();
+            services.AddScoped<IPaymentMethodTypeService, PaymentMethodTypeService>();
+            services.AddScoped<ISubscriptionPlanDurationPriceService, SubscriptionPlanDurationPriceService>();
+            services.AddScoped<ICampaignService, CampaignService>();
 
             // Admin Type Handlers (keyed by typeKey used in AdminTypesController)
             services.AddKeyedScoped<IAdminTypeHandler, SkillTypeHandler>("skills");

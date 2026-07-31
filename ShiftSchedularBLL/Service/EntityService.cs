@@ -95,7 +95,7 @@ namespace ShiftSchedularBLL.Service
                 EntityType entityTypeInstance = await _unitOfWork.GetGenericRepository<EntityType>().GetById(newEntity.EntityTypeId); // _entityTypeRepository.GetById(newEntity.EntityTypeId);
 
                 // Check if its a child entity being created
-                if (newEntity.ParentEntityId != Guid.Empty)
+                if (newEntity.ParentEntityId != null && newEntity.ParentEntityId != Guid.Empty)
                 {
                     // Check if parent exists
                     Entity parentEntity = await _unitOfWork.EntityRepository.GetEntityById(newEntity.ParentEntityId.Value, _languageAccessor.GetLanguageCode());
