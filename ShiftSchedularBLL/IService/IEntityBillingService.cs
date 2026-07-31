@@ -18,5 +18,7 @@ namespace ShiftSchedularBLL.IService
         Task<BaseResponse<bool>> SetDefaultPaymentMethodAsync(Guid entityId, string requesterId, Guid paymentMethodId);
 
         Task<BaseResponse<bool>> RemovePaymentMethodAsync(Guid entityId, string requesterId, Guid paymentMethodId);
+
+        Task<BaseResponse<Guid>> SubscribeAsync(Guid entityId, string requesterId, SubscribeRequestDTO dto);
     }
 }

@@ -160,5 +160,27 @@ namespace ShiftSchedularAPI.Controllers
         }
 
         #endregion
+
+        #region Subscribe / Change Plan
+
+        [HttpPost("{entityId}/subscribe")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Subscribe(Guid entityId, [FromBody] SubscribeRequestDTO dto)
+        {
+            if (entityId == Guid.Empty || dto == null)
+                return BadRequest();
+
+            string requesterId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            BaseResponse<Guid> response = await _entityBillingService.SubscribeAsync(entityId, requesterId, dto);
+
+            if (response.Forbidden) return Forbid();
+            if (response.NotFound) return NotFound(response.Message);
+            if (!response.Success) return BadRequest(response.Message);
+            return Ok(new { entitySubscriptionPlanId = response.Result });
+        }
+
+        #endregion
     }
 }

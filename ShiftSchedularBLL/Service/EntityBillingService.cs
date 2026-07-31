@@ -380,6 +380,114 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Subscribe / Change Plan
+
+        public async Task<BaseResponse<Guid>> SubscribeAsync(Guid entityId, string requesterId, SubscribeRequestDTO dto)
+        {
+            BaseResponse<Guid> response = new BaseResponse<Guid>();
+
+            if (entityId == Guid.Empty || string.IsNullOrEmpty(requesterId) || dto == null
+                || dto.SubscriptionPlanDurationPriceId == Guid.Empty || dto.PaymentMethodId == Guid.Empty)
+            {
+                response.Message = "Invalid request.";
+                return response;
+            }
+
+            bool allowed = await IsAllowedAsync(entityId, requesterId);
+            if (!allowed)
+            {
+                response.Forbidden = true;
+                response.Message = "You do not have permission to manage the subscription for this entity.";
+                return response;
+            }
+
+            IEnumerable<PaymentMethod> paymentMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
+            PaymentMethod paymentMethod = paymentMethods.FirstOrDefault(pm => pm.PaymentMethodId == dto.PaymentMethodId && pm.IsActive);
+            if (paymentMethod == null)
+            {
+                response.NotFound = true;
+                response.Message = "Payment method not found for this entity.";
+                return response;
+            }
+
+            SubscriptionPlanDurationPrice targetPlanPrice = await _unitOfWork.SubscriptionPlanDurationPriceRepository.GetByIdWithDetails(dto.SubscriptionPlanDurationPriceId);
+            if (targetPlanPrice == null || !targetPlanPrice.IsActive || !targetPlanPrice.IsPublicPlan)
+            {
+                response.NotFound = true;
+                response.Message = "Subscription plan not found or not available.";
+                return response;
+            }
+
+            Campaign campaign = null;
+            if (!string.IsNullOrWhiteSpace(dto.CouponCode))
+            {
+                IEnumerable<Campaign> campaigns = await _unitOfWork.CampaignRepository.GetAllWithDetails();
+                campaign = campaigns.FirstOrDefault(c => string.Equals(c.CouponCode, dto.CouponCode, StringComparison.OrdinalIgnoreCase));
+
+                if (campaign == null || !IsCampaignValid(campaign, targetPlanPrice.SubscriptionPlanDurationPriceId))
+                {
+                    response.Message = "Coupon code is invalid, expired, or not applicable to the selected plan.";
+                    return response;
+                }
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                EntitySubscriptionPlan currentPlan = await _unitOfWork.EntitySubscriptionPlanRepository.GetActiveByEntityId(entityId);
+
+                DateTime startDate = DateTime.UtcNow;
+                int durationInDays = targetPlanPrice.SubscriptionDurationType?.DurationInDays ?? 0;
+
+                EntitySubscriptionPlan newPlan = new EntitySubscriptionPlan
+                {
+                    EntitySubscriptionPlanId = Guid.NewGuid(),
+                    EntityId = entityId,
+                    SubscriptionPlanDurationPriceId = targetPlanPrice.SubscriptionPlanDurationPriceId,
+                    CampaignId = campaign?.CampaignId,
+                    PreviousSubscriptionPlanId = currentPlan?.EntitySubscriptionPlanId,
+                    StartDate = startDate,
+                    EndDate = startDate.AddDays(durationInDays),
+                    Status = "Active"
+                };
+
+                await _unitOfWork.GetGenericRepository<EntitySubscriptionPlan>().Add(newPlan);
+
+                if (currentPlan != null)
+                {
+                    currentPlan.Status = "Cancelled";
+                    await _unitOfWork.GetGenericRepository<EntitySubscriptionPlan>().Update(currentPlan);
+                }
+
+                if (campaign != null)
+                {
+                    bool incremented = await IncrementCampaignRedemptionAsync(campaign.CampaignId, campaign.MaxRedemptions);
+                    if (!incremented)
+                    {
+                        await _unitOfWork.RollbackAsync();
+                        response.Message = "Coupon code has reached its maximum number of redemptions.";
+                        return response;
+                    }
+                }
+
+                await _unitOfWork.CommitAsync();
+
+                response.Result = newPlan.EntitySubscriptionPlanId;
+                response.Success = true;
+                response.Message = "Subscription updated successfully.";
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = "Failed to update subscription.";
+            }
+
+            return response;
+        }
+
+        #endregion
+
         #region Helpers
 
         private async Task<bool> IsAllowedAsync(Guid entityId, string requesterId)
@@ -389,6 +497,47 @@ namespace ShiftSchedularBLL.Service
                 return true;
 
             return await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(entityId, requesterId);
+        }
+
+        private static bool IsCampaignValid(Campaign campaign, Guid subscriptionPlanDurationPriceId)
+        {
+            DateTime now = DateTime.UtcNow;
+
+            if (!campaign.IsActive)
+                return false;
+
+            if (campaign.StartDate > now)
+                return false;
+
+            if (campaign.EndDate.HasValue && campaign.EndDate.Value < now)
+                return false;
+
+            if (campaign.MaxRedemptions > 0 && campaign.RedemptionCount >= campaign.MaxRedemptions)
+                return false;
+
+            bool isEligible = campaign.CampaignSchedulePlans != null
+                && campaign.CampaignSchedulePlans.Any(csp => csp.SubscriptionPlanDurationPriceId == subscriptionPlanDurationPriceId);
+
+            return isEligible;
+        }
+
+        private async Task<bool> IncrementCampaignRedemptionAsync(Guid campaignId, int maxRedemptions)
+        {
+            string sql = @"UPDATE Campaigns
+                SET RedemptionCount = RedemptionCount + 1
+                OUTPUT INSERTED.RedemptionCount
+                WHERE CampaignId = @CampaignId
+                  AND IsActive = 1
+                  AND (@MaxRedemptions <= 0 OR RedemptionCount < @MaxRedemptions)";
+
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "@CampaignId", campaignId },
+                { "@MaxRedemptions", maxRedemptions }
+            };
+
+            IEnumerable<int> result = await _unitOfWork.SQLRawRepository.ExecuteQuery<int>(sql, parameters);
+            return result.Any();
         }
 
         private async Task<string> GetOrCreateGatewayCustomerIdAsync(Guid entityId)
