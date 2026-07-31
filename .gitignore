@@ -406,4 +406,3 @@ tmpclaude-*
 Logs/
 *.log
 /.claude/settings.local.json
-ShiftSchedularAPI/.github/copilot-instructions.md
