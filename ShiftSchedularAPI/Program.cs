@@ -173,6 +173,9 @@ try
     builder.Services.AddServicesInjections(logDirectory, emailSettings);
     builder.Services.AddCustomRateLimiting(builder.Configuration);
 
+    // Configure Stripe (secret key must come from environment/Key Vault, never committed)
+    Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
     // 6. Add HttpContextAccessor and LanguageAccessor for language header support
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ILanguageAccessor, LanguageAccessor>();
