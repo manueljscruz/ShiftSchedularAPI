@@ -44,9 +44,9 @@ namespace ShiftSchedularEntity.Entities
         public DateTime StartDate { get; set; }
 
         /// <summary>
-        /// End date of the subscription plan, indicating when the subscription ends for the entity. This can be null if the subscription is ongoing or has no specific end date.
+        /// End date of the subscription plan, indicating when the subscription ends for the entity. This is null if the subscription has no specific expiration (e.g. an indefinite Free plan).
         /// </summary>
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Status of the subscription plan, indicating whether it is active, expired, canceled, or any other relevant status. This field helps in tracking the current state of the subscription plan for the entity.
