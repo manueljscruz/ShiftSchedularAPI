@@ -3,6 +3,8 @@ using ShiftSchedularDAL.UnitOfWork;
 using ShiftSchedularEntity.Entities;
 using ShiftSchedularEntity.Models;
 using ShiftSchedularEntity.Models.DataTransferObjects.Billing;
+using Stripe;
+using PaymentMethod = ShiftSchedularEntity.Entities.PaymentMethod;
 
 namespace ShiftSchedularBLL.Service
 {
@@ -69,15 +71,7 @@ namespace ShiftSchedularBLL.Service
             IEnumerable<PaymentMethod> paymentMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
             summary.PaymentMethods = paymentMethods
                 .Where(pm => pm.IsActive)
-                .Select(pm => new PaymentMethodSummaryDTO
-                {
-                    PaymentMethodId = pm.PaymentMethodId,
-                    PaymentMethodTypeId = pm.PaymentMethodTypeId,
-                    PaymentMethodTypeName = pm.PaymentMethodType?.PaymentMethodTypeName,
-                    CardBrand = pm.CardBrand,
-                    LastFourDigits = pm.LastFourDigits,
-                    IsDefault = pm.IsDefault
-                })
+                .Select(MapToPaymentMethodSummaryDTO)
                 .ToList();
 
             response.Result = summary;
@@ -158,6 +152,234 @@ namespace ShiftSchedularBLL.Service
 
         #endregion
 
+        #region Create Setup Intent
+
+        public async Task<BaseResponse<SetupIntentDTO>> CreateSetupIntentAsync(Guid entityId, string requesterId)
+        {
+            BaseResponse<SetupIntentDTO> response = new BaseResponse<SetupIntentDTO>();
+
+            if (entityId == Guid.Empty || string.IsNullOrEmpty(requesterId))
+            {
+                response.Message = "Invalid request.";
+                return response;
+            }
+
+            bool allowed = await IsAllowedAsync(entityId, requesterId);
+            if (!allowed)
+            {
+                response.Forbidden = true;
+                response.Message = "You do not have permission to manage payment methods for this entity.";
+                return response;
+            }
+
+            try
+            {
+                string gatewayCustomerId = await GetOrCreateGatewayCustomerIdAsync(entityId);
+
+                SetupIntentService setupIntentService = new SetupIntentService();
+                SetupIntent setupIntent = await setupIntentService.CreateAsync(new SetupIntentCreateOptions
+                {
+                    Customer = gatewayCustomerId,
+                    PaymentMethodTypes = new List<string> { "card" }
+                });
+
+                response.Result = new SetupIntentDTO { ClientSecret = setupIntent.ClientSecret };
+                response.Success = true;
+            }
+            catch (StripeException ex)
+            {
+                response.Message = $"Failed to create setup intent: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Confirm Payment Method
+
+        public async Task<BaseResponse<PaymentMethodSummaryDTO>> ConfirmPaymentMethodAsync(Guid entityId, string requesterId, ConfirmPaymentMethodDTO dto)
+        {
+            BaseResponse<PaymentMethodSummaryDTO> response = new BaseResponse<PaymentMethodSummaryDTO>();
+
+            if (entityId == Guid.Empty || string.IsNullOrEmpty(requesterId) || dto == null || string.IsNullOrWhiteSpace(dto.StripePaymentMethodId))
+            {
+                response.Message = "Invalid request.";
+                return response;
+            }
+
+            bool allowed = await IsAllowedAsync(entityId, requesterId);
+            if (!allowed)
+            {
+                response.Forbidden = true;
+                response.Message = "You do not have permission to manage payment methods for this entity.";
+                return response;
+            }
+
+            IEnumerable<PaymentMethodType> paymentMethodTypes = await _unitOfWork.PaymentMethodTypeRepository.GetAllWithDetails();
+            PaymentMethodType cardType = paymentMethodTypes.FirstOrDefault(t => string.Equals(t.PaymentMethodTypeName, "Card", StringComparison.OrdinalIgnoreCase));
+            if (cardType == null)
+            {
+                response.Message = "No 'Card' payment method type configured in the catalog.";
+                return response;
+            }
+
+            try
+            {
+                PaymentMethodService stripePaymentMethodService = new PaymentMethodService();
+                Stripe.PaymentMethod stripePaymentMethod = await stripePaymentMethodService.GetAsync(dto.StripePaymentMethodId);
+
+                if (stripePaymentMethod?.Card == null)
+                {
+                    response.Message = "The provided payment method is not a card.";
+                    return response;
+                }
+
+                IEnumerable<PaymentMethod> existingMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
+                bool isFirstPaymentMethod = !existingMethods.Any(pm => pm.IsActive);
+
+                PaymentMethod paymentMethod = new PaymentMethod
+                {
+                    PaymentMethodId = Guid.NewGuid(),
+                    EntityId = entityId,
+                    GatewayCustomerId = stripePaymentMethod.CustomerId,
+                    PaymentMethodTypeId = cardType.PaymentMethodTypeId,
+                    LastFourDigits = stripePaymentMethod.Card.Last4,
+                    CardBrand = stripePaymentMethod.Card.Brand,
+                    ExpiryMonth = (int)stripePaymentMethod.Card.ExpMonth,
+                    ExpiryYear = (int)stripePaymentMethod.Card.ExpYear,
+                    Token = stripePaymentMethod.Id,
+                    IsDefault = isFirstPaymentMethod,
+                    IsActive = true
+                };
+
+                await _unitOfWork.GetGenericRepository<PaymentMethod>().Add(paymentMethod);
+
+                response.Result = MapToPaymentMethodSummaryDTO(paymentMethod);
+                response.Result.PaymentMethodTypeName = cardType.PaymentMethodTypeName;
+                response.Success = true;
+            }
+            catch (StripeException ex)
+            {
+                response.Message = $"Failed to confirm payment method: {ex.Message}";
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Set Default Payment Method
+
+        public async Task<BaseResponse<bool>> SetDefaultPaymentMethodAsync(Guid entityId, string requesterId, Guid paymentMethodId)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if (entityId == Guid.Empty || string.IsNullOrEmpty(requesterId) || paymentMethodId == Guid.Empty)
+            {
+                response.Message = "Invalid request.";
+                return response;
+            }
+
+            bool allowed = await IsAllowedAsync(entityId, requesterId);
+            if (!allowed)
+            {
+                response.Forbidden = true;
+                response.Message = "You do not have permission to manage payment methods for this entity.";
+                return response;
+            }
+
+            IEnumerable<PaymentMethod> paymentMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
+            List<PaymentMethod> activeMethods = paymentMethods.Where(pm => pm.IsActive).ToList();
+            PaymentMethod target = activeMethods.FirstOrDefault(pm => pm.PaymentMethodId == paymentMethodId);
+
+            if (target == null)
+            {
+                response.NotFound = true;
+                response.Message = "Payment method not found for this entity.";
+                return response;
+            }
+
+            try
+            {
+                await _unitOfWork.BeginTransactionAsync();
+
+                foreach (PaymentMethod method in activeMethods)
+                {
+                    bool shouldBeDefault = method.PaymentMethodId == paymentMethodId;
+                    if (method.IsDefault != shouldBeDefault)
+                    {
+                        method.IsDefault = shouldBeDefault;
+                        await _unitOfWork.GetGenericRepository<PaymentMethod>().Update(method);
+                    }
+                }
+
+                await _unitOfWork.CommitAsync();
+                response.Result = true;
+                response.Success = true;
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackAsync();
+                response.Message = "Failed to set default payment method.";
+            }
+
+            return response;
+        }
+
+        #endregion
+
+        #region Remove Payment Method
+
+        public async Task<BaseResponse<bool>> RemovePaymentMethodAsync(Guid entityId, string requesterId, Guid paymentMethodId)
+        {
+            BaseResponse<bool> response = new BaseResponse<bool>();
+
+            if (entityId == Guid.Empty || string.IsNullOrEmpty(requesterId) || paymentMethodId == Guid.Empty)
+            {
+                response.Message = "Invalid request.";
+                return response;
+            }
+
+            bool allowed = await IsAllowedAsync(entityId, requesterId);
+            if (!allowed)
+            {
+                response.Forbidden = true;
+                response.Message = "You do not have permission to manage payment methods for this entity.";
+                return response;
+            }
+
+            IEnumerable<PaymentMethod> paymentMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
+            PaymentMethod target = paymentMethods.FirstOrDefault(pm => pm.PaymentMethodId == paymentMethodId && pm.IsActive);
+
+            if (target == null)
+            {
+                response.NotFound = true;
+                response.Message = "Payment method not found for this entity.";
+                return response;
+            }
+
+            try
+            {
+                PaymentMethodService stripePaymentMethodService = new PaymentMethodService();
+                await stripePaymentMethodService.DetachAsync(target.Token);
+            }
+            catch (StripeException)
+            {
+                // Detach failures on the gateway side should not block deactivating it locally.
+            }
+
+            target.IsActive = false;
+            target.IsDefault = false;
+            await _unitOfWork.GetGenericRepository<PaymentMethod>().Update(target);
+
+            response.Result = true;
+            response.Success = true;
+            return response;
+        }
+
+        #endregion
+
         #region Helpers
 
         private async Task<bool> IsAllowedAsync(Guid entityId, string requesterId)
@@ -167,6 +389,22 @@ namespace ShiftSchedularBLL.Service
                 return true;
 
             return await _unitOfWork.EntityPermissionRepository.CanUserEditEntity(entityId, requesterId);
+        }
+
+        private async Task<string> GetOrCreateGatewayCustomerIdAsync(Guid entityId)
+        {
+            IEnumerable<PaymentMethod> existingMethods = await _unitOfWork.PaymentMethodRepository.GetByEntityId(entityId);
+            string existingCustomerId = existingMethods.FirstOrDefault(pm => !string.IsNullOrEmpty(pm.GatewayCustomerId))?.GatewayCustomerId;
+            if (!string.IsNullOrEmpty(existingCustomerId))
+                return existingCustomerId;
+
+            CustomerService customerService = new CustomerService();
+            Customer customer = await customerService.CreateAsync(new CustomerCreateOptions
+            {
+                Metadata = new Dictionary<string, string> { { "EntityId", entityId.ToString() } }
+            });
+
+            return customer.Id;
         }
 
         private static CurrentSubscriptionPlanDTO MapToCurrentPlanDTO(EntitySubscriptionPlan plan)
@@ -184,6 +422,19 @@ namespace ShiftSchedularBLL.Service
                 StartDate = plan.StartDate,
                 EndDate = plan.EndDate,
                 Status = plan.Status
+            };
+        }
+
+        private static PaymentMethodSummaryDTO MapToPaymentMethodSummaryDTO(PaymentMethod pm)
+        {
+            return new PaymentMethodSummaryDTO
+            {
+                PaymentMethodId = pm.PaymentMethodId,
+                PaymentMethodTypeId = pm.PaymentMethodTypeId,
+                PaymentMethodTypeName = pm.PaymentMethodType?.PaymentMethodTypeName,
+                CardBrand = pm.CardBrand,
+                LastFourDigits = pm.LastFourDigits,
+                IsDefault = pm.IsDefault
             };
         }
 
