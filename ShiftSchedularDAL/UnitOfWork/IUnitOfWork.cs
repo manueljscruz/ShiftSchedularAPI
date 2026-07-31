@@ -60,6 +60,8 @@ namespace ShiftSchedularDAL.UnitOfWork
         ICampaignRepository CampaignRepository { get; }
         ICampaignLocalizationRepository CampaignLocalizationRepository { get; }
         ICampaignSubscriptionPlanRepository CampaignSubscriptionPlanRepository { get; }
+        IEntitySubscriptionPlanRepository EntitySubscriptionPlanRepository { get; }
+        IPaymentMethodRepository PaymentMethodRepository { get; }
 
         IGenericRepository<T> GetGenericRepository<T>() where T : class;
 
