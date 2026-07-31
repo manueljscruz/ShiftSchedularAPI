@@ -489,6 +489,18 @@ namespace ShiftSchedularDAL.UnitOfWork
             get { return _campaignSubscriptionPlanRepository = _campaignSubscriptionPlanRepository ?? new CampaignSubscriptionPlanRepository(_context, this); }
         }
 
+        private IEntitySubscriptionPlanRepository _entitySubscriptionPlanRepository;
+        public IEntitySubscriptionPlanRepository EntitySubscriptionPlanRepository
+        {
+            get { return _entitySubscriptionPlanRepository = _entitySubscriptionPlanRepository ?? new EntitySubscriptionPlanRepository(_context, this); }
+        }
+
+        private IPaymentMethodRepository _paymentMethodRepository;
+        public IPaymentMethodRepository PaymentMethodRepository
+        {
+            get { return _paymentMethodRepository = _paymentMethodRepository ?? new PaymentMethodRepository(_context, this); }
+        }
+
         #endregion
 
         #region Constructor
